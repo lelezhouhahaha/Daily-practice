@@ -89,7 +89,7 @@ PACK(void *) cmmdHandlerAutoJudged(int mDiagCmmdId){
 		return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
 	}
 	LOGE("cmmdHandlerAutoJudged: 2");
-	jmethodID method = env->GetMethodID(java_class, "doNoticeApHandlerAutoJudged", "(I)V");
+	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerAutoJudged", "(I)V");
 	if(!method) {
       if(threadAttached)
           jvm->DetachCurrentThread();
@@ -105,14 +105,15 @@ PACK(void *) cmmdHandlerAutoJudged(int mDiagCmmdId){
 	return NULL;
 }
 
-PACK(void *) cmmdHandlerSetResult(int mDiagCmmdId, PACK(void *)req_pkt, uint16 pkt_len){
+PACK(void *) cmmdHandlerSetResult(int mCmdId, PACK(void *)req_pkt, uint16 pkt_len){
 	JNIEnv *env;
+	LOGD_LOG("cmmdHandlerSetResult: mCmdId:%d", mCmdId);
 	ftm_cmd_response *cmd = (ftm_cmd_response *)req_pkt;
 	bool threadAttached = false;
 	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
 		if(jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
 			LOGD_LOG("cmmdHandlerSetResult: AttachCurrentThread error");
-			return CreatResponsePacket(mDiagCmmdId, 1, "AttachCurrentThread error");
+			return CreatResponsePacket(mCmdId, 1, "AttachCurrentThread error");
 		}
 		threadAttached = true;
 	}
@@ -122,20 +123,20 @@ PACK(void *) cmmdHandlerSetResult(int mDiagCmmdId, PACK(void *)req_pkt, uint16 p
 		if(threadAttached)
             jvm->DetachCurrentThread();
         LOGD_LOG("cmmdHandlerSetResult: GetObjectClass error");
-		return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
+		return CreatResponsePacket(mCmdId, 1, "GetObjectClass error");
 	}
 	LOGE("cmmdHandlerSetResult: 2");
-	jmethodID method = env->GetMethodID(java_class, "doNoticeApHandlerSetResult", "(ILjava/lang/String;)V");
+	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerSetResult", "(ILjava/lang/String;)V");
 	if(!method) {
       if(threadAttached)
           jvm->DetachCurrentThread();
       LOGD_LOG("cmmdHandlerSetResult: GetStaticMethodID error");
-	  return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
+	  return CreatResponsePacket(mCmdId, 1, "GetObjectClass error");
     }
 	LOGD_LOG("cmmdHandlerSetResult: 3");
 	jstring data = env->NewStringUTF((char*)cmd->Data);
 	/* Finally call the callback */
-    jint ret = env->CallStaticIntMethod(java_class, method, mDiagCmmdId, data);
+    jint ret = env->CallStaticIntMethod(java_class, method, mCmdId, data);
     if(threadAttached)
         jvm->DetachCurrentThread();
 	LOGD_LOG("cmmdHandlerSetResult end");
@@ -161,48 +162,11 @@ PACK(void *) ftm_ap_dispatch(PACK(void *)req_pkt, uint16 pkt_len) {
 	if(ptr_ret != NULL){
 		LOGD_LOG("ftm_ap_dispatch called fail!");
 	}
-
-	/*JNIEnv *env;
-	bool threadAttached = false;
-	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
-		if(jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
-			LOGD_LOG("ftm_ap_dispatch: AttachCurrentThread error");
-			return CreatResponsePacket(iCmd, 1, "AttachCurrentThread error");
-		}
-		threadAttached = true;
-	}
-	LOGE("ftm_ap_dispatch: 1");
-	jclass java_class = env->GetObjectClass(gDiagJNIInterfaceObject);
-	if(!java_class){
-		if(threadAttached)
-            jvm->DetachCurrentThread();
-        LOGD_LOG("diag_callback_handler: GetObjectClass error");
-		return CreatResponsePacket(iCmd, 1, "GetObjectClass error");
-	}
-	LOGE("ftm_ap_dispatch: 2");
-	jmethodID method = env->GetMethodID(java_class, "doNoticeApHandlerAutoJudged", "(I)V");
-	if(!method) {
-      if(threadAttached)
-          jvm->DetachCurrentThread();
-      LOGD_LOG("diag_callback_handler: GetStaticMethodID error");
-	  return CreatResponsePacket(iCmd, 1, "GetObjectClass error");
-    }
-	LOGD_LOG("ftm_ap_dispatch: 3");*/
-	/* Finally call the callback */
-    /*jint ret = env->CallStaticIntMethod(java_class, method, iCmd);
-    if(threadAttached)
-        jvm->DetachCurrentThread();*/
 	LOGD_LOG("ftm_ap_dispatch called! sem_wait");
 	
 	sem_wait(&g_sem_diag_cmmd);
 
-	LOGD_LOG("ftm_ap_dispatch called! get test result data[0]:%c\n", data[0]);
-	if(strncmp(data, "0", 1) == 0){
-		LOGD_LOG("ftm_ap_dispatch called! get test result success");
-		return CreatResponsePacket(iCmd, 0, NULL);
-	}
-	LOGD_LOG("ftm_ap_dispatch called! get test result fail");
-    return CreatResponsePacket(iCmd, 1, data);
+	return CreatResponsePacket(iCmd, mDiagCmmdResult, (mDiagCmmdResult == 0)?NULL:data);
 }
 
 static const diagpkt_user_table_entry_type ftm_mmi_diag_func_table[] = {
@@ -228,23 +192,6 @@ char* Jstring2CStr(JNIEnv* env, jstring jstr)
 	 env->ReleaseByteArrayElements(barr,ba,0);
 	 return rtn;
 }
-
-/*jstring CStr2Jstring( JNIEnv* env,const char* str )
-{
-    jsize len = strlen(str);
-    // 定义java String类 strClass
-    jclass strClass = (*env)->FindClass(env, "java/lang/String");
-    //设置String, 保存语言类型,用于byte数组转换至String时的参数
-    jstring encoding = (*env)->NewStringUTF(env, "GB2312");
-    // 获取java String类方法String(byte[],String)的构造器,用于将本地byte[]数组转换为一个新String
-    jmethodID ctorID = (*env)->GetMethodID(env, strClass, "<init>", "([BLjava/lang/String;)V");
-    // 建立byte数组
-    jbyteArray bytes = (*env)->NewByteArray(env, len);
-    // 将char* 转换为byte数组
-    (*env)->SetByteArrayRegion(env, bytes, 0, len, (jbyte*)str);
-    //将byte数组转换为java String,并输出
-    return (jstring)(*env)->NewObject(env, strClass, ctorID, bytes, encoding);
-}*/
   
 /* 
  * System.loadLibrary("lib")时调用 
@@ -257,7 +204,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     jvm = vm;
 	LOGD_LOG("Start to process ftm 1\n");
     if(vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
-        //MMI_LOGD_LOG("Failed to get the environment using GetEnv()");
 		LOGD_LOG("Start to process ftm 2\n");
         return JNI_ERR;
     }
@@ -287,12 +233,10 @@ JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_Diag_1I
 	LOGD_LOG("Start to process ftm 4 %s\n", bInit_Success?"true":"false");
 
     if(!bInit_Success) {
-        //MMI_LOGD_LOG("Diag_LSM_Init call failed");
 		LOGD_LOG("Start to process ftm 5\n");
         return;
     }
 
-    //MMI_ALOGI("Diag_LSM_Init call succeeded");
 	LOGD_LOG("Start to process ftm 6 Diag_LSM_Init call succeeded\n");
     DIAGPKT_DISPATCH_TABLE_REGISTER(DIAG_SUBSYS_FTM, ftm_mmi_diag_func_table);
 	LOGD_LOG("Start to process ftm register\n");
@@ -321,11 +265,13 @@ JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_Diag_1D
  * Signature: (ILjava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_SendDiagResult
-  (JNIEnv *jenv, jobject jobj, jint jcmdId, jstring jdata, jint jdatasize){
+  (JNIEnv *jenv, jobject jobj, jint jcmdId, jint jcmdresult, jstring jdata, jint jdatasize){
 	
-	//char *data = NULL;
 	ftm_cmd_response *req_pkt = NULL;
-	data = Jstring2CStr(jenv, jdata);
+	if(jdata != NULL){
+		data = Jstring2CStr(jenv, jdata);
+		mDiagCmmdResult = jcmdresult;
+	}
 	mDiagCmmdId = jcmdId;
 	
 	sem_post(&g_sem_diag_cmmd);

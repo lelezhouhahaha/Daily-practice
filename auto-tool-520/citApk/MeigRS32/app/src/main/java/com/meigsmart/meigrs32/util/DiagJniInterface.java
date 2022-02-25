@@ -9,7 +9,7 @@ public class DiagJniInterface {
 
     public static String TAG = "DiagJniInterfaceJava";
     private boolean status = false;
-    public static  Handler mHandler = null;
+    public static Handler mHandler = null;
 
     public boolean isStatus() {
         return status;
@@ -18,28 +18,11 @@ public class DiagJniInterface {
         status = result;
     }
 
-    /*private void handlerDiagCmmd(int cmdid){
-    Log.d(TAG, "cmdid:" + cmdid);
-        if(this.mHandler == null){
-            //Log.d("DiagJniInterfaceJava", "mHandler is null");
-            Log.d(TAG, "mHandler is null");
-            return;
-        }
-        Bundle bundle = new Bundle();
-        String mCmmdId = String.valueOf(cmdid);
-        bundle.putString("diag_command", mCmmdId);
-        Message msg = Message.obtain();
-        msg.setData(bundle);
-        msg.what = 10000;
-        msg.setTarget(this.mHandler);
-        msg.sendToTarget();
-    }
-*/
     //notice ap to handler diag cmmd
-    public void doNoticeApHandlerAutoJudged(int cmdid){
+    public static void doNoticeApHandlerAutoJudged(int cmdid){
         //Log.d("DiagJniInterfaceJava", "cmdid:" + cmdid);
         Log.d(TAG, "cmdid:" + cmdid);
-        if(this.mHandler == null){
+        if(mHandler == null){
             //Log.d("DiagJniInterfaceJava", "mHandler is null");
             Log.d(TAG, "mHandler is null");
             return;
@@ -50,13 +33,13 @@ public class DiagJniInterface {
         Message msg = Message.obtain();
         msg.setData(bundle);
         msg.what = 10000;
-        msg.setTarget(this.mHandler);
+        msg.setTarget(mHandler);
         msg.sendToTarget();
     }
 
-    public void doNoticeApHandlerSetResult(int cmdid, String data){
+    public static void doNoticeApHandlerSetResult(int cmdid, String data){
         Log.d(TAG, "cmdid:" + cmdid);
-        if(this.mHandler == null){
+        if(mHandler == null){
             //Log.d("DiagJniInterfaceJava", "mHandler is null");
             Log.d(TAG, "mHandler is null");
             return;
@@ -67,8 +50,8 @@ public class DiagJniInterface {
         bundle.putString("diag_data", data);
         Message msg = Message.obtain();
         msg.setData(bundle);
-        msg.what = 10000;
-        msg.setTarget(this.mHandler);
+        msg.what = 10010;
+        msg.setTarget(mHandler);
         msg.sendToTarget();
     }
 
@@ -78,7 +61,7 @@ public class DiagJniInterface {
 
     public native void Diag_Init();
     public native void Diag_Deinit();
-    public native void SendDiagResult(int cmdId, String data, int dataSize);
+    public native void SendDiagResult(int cmdId, int result, String data, int dataSize);
 
     static {
         System.loadLibrary("diag-jni");

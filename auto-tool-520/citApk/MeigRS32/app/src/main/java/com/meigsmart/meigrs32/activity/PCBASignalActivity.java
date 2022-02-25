@@ -89,7 +89,8 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
                         Log.d(activity.TAG, "send msg");
                         String mCmmdContent = (String) msg.getData().get("diag_command");
                         int mDiagCmmdId = Integer.valueOf(mCmmdContent);
-                        activity.mDiag.SendDiagResult(mDiagCmmdId,"1", 1);
+                        String data = "test fail";
+                        activity.mDiag.SendDiagResult(mDiagCmmdId, 1, data, data.length());
                         //doSendLocalMessage(SERVICEID, "AT+SOFTWAREINFO");
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -97,6 +98,15 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
                     break;
                 case HANDLER_DIAG_COMMAND_SET_RESULT:
                     Log.d(activity.TAG, "diag command handler set result");
+                    try {
+                        Thread.sleep(10000);
+                        Log.d(activity.TAG, "send msg");
+                        String mCmmdContent = (String) msg.getData().get("diag_command");
+                        int mDiagCmmdId = Integer.valueOf(mCmmdContent);
+                        activity.mDiag.SendDiagResult(mDiagCmmdId, 0, null, 0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         }

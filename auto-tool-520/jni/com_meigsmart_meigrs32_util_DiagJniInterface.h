@@ -112,10 +112,10 @@ JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_Diag_1D
 /*
  * Class:     com_meigsmart_meigrs32_util_DiagJniInterface
  * Method:    SendDiagResult
- * Signature: (ILjava/lang/String;I)V
+ * Signature: (IILjava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_SendDiagResult
-  (JNIEnv *, jobject, jint, jstring, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 #ifdef __cplusplus
 }
