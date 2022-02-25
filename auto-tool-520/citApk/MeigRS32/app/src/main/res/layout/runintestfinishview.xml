@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal" >
+
+    <TextView
+            android:id="@+id/test_status"
+            android:layout_weight="3"
+            android:textSize="@dimen/fontmidSize"
+            style="@style/runinTestFinishViewStyle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/test_fail_item_info"
+            android:singleLine="false"
+            style="@style/runinTestFinishViewStyle"
+            android:text="@string/runin_fail_item"
+            android:textSize="@dimen/fontSize"/>
+        <TextView
+            android:id="@+id/test_fail_name"
+            android:textColor="@color/white"
+            android:singleLine="false"
+            android:layout_above="@+id/test_fail_reason"
+            style="@style/runinTestFinishViewStyle"
+            android:textSize="@dimen/fontSize"/>
+        <TextView
+            android:id="@+id/test_fail_reason_info"
+            android:singleLine="false"
+            style="@style/runinTestFinishViewStyle"
+            android:text="@string/runin_fail_reason"
+            android:textSize="@dimen/fontSize"/>
+        <TextView
+            android:id="@+id/test_fail_reason"
+            android:singleLine="false"
+            style="@style/runinTestFinishViewStyle"
+            android:textColor="@color/white"
+            android:textSize="@dimen/fontSize"/>
+
+        <TextView
+            android:id="@+id/remain_time_info"
+            android:layout_above="@+id/remain_time"
+            style="@style/runinTestFinishViewStyle"
+            android:textSize="@dimen/fontSize"/>
+        <TextView
+            android:id="@+id/remain_time"
+            android:layout_alignLeft="@+id/remain_time_info"
+            style="@style/runinTestFinishViewStyle"
+            android:textSize="@dimen/fontmidSize"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/mix_size"
+        android:background="@color/black" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_close"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="@dimen/fontmidSize"
+        android:text="@string/close" />
+    </LinearLayout>
+</RelativeLayout>

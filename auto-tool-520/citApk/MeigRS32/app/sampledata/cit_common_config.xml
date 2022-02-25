@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<common_config>
+    <common_front_camera_rotation_angle>180</common_front_camera_rotation_angle><!--0,90,180,270,360-->
+    <common_rear_camera_rotation_angle>0</common_rear_camera_rotation_angle><!--0,90,180,270,360-->
+    <common_rear_camera_autofocus_bool>true</common_rear_camera_autofocus_bool><!--true, false-->
+    <common_ear_phone_hang_up_key_config>true</common_ear_phone_hang_up_key_config><!--true,false-->
+    <common_ear_phone_key_show_bool_config>true</common_ear_phone_key_show_bool_config><!--true,false-->
+    <common_usb_otg_udisk_config_bool>false</common_usb_otg_udisk_config_bool><!--false:mouse   true:U Disk-->
+    <common_software_version_device_id_config_persist>sys.device.id</common_software_version_device_id_config_persist>
+    <common_software_version_device_id_config_bool>true</common_software_version_device_id_config_bool>
+    <common_software_version_tp_hardware_config_path>/sys/bus/i2c/devices/3-0024/ic_ver</common_software_version_tp_hardware_config_path>
+    <common_software_version_tp_hardware_config_compare_value>Firmware Configuration Version</common_software_version_tp_hardware_config_compare_value>
+    <common_software_version_tp_hardware_config_bool>true</common_software_version_tp_hardware_config_bool>
+	<common_software_version_hardware_config_bool>true</common_software_version_hardware_config_bool>
+    <common_screen_orientationmn_portrait_config_bool>true</common_screen_orientationmn_portrait_config_bool>
+    <common_screen_follow_system_config_bool>false</common_screen_follow_system_config_bool>
+    <common_cit_log_save_path_dir>/persit</common_cit_log_save_path_dir>
+    <common_cit_log_save_path_file>/persist/CITResults</common_cit_log_save_path_file>
+    <common_cit_system_default_language>true</common_cit_system_default_language>
+    <common_uhf_power_supply_node>sys/class/gpio/gpio2/value</common_uhf_power_supply_node>
+    <common_uhf_eint_pin_path>sys/class/gpio/gpio129/value</common_uhf_eint_pin_path>
+    <common_second_battery_forced_charge_config_bool>true</common_second_battery_forced_charge_config_bool>
+    <common_second_battery_wait_time_config_int>5</common_second_battery_wait_time_config_int> <!-- unit: s-->
+    <common_touch_screen_draw_off_set_value_int>150</common_touch_screen_draw_off_set_value_int>
+    <common_mic_test_persist_config_string>persist.sys.cit.micmode</common_mic_test_persist_config_string>
+    <common_mic_gain1_test_max_config>80</common_mic_gain1_test_max_config>
+    <common_mic_gain2_test_max_config>80</common_mic_gain2_test_max_config>
+    <common_cpu_test_check_max_temperature_int>75</common_cpu_test_check_max_temperature_int>
+    <common_cpu_test_check_min_temperature_int>50</common_cpu_test_check_min_temperature_int>
+    <common_wifi_test_default_status_bool_config>true</common_wifi_test_default_status_bool_config>
+    <common_bt_test_default_status_bool_config>true</common_bt_test_default_status_bool_config>
+    <common_hall_test_defualt_int_config>0</common_hall_test_defualt_int_config> <!--0:defult 1:660  -->
+    <common_BatterySwitchActivity_sub_battery_hidden_display_config>true</common_BatterySwitchActivity_sub_battery_hidden_display_config>
+    <common_MeigRS32BroadcastReceiver_start_up_config_bool>false</common_MeigRS32BroadcastReceiver_start_up_config_bool>
+    <common_GSensorActivity_auto_judgment_bool>false</common_GSensorActivity_auto_judgment_bool>
+    <common_EComPassActivity_auto_judgment_bool>false</common_EComPassActivity_auto_judgment_bool>
+</common_config>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.SoftwareVersionActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/suc"
+            android:scrollbars="vertical"
+            android:fadingEdge="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/TV_cpuname"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/gpu_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/TV_RAM_size"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/TV_ROM_size"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/TP_fw_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/lcd_info"
+                style="@style/GyroMeterTextViewStyle"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/lcd_fw_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/TV_Wan_Module_Firmeware_Version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/sw_tag"
+                style="@style/GyroMeterTextViewStyle"
+                android:visibility="gone"/>
+            <TextView
+                style="@style/GyroMeterTextViewStyle"
+                android:id="@+id/info_camera_type"
+                android:singleLine="false"/>
+
+            <TextView
+                style="@style/GyroMeterTextViewStyle"
+                android:id="@+id/info_scan_type"
+                android:singleLine="false"/>
+
+            <TextView
+                style="@style/GyroMeterTextViewStyle"
+                android:id="@+id/info_printer_type"
+                android:singleLine="false"/>
+            <TextView
+                android:id="@+id/SunMi_os_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/boot_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+            <TextView
+                android:id="@+id/cfg_file_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/battery_chip_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/battery_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/info_firmware"
+                style="@style/GyroMeterTextViewStyle"
+                android:singleLine="false"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/nfc_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/fingerprint_version"
+                style="@style/GyroMeterTextViewStyle"
+                android:inputType="textMultiLine"
+                android:singleLine="false" />
+
+
+        </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+</LinearLayout>

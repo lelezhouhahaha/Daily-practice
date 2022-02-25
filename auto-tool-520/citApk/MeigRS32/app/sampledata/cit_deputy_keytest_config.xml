@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyboard_config>
+
+	<!-- Please put this file to "/system/etc/meig/cit_keytest_config.xml"
+		 [Keyword explanation]:
+		 ===>test_line:	show key test button in one lineage
+		 ===>key_test:	one key test object
+		 ===>keyName:	key name to show
+		 ===>keyCode:	key code value
+		 ===>width:		key button width,you can not set
+		 ===>height:	key button height,you can not set
+	-->
+	<!-- sample 
+	
+	<test_line>
+        <key_test>
+            <keyName>Volume up</keyName>
+            <keyCode>24</keyCode>
+			<width>200</width>
+			<height>50</height>
+        </key_test>        
+    </test_line>
+	
+	-->
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_P1</keyName>
+            <keyCode>539</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_TRIGGER</keyName>
+            <keyCode>505</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_P2</keyName>
+            <keyCode>540</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+			<keyName>KEYCODE_DPAD_LEFT</keyName>
+            <keyCode>21</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_DPAD_UP</keyName>
+            <keyCode>19</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_DPAD_DOWN</keyName>
+            <keyCode>20</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_DPAD_RIGHT</keyName>
+            <keyCode>22</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_CTRL</keyName>
+            <keyCode>502</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_A</keyName>
+            <keyCode>29</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_B</keyName>
+            <keyCode>30</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_C</keyName>
+            <keyCode>31</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_ALPHA</keyName>
+            <keyCode>503</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_D</keyName>
+            <keyCode>32</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_E</keyName>
+            <keyCode>33</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_F</keyName>
+            <keyCode>34</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_G</keyName>
+            <keyCode>35</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_H</keyName>
+            <keyCode>36</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_I</keyName>
+            <keyCode>37</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_J</keyName>
+            <keyCode>38</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_K</keyName>
+            <keyCode>39</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_L</keyName>
+            <keyCode>40</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_M</keyName>
+            <keyCode>41</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_N</keyName>
+            <keyCode>42</keyCode>
+        </key_test>
+	</test_line>
+		
+		<test_line>
+		<key_test>
+            <keyName>KEYCODE_O</keyName>
+            <keyCode>43</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_P</keyName>
+            <keyCode>44</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_Q</keyName>
+            <keyCode>45</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_R</keyName>
+            <keyCode>46</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_S</keyName>
+            <keyCode>47</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_T</keyName>
+            <keyCode>48</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_U</keyName>
+            <keyCode>49</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_V</keyName>
+            <keyCode>50</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_W</keyName>
+            <keyCode>51</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_SPACE</keyName>
+            <keyCode>62</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_X</keyName>
+            <keyCode>52</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_Y</keyName>
+            <keyCode>53</keyCode>
+        </key_test>
+	</test_line>
+	
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_Z</keyName>
+            <keyCode>54</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_DEL</keyName>
+            <keyCode>67</keyCode>
+        </key_test>
+	</test_line>
+
+	<test_line>
+        <key_test>
+            <keyName>KEYCODE_1</keyName>
+            <keyCode>8</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_2</keyName>
+            <keyCode>9</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_3</keyName>
+            <keyCode>10</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_SHIFT</keyName>
+            <keyCode>504</keyCode>
+        </key_test>
+    </test_line>
+    <test_line>
+		<key_test>
+            <keyName>KEYCODE_4</keyName>
+            <keyCode>11</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_5</keyName>
+            <keyCode>12</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_6</keyName>
+            <keyCode>13</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_ENTER</keyName>
+            <keyCode>66</keyCode>
+        </key_test>
+    </test_line>
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_7</keyName>
+            <keyCode>14</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_8</keyName>
+            <keyCode>15</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_9</keyName>
+            <keyCode>16</keyCode>
+        </key_test>
+		
+	</test_line>
+	<test_line>
+		<key_test>
+            <keyName>KEYCODE_PERIOD</keyName>
+            <keyCode>56</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>KEYCODE_0</keyName>
+            <keyCode>7</keyCode>
+        </key_test>
+		<key_test>
+            <keyName>STAR</keyName>
+            <keyCode>17</keyCode>
+        </key_test>
+    </test_line>
+	<test_line>
+        <key_test>
+            <keyName>KEYCODE_TRIGGER_LEFT</keyName>
+            <keyCode>507</keyCode>
+        </key_test>
+        <key_test>
+            <keyName>KEYCODE_TRIGGER_RIGHT</keyName>
+            <keyCode>508</keyCode>
+		</key_test>
+    </test_line>
+</keyboard_config>

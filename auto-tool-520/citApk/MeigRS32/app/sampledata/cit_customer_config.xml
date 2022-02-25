@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customer_config>
+
+	<!-- Please put this file to "/system/etc/meig/cit_customer_config.xml"
+		 [customer Test explanation]:
+		 ===>test_line:	show customer test  in one lineage
+		 ===>packageName:	The Package Name  of start.            value:   empty or not empty
+		 ===>className:	    The Class Name of start.                value: not empty
+	-->
+	<!-- sample 
+
+	<test_line>
+        <customer_test>
+            <packageName>com.meigsmart.slb767_stress</packageName>
+            <className>com.meigsmart.slb767_stress.ui.MainActivity</className>
+        </customer_test>
+    </test_line>
+	
+	-->
+
+    <test_line>
+        <customer_test>
+            <packageName>com.meigsmart.slb767_stress</packageName>
+            <className>com.meigsmart.slb767_stress.ui.MainActivity</className>
+        </customer_test>
+    </test_line>
+
+</customer_config>

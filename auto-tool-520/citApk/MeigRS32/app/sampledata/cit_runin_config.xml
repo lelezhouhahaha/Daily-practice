@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<runin_config>
+
+	<!-- Please put this file to "/system/etc/meig/cit_runin_config.xml"
+		 [Keyword explanation]:
+		 ===>test_line:	show key test button in one lineage
+		 ===>ActivityName:
+		 ===>runtime:	配置每项单次运行时间 单位 秒
+	-->
+
+    <test_line>
+        <ActivityName>total</ActivityName>
+        <runtime>3600</runtime> <!--配置所有的测试项目总共运行多长时间 单位 秒 -->
+	</test_line>
+    <test_line>
+        <ActivityName>activity.VideoActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.CpuActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.MemoryRamActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.MemoryEmmcActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.LCDRGBActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.LCDBrightnessActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.AudioActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.LEDActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.NFCActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.RearCameraAutoActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.GSensorActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.EComPassActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.LSensorActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.PSensorActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.GyroMeterActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.VibratorActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.DcJackChargeActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.ThreeDActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.FrontCameraVedioActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+    <test_line>
+        <ActivityName>activity.RearCameraVedioActivity</ActivityName>
+        <runtime>120</runtime>
+    </test_line>
+
+</runin_config>

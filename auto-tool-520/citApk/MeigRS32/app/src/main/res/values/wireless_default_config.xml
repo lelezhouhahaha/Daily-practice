@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- wireless test save log default path-->
+    <string name="wireless_save_log_default_path">MeiGFunction/Wireless</string>
+    <!-- wireless test save log file name-->
+    <string name="wireless_save_log_file_name">json.log</string>
+    <!-- wireless test save log custom path-->
+    <string name="wireless_save_log_custom_path">MeiG/Wireless</string>
+    <!-- wireless test save log is user custom-->
+    <bool name="wireless_save_log_is_user_custom">false</bool>
+    <!-- wireless test time default One minute -->
+    <integer name="wireless_test_default_time">1</integer>
+
+</resources>

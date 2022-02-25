@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.RecordActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/flag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/start_tag"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:id="@+id/record_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:text="@string/record_pull_earphone"
+                android:id="@+id/earphone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize"
+                android:visibility="gone" />
+
+            <com.meigsmart.meigrs32.view.VolumeView
+                android:id="@+id/volumeView"
+                android:layout_width="150dp"
+                android:layout_height="60dp"
+                android:layout_above="@+id/mic"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="80dp"
+                android:background="@drawable/vumeter" />
+
+            <TextView
+                android:id="@+id/mic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/m_left"
+                android:layout_marginRight="@dimen/m_left"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/record_mic_default"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize"
+                android:layout_above="@+id/start"/>
+            <TextView
+                android:id="@+id/maxmic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/m_left"
+                android:layout_marginRight="@dimen/m_left"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/record_maxmic"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize"
+                android:layout_above="@+id/start"
+                android:visibility="invisible"/>
+
+            <Button
+                android:id="@+id/start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onStartRecord"
+                android:text="@string/record_start"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize"
+                android:visibility="invisible"/>
+
+            <TextView
+                android:id="@+id/play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/m_left"
+                android:layout_marginRight="@dimen/m_left"
+                android:gravity="center"
+                android:maxLines="2"
+                android:text=""
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize"
+                android:layout_above="@+id/below_ll"
+                android:visibility="invisible"/>
+        </LinearLayout>
+        <include
+            layout="@layout/activity_below"
+            android:id="@+id/below_ll"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+</LinearLayout>

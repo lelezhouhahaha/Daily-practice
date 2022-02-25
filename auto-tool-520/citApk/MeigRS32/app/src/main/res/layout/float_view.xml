@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/float_textView_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/red"
+        android:textSize="@dimen/fontmidSize"
+        android:textStyle="bold"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/float_textView_current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/float_textView_total"
+        android:layout_weight="1"
+        android:textColor="@color/red"
+        android:textSize="@dimen/fontmidSize"
+        android:textStyle="bold"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/float_textView_voltage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/float_textView_current"
+        android:layout_weight="1"
+        android:textColor="@color/red"
+        android:textSize="@dimen/fontmidSize"
+        android:textStyle="bold"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/float_textView_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/float_textView_voltage"
+        android:layout_weight="1"
+        android:textColor="@color/red"
+        android:textSize="@dimen/fontmidSize"
+        android:textStyle="bold"
+        android:text="" />
+</RelativeLayout>

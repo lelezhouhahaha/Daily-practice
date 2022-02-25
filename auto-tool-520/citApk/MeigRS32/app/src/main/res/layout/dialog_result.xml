@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/result_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/yellow"
+        android:textSize="@dimen/fontmidSize"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:text="" />
+    <ProgressBar
+        android:id="@+id/save_loading"
+        android:layout_width="@dimen/fontmidSize"
+        android:layout_height="@dimen/fontmidSize"
+        android:layout_gravity="center_horizontal"
+        android:indeterminateBehavior="repeat"
+        android:indeterminateDrawable="@drawable/anim_loading" />
+
+    <TextView
+        android:id="@+id/save_result"
+        android:layout_below="@+id/save_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/red"
+        android:textSize="@dimen/fontSize"
+        android:text="@string/saving_result" />
+    <TextView
+        android:id="@+id/switch_gpio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textSize="@dimen/fontSize"
+        android:text="@string/test_success_write_gpio_flag" />
+</LinearLayout>
+</RelativeLayout>

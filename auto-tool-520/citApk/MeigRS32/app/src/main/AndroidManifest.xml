@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.meigsmart.meigrs32"
+    android:sharedUserId="android.uid.system">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_OWNER_DATA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.DEVICE_POWER" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="com.qualcomm.permission.USE_QCRIL_MSG_TUNNEL" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.SHUTDOWN" />
+    <uses-permission android:name="android.permission.REBOOT"/>
+
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.sensor.proximity"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.sensor.gyroscope"
+        android:required="true" />
+
+    <application
+        android:name=".application.MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+
+        <uses-library
+            android:name="org.zz.api"
+            android:required="false" />
+
+        <service
+            android:name=".service.MusicService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".cpuservice.CpuService1"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="true" />
+        <service android:name=".service.AudioLoopbackService" />
+        <service android:name=".service.GpsService" />
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.meig.cit.start" />
+                <action android:name="com.sunmi.action_secretdoor" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.Main_Default_Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <!--<action android:name="android.intent.action.MAIN" />
+                <action android:name="com.meig.cit.start" />
+                <action android:name="com.sunmi.action_secretdoor" />-->
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.TypeCChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.DCChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.CradleChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.DMRActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBASignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PreFunctionActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PreFunctionSignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMiSubSimSignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMi_3D_Structured_SignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RunInActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MM1_FunctionActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MMI1_FunctionSignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MM2_FunctionActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MMI2_FunctionSignalActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ThreeM_CameraAutoActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.InformationCheckActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CalibrationActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CpuActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MemoryActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MemoryRamActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MemoryEmmcActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BatteryActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.BatteryChargingActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.LCDRGBActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:theme="@style/fullscreen" />
+        <activity
+            android:name=".activity.SunMi_LCDRGBActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:theme="@style/fullscreen" />
+        <activity
+            android:name=".activity.LCDBrightnessActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LCDWaterRippleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:theme="@style/fullscreen" />
+        <activity
+            android:name=".activity.AudioActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.VideoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMi_LEDActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDBatterySwitchActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ScanActivityFarFocus"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ScanActivityNearFocus"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ScanActivitySS1100FarFocus"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ScanActivitySS1100NearFocus"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ScanActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".activity.NFCActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".activity.NFCABCardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".activity.RearCameraAutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.Rear2CameraAutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <!--add by wangjinfeng for srm900-->
+        <activity
+            android:name=".activity.RearCamera2AutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+        android:name=".activity.RearCamera3AutoActivity"
+        android:configChanges="orientation|screenSize|mcc|mnc"
+        android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.LEDsBlankTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <!--add by wangjinfeng for srm900-->
+        <activity
+            android:name=".activity.RearCameraApi2AutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.FrontCameraAutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.FrontCameraAutoActivity1"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.FrontCameraAutoActivity2"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.RunIn_FrontCameraAutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.RunIn_RearCameraAutoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.RearCameraVideoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.FrontCameraVideoActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.FmActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.GSensorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PreGSensorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.EComPassActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.EComPassPCBAActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LSensorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LSensorCalibrationActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.GyroMeterActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.GyroMeterCalibrationActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.VibratorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.EarPhoneActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <!--added by Yar for Speakloop begin-->
+        <activity
+            android:name=".activity.SpeakPhoneActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <!--added by Yar for Speakloop end-->
+        <activity
+            android:name=".activity.SpeakerActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ReceiverOrMicActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MICGain1Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MICGain2Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RecordActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMiRecordActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.GpsActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BatteryChargePCBAActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BluetoothActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.WifiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SoftwareVersionActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FirmewareVersionActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ChargerActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.KeyboardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.KeyboardMore_Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SIMActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SIM1Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SIM2Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SingleSIMActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SimHotPlugActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.Sim1HotPlugActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.Sim2HotPlugActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.StorageCardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.StorageCardHotPlugActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SimAndStorageCardHotPlugActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UsbOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PogopinOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PogoPin8ChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.PogoPin2ChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PogopinChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SimCallActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RecActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FlashLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FlashLight_NewActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LightGoolgeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BatterySwitchActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RtcActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".activity.SecondaryBatteryTest"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SecondaryBattery_NewTest"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.DcJackChargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSensorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SARSensorActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSensorCalibrationActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SecondPhoneLoopBackTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TouchTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MutiTouchTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSAMActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSAMActivity2"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ThreeDActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.StartCustomerActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.IRBrightnessActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.IRCutModeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.HallActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BreathLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.AirPresActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ElectricTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UHFTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ReadCardModuleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FingerOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UhfOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ICCTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PICCTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MSRTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PrinterTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TrigerTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BotUSBOTGActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BotUSBOTG1Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UsbTypeCOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UsbTypeCOtgActivity_New"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDRGB1Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDRGB2Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSAMTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.BuzzerTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ButtonLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDKeyBacklightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ShippingPowerModeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.StartSingleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LaserLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PowerBoardSingleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PowerBoardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SMTKeypadSingleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SMTKeypadActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FingerPrintActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SixPinOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NinePinOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+	<activity
+            android:name=".activity.TenPinOtgActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SixPinUartActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NinePinUartActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+	<activity
+            android:name=".activity.TenPinUartActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NinePinBotchargeActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.KeypadPowerBoardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UHFTest786Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.HDMITestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RJ11TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RJ12TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RJ45TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TenPinWaferActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SixPinWaferActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FourPinWaferActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MainLCDRGBActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ColdChainTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.HeatingTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CradleTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CradleI2CTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CradlePinTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CradleUartAdcTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CradleUartTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MeshPlateActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MainLCDBrightnessActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UsbTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.EightPinLinkerTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.EightPinLinkerUsbTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FormatSdCardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FcamSixPinKeyTest"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NinePinKeyActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TwoPinWaferActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+	<activity
+            android:name=".activity.GpioActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SpeakerRightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SpeakerLeftActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SpeakerRightAndLeftActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SecondMutiTouchTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.SecondTouchPointTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.HUBTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.SecondLCDBrightnessActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.SecondLCDRGBActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.SunmiPrinterTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.SunmiPrinter_NewTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.ScanSingleActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+		<activity
+            android:name=".activity.ScalesActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.HDMIScreenTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.RJ11ATestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.RJ11BTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.RS231TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.RS232TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+		<activity
+            android:name=".activity.LampPlateSignalTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.CameraPlateSignalTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.LampPlateTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.USB3TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.USB3FrontAndbackTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TpCapacityActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TpCapacity_Fangxing_Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TpCapacity_New_Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+	<activity
+            android:name=".activity.RebootTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.BuzzerTestSunmiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCIndicatorLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCSunMiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCSunMiA_TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCSunMiB_TestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PSAMSunmiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.ICReaderCardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LightKeyBoardActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.MagEncActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMi_MagEncActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCSunmiPCBActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.USBTypeCActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCandKeyBoardLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LEDandKeyBoardLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TrigerSunmiTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FillLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMi_FlashLightActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.Tamper_Proof_Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.TaxTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.CheckSPTouchActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RearCameraCloseShotActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RearCameraVisionActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.RunInPrintTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.LCDandSpeakerActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.AutoScanActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+		<activity
+            android:name=".activity.AutoFingerTestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.NFCSunMi2Activity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.SunMi1_MagEncActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.POETestActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.FingerTestSunMiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity android:name=".activity.Sn_ModerNameSetActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay"/>
+        <activity
+            android:name=".oemscan.OemScanTest"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.GpioSunmiActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc"/>
+        <activity
+            android:name=".activity.I2CActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.UARTActivity"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <receiver android:name=".activity.MeigRS32BroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SECRET_CODE" />
+
+                <data
+                    android:host="83789"
+                    android:scheme="android_secret_code" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.activity.waterripple" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.activity.customeractivityresult" />
+            </intent-filter>
+	    <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

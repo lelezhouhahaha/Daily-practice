@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never" >
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/start_test"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/flashlight_on"
+        android:textSize="25dip" />
+    <Button
+        android:id="@+id/close_test"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/flashlight_off"
+        android:textSize="25dip" />
+
+</LinearLayout>

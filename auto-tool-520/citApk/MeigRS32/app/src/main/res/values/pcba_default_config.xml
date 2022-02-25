@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources >
+
+    <!--pcba test save log default path-->
+    <string name="pcba_save_log_default_path">MeiGFunction/PCBA</string>
+    <!--pcba test save log file name-->
+    <string name="pcba_save_log_file_name">json.log</string>
+    <!--pcba test save log custom path-->
+    <string name="pcba_save_log_custom_path">MeiG/pcabTest</string>
+    <!--pcba test save log is user custom-->
+    <bool name="pcba_save_log_is_user_custom">false</bool>
+    <!--pcba test time default One minute -->
+    <integer name="pcba_test_default_time">60</integer>
+
+</resources>

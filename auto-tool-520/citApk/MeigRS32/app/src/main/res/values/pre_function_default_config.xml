@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- pre-function test save log default path-->
+    <string name="pre_function_save_log_default_path">MeiGFunction/PreFunction</string>
+    <string name="mmi1_function_save_log_default_path">MeiGFunction/MMI1_Function</string>
+    <string name="mmi2_function_save_log_default_path">MeiGFunction/MMI2_Function</string>
+    <!-- pre-function test save log file name-->
+    <string name="pre_function_save_log_file_name">json.log</string>
+    <string name="mmi1_function_save_log_file_name">json_mmi1.log</string>
+    <string name="mmi2_function_save_log_file_name">json_mmi2.log</string>
+    <!-- pre-function test save log custom path-->
+    <string name="pre_function_save_log_custom_path">MeiG/PreFunction</string>
+    <string name="mmi1_function_save_log_custom_path">MeiG/MMI1_Function</string>
+    <string name="mmi2_function_save_log_custom_path">MeiG/MMI2_Function</string>
+    <!-- pre-function test save log is user custom-->
+    <bool name="pre_function_save_log_is_user_custom">false</bool>
+    <bool name="mmi1_function_save_log_is_user_custom">false</bool>
+    <bool name="mmi2_function_save_log_is_user_custom">false</bool>
+    <!-- pre-function test time default One minute -->
+    <integer name="pre_function_test_default_time">1</integer>
+
+</resources>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.LSensorActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/tags">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_marginTopPercent="20%">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/l_sensor_tag"
+                    android:textColor="@color/black_dan"
+                    android:textSize="@dimen/fontSize" />
+
+                <TextView
+                    android:id="@+id/values"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/black_dan"
+                    android:textSize="@dimen/fontSize" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/success_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="130dp"
+                android:gravity="center"
+                android:maxLines="2"
+                android:text="@string/l_sensor_tag1"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize" />
+
+            <TextView
+                android:id="@+id/success_max"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="90dp"
+                android:gravity="center"
+                android:maxLines="2"
+                android:text="@string/l_sensor_tag2"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize" />
+
+            <!--TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="60dp"
+                android:gravity="center"
+                android:maxLines="2"
+                android:text="@string/l_sensor_tag3"
+                android:textColor="@color/black_dan"
+                android:textSize="@dimen/fontSize" /-->
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/l_sensor_disable"
+            android:text="@string/l_sensor_disable"
+            android:textColor="@color/black_dan"
+            android:textSize="@dimen/fontSize"
+            android:visibility="gone"/>
+
+        <include
+            layout="@layout/activity_below"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+
+</LinearLayout>

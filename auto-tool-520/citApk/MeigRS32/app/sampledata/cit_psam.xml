@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<psam>
+	<!-- Please put this file to "/system/etc/meig/cit_psam.xml"-->
+	<dev>/dev/ttyHSL1</dev>
+	<baud>38400</baud>
+	<input>98,0,0,0,0,0,2,0,0,0,96</input>
+	<output>0</output>
+	<psamPowerSupplypath>/sys/class/leds/power-SAM/brightness</psamPowerSupplypath>
+</psam>

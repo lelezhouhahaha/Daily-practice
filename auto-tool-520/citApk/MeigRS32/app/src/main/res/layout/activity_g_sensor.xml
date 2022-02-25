@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.GSensorActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:id="@+id/xyz"
+         android:orientation="vertical">
+         <TextView
+             android:id="@+id/flag"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_marginLeft="@dimen/m_left"
+             android:singleLine="true"
+             android:text="@string/g_sensor_layout_tag"
+             android:textColor="@color/black_dan"
+             android:textSize="13sp" />
+        <TextView
+            android:id="@+id/sesor_x"
+            style="@style/GSensorTextViewStyle" />
+
+        <TextView
+            android:id="@+id/sesor_y"
+            style="@style/GSensorTextViewStyle" />
+
+        <TextView
+            android:id="@+id/sesor_z"
+            style="@style/GSensorTextViewStyle" />
+     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:id="@+id/display"
+        android:visibility="gone"
+        android:orientation="vertical">
+         <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:background="@drawable/arrow_up_"
+             android:id="@+id/up"/>
+         <!--style="@style/GSensorTextViewStyle"-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/left"
+                android:background="@drawable/arrow_left_"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/right"
+                android:background="@drawable/arrow_right_"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+         <TextView
+             android:id="@+id/down"
+             android:background="@drawable/arrow_down_"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content" />
+             <!--style="@style/GSensorTextViewStyle"-->
+     </LinearLayout>
+    <include
+        layout="@layout/activity_below"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+</RelativeLayout>
+</LinearLayout>

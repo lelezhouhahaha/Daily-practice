@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.AirPresActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/pressure_background" >
+
+    <include
+        layout="@layout/activity_below"
+        android:id="@+id/below"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/below">
+    <Button
+        android:id="@+id/btn_pres_hardwareinfo"
+        android:layout_width="40.0dip"
+        android:layout_height="40.0dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="10.0dip"
+        android:background="@drawable/btn_hard_normal" />
+
+    <TextView
+        android:id="@+id/tv_pres_number"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btn_pres_hardwareinfo"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10.0dip"
+        android:layout_marginRight="10.0dip"
+        android:layout_marginTop="10.0dip"
+        android:gravity="center"
+        android:text="@string/nochangedet"
+        android:textColor="#ffd7cac2"
+        android:textSize="30.0dip" />
+
+    <com.meigsmart.meigrs32.view.PressureView
+        android:id="@+id/pres_dialview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_pres_number"
+        android:layout_below="@layout/include_title"
+        android:layout_marginLeft="10.0dip"
+        android:layout_marginRight="10.0dip"
+        android:layout_marginTop="10.0dip" />
+
+    <com.meigsmart.meigrs32.view.HardwareInfoView
+        android:id="@+id/pres_hardinfo"
+        android:layout_width="fill_parent"
+        android:layout_height="180.0dip"
+        android:layout_alignBottom="@id/tv_pres_number"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>
+

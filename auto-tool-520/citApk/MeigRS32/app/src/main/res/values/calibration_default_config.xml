@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- calibration test save log default path-->
+    <string name="calibration_save_log_default_path">MeiGFunction/Calibration</string>
+    <!-- calibration test save log file name-->
+    <string name="calibration_save_log_file_name">json.log</string>
+    <!-- calibrationtest save log custom path-->
+    <string name="calibration_save_log_custom_path">MeiG/Calibration</string>
+    <!-- calibration test save log is user custom-->
+    <bool name="calibration_save_log_is_user_custom">false</bool>
+    <!-- calibration test time default One minute -->
+    <integer name="calibration_test_default_time">1</integer>
+
+</resources>

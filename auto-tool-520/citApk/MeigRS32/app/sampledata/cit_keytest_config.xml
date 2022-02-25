@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyboard_config>
+
+	<!-- Please put this file to "/system/etc/meig/cit_keytest_config.xml"
+		 [Keyword explanation]:
+		 ===>test_line:	show key test button in one lineage
+		 ===>key_test:	one key test object
+		 ===>keyName:	key name to show
+		 ===>keyCode:	key code value
+		 ===>width:		key button width,you can not set
+		 ===>height:	key button height,you can not set
+	-->
+	<!-- sample 
+	
+	<test_line>
+        <key_test>
+            <keyName>Volume up</keyName>
+            <keyCode>24</keyCode>
+			<width>200</width>
+			<height>50</height>
+        </key_test>        
+    </test_line>
+	
+	-->
+
+    <test_line>
+        <key_test  >
+            <keyName>volume_up</keyName>
+            <keyCode>24</keyCode>
+        </key_test>
+        <key_test  >
+            <keyName>power</keyName>
+            <keyCode>26</keyCode>
+        </key_test>
+    </test_line>
+    <test_line>
+        <key_test  >
+            <keyName>volume_down</keyName>
+            <keyCode>25</keyCode>
+        </key_test>
+        <key_test  >
+            <keyName>scan</keyName>
+            <keyCode>131</keyCode>
+        </key_test>
+    </test_line>
+    <test_line>
+        <key_test  >
+            <keyName>back</keyName>
+            <keyCode>4</keyCode>
+        </key_test>
+        <key_test  >
+            <keyName>home</keyName>
+            <keyCode>3</keyCode>
+        </key_test>
+        <key_test  >
+            <keyName>Switch</keyName>
+            <keyCode>187</keyCode>
+        </key_test>
+        <key_test  >
+            <keyName>search</keyName>
+            <keyCode>84</keyCode>
+        </key_test>
+    </test_line>
+
+</keyboard_config>

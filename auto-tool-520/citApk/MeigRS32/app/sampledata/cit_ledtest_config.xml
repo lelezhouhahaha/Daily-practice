@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<led_config>
+
+	<!-- Please put this file to "/system/etc/meig/cit_ledtest_config.xml"
+		 [Keyword explanation]:
+		 ===>test_line:	show led test info in one lineage.
+		 ===>led_test:	one led test object.
+		 ===>ledName:	led name to show.
+		 ===>ledPath:	led path to operation.
+		 ===>ledOnName: led light on to show.
+		 ===>ledOnValue: led light on to write.
+		 ===>ledOnWidth:    led light on button width,you can not set.
+		 ===>ledOnHeight:   led light on button height,you can not set.
+		 ===>ledOffName: led light off to show.
+		 ===>ledOffValue: led light off to write.
+		 ===>ledOnWidth:    led light off button width,you can not set.
+		 ===>ledOnHeight:	led light off button height,you can not set.
+		 ===>ledGroup:     led group
+	-->
+	<!-- sample 
+	
+	<test_line>
+        <led_test>
+            <ledName>Red</ledName>
+            <ledPath>/sys/class/leds/red/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValu>255</ledOnValu>
+            <ledOnWidth>200</ledOnWidth>
+            <ledOnHeight>50</ledOnHeight>
+            <ledOffName>Off</ledOffName>
+            <ledOffValu>0</ledOffValu>
+            <ledOffWidth>200</ledOffWidth>
+            <ledOffHeight>50</ledOffHeight>
+            <ledGroup>0</ledGroup>
+        </led_test>
+    </test_line>
+	
+	-->
+
+    <test_line>
+        <led_test  >
+            <ledName>Red</ledName>
+            <ledPath>/sys/class/leds/red/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>0</ledGroup>
+        </led_test>
+    </test_line>
+
+    <test_line>
+        <led_test  >
+            <ledName>Green</ledName>
+            <ledPath>/sys/class/leds/rgb0_green/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>0</ledGroup>
+        </led_test>
+    </test_line>
+
+    <test_line>
+        <led_test  >
+            <ledName>Blue</ledName>
+            <ledPath>/sys/class/leds/blue/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>0</ledGroup>
+        </led_test>
+    </test_line>
+
+    <test_line>
+        <led_test  >
+            <ledName>Red1</ledName>
+            <ledPath>/sys/class/leds/rgb1_red/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>1</ledGroup>
+        </led_test>
+    </test_line>
+
+    <test_line>
+        <led_test  >
+            <ledName>Green1</ledName>
+            <ledPath>/sys/class/leds/green/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>1</ledGroup>
+        </led_test>
+    </test_line>
+
+    <test_line>
+        <led_test  >
+            <ledName>Blue1</ledName>
+            <ledPath>/sys/class/leds/rgb1_blue/brightness</ledPath>
+            <ledOnName>On</ledOnName>
+            <ledOnValue>255</ledOnValue>
+            <ledOffName>Off</ledOffName>
+            <ledOffValue>0</ledOffValue>
+            <ledGroup>1</ledGroup>
+        </led_test>
+    </test_line>
+
+    <breath_test_line>
+        <breath_led_test>
+            <breathledName>BreathRed</breathledName>
+            <breathledPath>/sys/class/leds/red/brink</breathledPath>
+            <breathledOnName>On</breathledOnName>
+            <breathledOnValue>1</breathledOnValue>
+            <breathledOffName>Off</breathledOffName>
+            <breathledOffValue>0</breathledOffValue>
+            <breathledGroup>0</breathledGroup>
+        </breath_led_test>
+    </breath_test_line>
+
+    <breath_test_line>
+        <breath_led_test>
+            <breathledName>BreathGreen</breathledName>
+            <breathledPath>/sys/class/leds/green/brink</breathledPath>
+            <breathledOnName>On</breathledOnName>
+            <breathledOnValue>1</breathledOnValue>
+            <breathledOffName>Off</breathledOffName>
+            <breathledOffValue>0</breathledOffValue>
+            <breathledGroup>0</breathledGroup>
+        </breath_led_test>
+    </breath_test_line>
+
+    <breath_test_line>
+        <breath_led_test>
+            <breathledName>BreathBlue</breathledName>
+            <breathledPath>/sys/class/leds/blue/brink</breathledPath>
+            <breathledOnName>On</breathledOnName>
+            <breathledOnValue>1</breathledOnValue>
+            <breathledOffName>Off</breathledOffName>
+            <breathledOffValue>0</breathledOffValue>
+            <breathledGroup>0</breathledGroup>
+        </breath_led_test>
+    </breath_test_line>
+
+    <backlight_test_line>
+        <key_backlight_led_test>
+            <backlightName>KeyBacklightLed</backlightName>
+            <backlightPath>/sys/class/leds/aw9106_led/backlight_brightness</backlightPath>
+            <backlightOnName>On</backlightOnName>
+            <backlightOnValue>255</backlightOnValue>
+            <backlightMiddleName>Middle</backlightMiddleName>
+            <backlightMiddleValue>100</backlightMiddleValue>
+            <backlightOffName>Off</backlightOffName>
+            <backlightOffValue>0</backlightOffValue>
+            <backlightGroup>0</backlightGroup>
+        </key_backlight_led_test>
+    </backlight_test_line>
+    <battery_switch_test_line>
+        <battery_switch_led_test>
+            <switchlightName>BatterySwitchLed</switchlightName>
+            <switchlightPath>/sys/class/leds/aw9106_led/red_led</switchlightPath>
+            <switchlightOnName>On</switchlightOnName>
+            <switchlightOnValue>1</switchlightOnValue>
+            <switchlightOffName>Off</switchlightOffName>
+            <switchlightOffValue>0</switchlightOffValue>
+            <switchlightGroup>0</switchlightGroup>
+        </battery_switch_led_test>
+    </battery_switch_test_line>
+</led_config>

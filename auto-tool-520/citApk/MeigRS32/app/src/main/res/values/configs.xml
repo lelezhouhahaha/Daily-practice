@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources >
+
+    <!--power board test save log default path-->
+    <string name="power_board_save_log_default_path">MeiGFunction/PowerBoard</string>
+    <!--power board test save log file name-->
+    <string name="power_board_save_log_file_name">json.log</string>
+    <!--power board test save log custom path-->
+    <string name="power_board_save_log_custom_path">MeiG/PowerBoard</string>
+    <!--power board test save log is user custom-->
+    <bool name="power_board_save_log_is_user_custom">false</bool>
+    <!--power board test time default One minute -->
+    <integer name="power_board_test_default_time">60</integer>
+	
+	
+	<!--power board single test save log default path-->
+    <string name="power_board_single_save_log_default_path">MeiGFunction/PowerBoardSingle</string>
+    <!--power board single test save log file name-->
+    <string name="power_board_single_save_log_file_name">json.log</string>
+    <!--power board single test save log custom path-->
+    <string name="power_board_single_save_log_custom_path">MeiG/PowerBoardSingle</string>
+    <!--power board single test save log is user custom-->
+    <bool name="power_board_single_save_log_is_user_custom">false</bool>
+    <!--power board single test time default One minute -->
+    <integer name="power_board_single_test_default_time">60</integer>
+	
+	
+	<!--SMT Keypad test save log default path-->
+    <string name="SMT_Keypad_save_log_default_path">MeiGFunction/SMTKeypad</string>
+    <!--SMT Keypad test save log file name-->
+    <string name="SMT_Keypad_save_log_file_name">json.log</string>
+    <!--SMT Keypad test save log custom path-->
+    <string name="SMT_Keypad_save_log_custom_path">MeiG/SMTKeypad</string>
+    <!--SMT Keypad test save log is user custom-->
+    <bool name="SMT_Keypad_save_log_is_user_custom">false</bool>
+    <!--SMT Keypad test time default One minute -->
+    <integer name="SMT_Keypad_test_default_time">60</integer>
+	
+	
+	<!--SMT Keypad single test save log default path-->
+    <string name="SMT_Keypad_single_save_log_default_path">MeiGFunction/SMTKeypadSingle</string>
+    <!--SMT Keypad single test save log file name-->
+    <string name="SMT_Keypad_single_save_log_file_name">json.log</string>
+    <!--SMT Keypad single test save log custom path-->
+    <string name="SMT_Keypad_single_save_log_custom_path">MeiG/SMTKeypadSingle</string>
+    <!--SMT Keypad single test save log is user custom-->
+    <bool name="SMT_Keypad_single_save_log_is_user_custom">false</bool>
+    <!--SMT Keypad single test time default One minute -->
+    <integer name="SMT_Keypad_single_test_default_time">60</integer>
+
+
+    <!--SMT Keypad and power board test save log default path-->
+    <string name="Keypad_power_board_save_log_default_path">MeiGFunction/KeypadPowerBoard</string>
+    <!--SMT Keypad and power board test save log file name-->
+    <string name="Keypad_power_board_save_log_file_name">json.log</string>
+    <!--SMT Keypad and power board save log custom path-->
+    <string name="Keypad_power_board_save_log_custom_path">MeiG/KeypadPowerBoard</string>
+    <!--SMT Keypad and power board test save log is user custom-->
+    <bool name="Keypad_power_board_save_log_is_user_custom">false</bool>
+    <!--SMT Keypad and power board test time default One minute -->
+    <integer name="Keypad_power_board_test_default_time">60</integer>
+
+    <!--ScanSingle test save log default path-->
+    <string name="scan_save_log_default_path">MeiGFunction/Scan</string>
+    <!--ScanSingle test save log file name-->
+    <string name="scan_save_log_file_name">scan.log</string>
+    <!--ScanSinglesave log custom path-->
+    <string name="scan_save_log_custom_path">MeiG/Scan</string>
+    <!--ScanSingletest save log is user custom-->
+    <bool name="scan_save_log_is_user_custom">false</bool>
+    <!--ScanSingle test time default One minute -->
+    <integer name="scan_test_default_time">60</integer>
+
+    <!--SMT LampPlate test save log default path-->
+    <string name="lamp_plate_save_log_default_path">MeiGFunction/LampPlateTest</string>
+    <!--SMT LampPlate test save log file name-->
+    <string name="lamp_plate_save_log_file_name">json.log</string>
+    <!--SMT LampPlate save log custom path-->
+    <string name="lamp_plate_save_log_custom_path">MeiG/LampPlateTest</string>
+    <!--SMT LampPlate test save log is user custom-->
+    <bool name="lamp_plate_save_log_is_user_custom">false</bool>
+    <!--SMT LampPlate test time default One minute -->
+    <integer name="lamp_plate_test_default_time">60</integer>
+
+    <!--SMT LampPlate test save log default path-->
+    <string name="lamp_plate_signal_save_log_default_path">MeiGFunction/LampPlateSignalTest</string>
+    <!--SMT LampPlate test save log file name-->
+    <string name="lamp_plate_signal_save_log_file_name">json.log</string>
+    <!--SMT LampPlate save log custom path-->
+    <string name="lamp_plate_signal_save_log_custom_path">MeiG/LampPlateSignalTest</string>
+    <!--SMT LampPlate test save log is user custom-->
+    <bool name="lamp_plate_signal_save_log_is_user_custom">false</bool>
+    <!--SMT LampPlate test time default One minute -->
+    <integer name="lamp_plate_signal_test_default_time">60</integer>
+
+    <string name="threshold_hint">400</string>
+
+    <string name="max_threshold_hint">4400</string>
+
+    <string name="min_threshold_hint">3900</string>
+
+
+
+</resources>

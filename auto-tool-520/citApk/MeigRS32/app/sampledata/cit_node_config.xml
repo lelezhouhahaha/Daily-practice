@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node_config>
+    <switch_battery_node>/sys/class/power_supply/battery/battery_switch</switch_battery_node>
+    <primary_battery_status_node>/sys/class/power_supply/battery/voltage_now</primary_battery_status_node>
+    <second_battery_node>/sys/class/power_supply/battery/get_sub_batt_voltage</second_battery_node>
+    <sub_battery_status_node>/sys/class/power_supply/battery/sub_voltage_now</sub_battery_status_node>
+    <sub_battery_charging_node>/sys/class/power_supply/tla2024/sub_battery_chg</sub_battery_charging_node>
+    <dc_jact_charge_node>/sys/class/power_supply/battery/status</dc_jact_charge_node>
+    <current_now_node>/sys/class/power_supply/bms/current_now</current_now_node>
+    <current_threshold_node>1000</current_threshold_node> <!-- unit: mA -->
+    <capacity_node>/sys/class/power_supply/battery/capacity</capacity_node>
+    <voltage_now_node>/sys/class/power_supply/bms/voltage_now</voltage_now_node>
+    <infrared_led_node>/sys/class/leds/infra-led/brightness</infrared_led_node>
+    <infrared_cut_node>/sys/bus/platform/drivers/ir-led/ircut_control</infrared_cut_node>
+    <changer_status_node>/sys/class/power_supply/battery/set_chg_status</changer_status_node>
+</node_config>

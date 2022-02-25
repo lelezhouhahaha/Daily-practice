@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensor_config>
+	<sensor_test>
+		<l_sensor_config_success_min_threshold>5</l_sensor_config_success_min_threshold>
+		<l_sensor_config_success_max_threshold>50</l_sensor_config_success_max_threshold>
+		<l_sensor_calibration_config_success_threshold>500</l_sensor_calibration_config_success_threshold>
+
+		<!-- true: l_sensor校准测试使用第三方应用-->
+		<l_sensor_calibration_use_3rd_app></l_sensor_calibration_use_3rd_app>
+		<common_sensor_calibration_Lsensor_packagename>com.qualcomm.qti.sensors</common_sensor_calibration_Lsensor_packagename>
+		<common_sensor_calibration_Lsensor_classname>com.qualcomm.qti.sensors.activity.LSensorCalibrationActivity</common_sensor_calibration_Lsensor_classname>
+		<!-- true: p_sensor校准测试使用第三方应用-->
+		<p_sensor_calibration_use_3rd_app></p_sensor_calibration_use_3rd_app>
+		<common_sensor_calibration_Psensor_packagename>com.qualcomm.qti.sensors</common_sensor_calibration_Psensor_packagename>
+		<common_sensor_calibration_Psensor_classname>com.qualcomm.qti.sensors.activity.PSensorCalibrationActivity</common_sensor_calibration_Psensor_classname>
+		<!-- true: g_sensor校准测试使用第三方应用-->
+		<g_sensor_calibration_use_3rd_app></g_sensor_calibration_use_3rd_app>
+		<common_sensor_calibration_Gsensor_packagename>com.qualcomm.qti.sensors</common_sensor_calibration_Gsensor_packagename>
+		<common_sensor_calibration_Gsensor_classname>com.qualcomm.qti.sensors.activity.GSensorCalibrationActivity</common_sensor_calibration_Gsensor_classname>
+	</sensor_test>
+</sensor_config>

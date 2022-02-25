@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.VibratorActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include
+            layout="@layout/activity_below"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+                <include
+                    layout="@layout/include_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    app:layout_marginTopPercent="10%"
+                    android:id="@+id/vibrator_info"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:maxLines="2"
+                    android:textSize="@dimen/fontSize"
+                    android:textColor="@color/black_dan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_gravity="center"
+                    app:layout_marginTopPercent="20%"
+                    android:layout_alignTop="@id/start"
+                    android:singleLine="true"
+                    android:textSize="@dimen/fontSize"
+                    android:textColor="@color/black_dan"
+                    android:text="@string/vibrator_tag1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+
+            <Button
+                android:onClick="onStart"
+                android:id="@+id/start"
+                android:textSize="@dimen/fontSize"
+                android:textColor="@color/black_dan"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:text="@string/vibrator_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+                <Button
+                    android:onClick="onStop"
+                    android:id="@+id/stop"
+                    android:textSize="@dimen/fontSize"
+                    android:textColor="@color/black_dan"
+                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/vibrator_stop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                    </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.TpCapacityActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include
+            android:id="@+id/below_lay"
+            layout="@layout/activity_below"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+
+        <LinearLayout
+            android:id="@+id/lay_threshold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="5dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_threshold"/>
+            <EditText
+                android:id="@+id/threshold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/threshold_hint"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/lay_max_threshold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="5dp"
+            android:layout_below="@+id/lay_threshold">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/allnode_max_threshold"/>
+            <EditText
+                android:id="@+id/max_threshold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/max_threshold_hint"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/lay_min_threshold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="5dp"
+            android:layout_below="@+id/lay_max_threshold">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/allnode_min_threshold"/>
+            <EditText
+                android:id="@+id/min_threshold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/min_threshold_hint"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/tp_test_btn"
+            android:layout_below="@+id/lay_min_threshold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/tp_capacity_test"
+            android:textSize="16sp"/>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_margin="5dp"
+            android:layout_below="@+id/tp_test_btn"
+            android:layout_above="@+id/below_lay">
+
+            <TextView
+                android:id="@+id/tp_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>>
+
+    </RelativeLayout>
+
+</LinearLayout>

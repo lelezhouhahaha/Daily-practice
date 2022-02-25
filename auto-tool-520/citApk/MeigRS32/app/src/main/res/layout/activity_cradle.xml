@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.UHFTestActivity">
+
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/flag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/start_tag"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize" />
+
+    <!--CradleI2CTestActivity-->
+    <TextView
+        android:id="@+id/GPIO64_CRADLE_IO3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/gpio64_cradle_io3_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/GPIO9_CRADLE_IO2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/gpio9_cradle_io2_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+
+    <!--CradleUartAdcTestActivity-->
+    <TextView
+        android:id="@+id/DC_ADC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_dc_adc_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/usb_sub_uart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_usb_sub_uart_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/gpio0_gpio1_uart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_gpio0_gpio1_uart_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+
+    <!--CradlePinTestActivity-->
+    <TextView
+        android:id="@+id/VBUS_5V"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_VBUS_5V_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/GPIO74_CRADLE_IO1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_GPIO74_CRADLE_IO1_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/DC_PWM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/cradle_DC_PWM_test"
+        android:textColor="@color/black_dan"
+        android:textSize="@dimen/fontSize"
+        android:visibility="gone"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            layout="@layout/activity_below"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

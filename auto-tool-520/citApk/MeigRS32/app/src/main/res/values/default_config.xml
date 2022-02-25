@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- LogUtil log config -->
+    <string name="default_log_save_path">MeiGFunction/CITlogs/</string>
+
+    <!-- main show -->
+    <string name="test_flag_default_config">01</string>
+    <bool name="main_default_config_is_test">false</bool>
+    <string name="main_default_config_bt_persist">persist.radio.bt</string>
+    <string name="main_default_config_ft1_persist">persist.radio.ft1</string>
+    <string name="main_default_config_ft2_persist">persist.radio.ft2</string>
+    <string name="main_default_config_wifi_persist">persist.radio.wifi</string>
+
+    <!-- software version -->
+    <string name="version_default_config_device_id_persist">sys.device.id</string>
+    <string name="version_default_config_serial_no">ro.serialno</string>
+    <string name="version_default_config_pcba_sn">persist.radio.sn</string>
+    <string name="version_default_config_hardware_version_persist">persist.radio.sghw</string>
+	<string name="version_default_config_software_version_meig">meig.full.sw.version</string>
+    <string name="version_default_config_software_version_persist">persist.radio.forge.version</string>
+    <string name="version_default_config_custom_software_version_persist">ro.build.display.id</string>
+    <string name="version_default_config_software_version_tp_fw_version_path">/sys/bus/i2c/devices/3-0024/ic_ver</string>
+    <string name="version_default_config_software_version_ram_size_path">/proc/meminfo</string>
+
+    <string name="version_default_config_software_version_tag">meig.sw.tag.version</string>
+
+    <integer name="start_delay_time">10</integer>
+    <integer name="loop_delay_time">1000</integer>
+    <!--cpu Test-->
+    <integer name="cpu_default_config_threshold">70</integer>
+    <string name="cpu_default_config_cpu_temperature_path">/sys/class/thermal/thermal_zone9/temp</string>
+    <string name="cpu_default_config_cpu_temperature_path_new">/sys/class/thermal/thermal_zone0/temp</string>
+
+    <!--Memory Test-->
+    <!-- the Battery power test -->
+    <integer name="memory_default_config_standard_result">1</integer>
+    <!--Whether to use a custom path-->
+    <bool name="memory_default_config_is_user_custom_path">false</bool>
+    <!-- the custom path-->
+    <string name="memory_default_config_custom_path">Download/</string>
+    <!-- the custom path fileName-->
+    <string name="memory_default_config_custom_file_name">test.txt</string>
+
+    <!--Battery Test-->
+    <!-- the battery standard capacity (mA)-->
+    <integer name="battery_default_config_standard_capacity">1000</integer>
+    <!-- the Battery charge test -->
+    <integer name="battery_charge_default_config_standard_result">1</integer>
+    <!-- the Battery power test -->
+    <integer name="battery_power_default_config_standard_result">1</integer>
+
+    <!--Audio Test-->
+    <!--Whether to use a custom path-->
+    <bool name="audio_default_config_is_user_custom_path">false</bool>
+    <!-- the custom path-->
+    <string name="audio_default_config_custom_path">MeiG/</string>
+    <!-- the custom path fileName-->
+    <string name="audio_default_config_custom_file_name">test.mp3</string>
+    <!-- audio auto critical result-->
+    <integer name="audio_auto_default_config_standard_result">1</integer>
+
+    <!--LCD R/G/B Test-->
+    <!--LCD R/G/B Test critical result-->
+    <integer name="lcd_rgb_default_config_standard_result">1</integer>
+    <!--LCD Brightness Test critical result-->
+    <integer name="lcd_brightness_default_config_standard_result">150</integer>
+
+    <!--LED  Test-->
+    <!--LED Test critical result-->
+    <integer name="leds_default_config_standard_result">1</integer>
+
+    <!--BreathLightActivity  Test-->
+    <!--BreathLightActivity Test critical result-->
+    <integer name="breath_leds_default_config_standard_result">1</integer>
+    <!--NFC  Test-->
+    <!--NFC Test critical result-->
+    <integer name="nfc_default_config_standard_result">1</integer>
+
+    <!--front camera auto  Test-->
+    <integer name="front_camera_auto_deault_config_roration_angle">180</integer>
+    <!--front camera auto Test critical result-->
+    <integer name="front_camera_auto_default_config_standard_result">1</integer>
+
+    <!--rear camera auto  Test-->
+    <integer name="rear_camera_auto_deault_config_roration_angle">0</integer>
+    <!--rear camera auto Test critical result-->
+    <integer name="rear_camera_auto_default_config_standard_result">1</integer>
+
+    <!-- G-Sensor Test-->
+    <!-- G-Sensor critical result-->
+    <integer name="g_sensor_default_config_standard_result">1</integer>
+
+    <!-- G-Sensor calibration Test-->
+    <string name="g_sensor_calibration_default_config_compare_value_x">0</string>
+    <string name="g_sensor_calibration_default_config_compare_value_y">0</string>
+    <string name="g_sensor_calibration_default_config_compare_value_z">9.8</string>
+    <bool name="g_sensor_calibration_default_config_simulation_mode">true</bool>
+    <string name="g_sensor_calibration_default_config_difference_value">0.5</string>
+    <string name="g_sensor_calibration_default_config_time_interval">2000</string>
+    <string name="g_sensor_calibration_default_config">persist.sensor.calibration</string>
+
+    <!-- E-comPass Test-->
+    <!-- E-comPass critical result-->
+    <integer name="e_compass_default_config_standard_result">1</integer>
+
+    <!-- P-Sensor Calibration Test-->
+    <string name="p_sensor_calibration_default_config_compare_distance_1">5</string>
+    <bool name="p_sensor_calibration_default_config_simulation_mode">true</bool>
+    <string name="p_sensor_calibration_default_config_difference_value">0.004</string>
+    <string name="p_sensor_calibration_default_config">persist.sensor.calibration</string>
+    <!-- P-Sensor Calibration  critical result-->
+    <integer name="p_sensor_calibration_default_config_standard_result">1</integer>
+
+    <!-- L-Sensor Test-->
+    <integer name="l_sensor_default_config_standard_max_result">50</integer>
+    <integer name="l_sensor_default_config_standard_min_result">5</integer>
+    <!-- L-Sensor critical result-->
+
+
+    <!-- L-Sensor Calibration Test-->
+    <string name="l_sensor_calibration_default_config_compare_value">500</string>
+    <bool name="l_sensor_calibration_default_config_simulation_mode">true</bool>
+    <string name="l_sensor_calibration_default_config_difference_value">50</string>
+    <string name="l_sensor_calibration_default_config">persist.sensor.calibration</string>
+    <string name="l_sensor_calibration_default_config_time_interval">5000</string>
+    <!-- L-Sensor Calibration critical result-->
+    <integer name="l_sensor_calibration_default_config_standard_result">50</integer>
+
+    <!-- Gyro-Meter Test-->
+    <!-- Gyro-Meter critical result-->
+    <integer name="gyro_meter_default_config_standard_result">1</integer>
+
+    <!-- Gyro-Meter Calibration Test-->
+    <integer name="gyro_meter_calibration_default_config_time_delay">2000</integer>
+    <bool name="gyro_meter_calibration_default_config_use_default_value">false</bool>
+    <string name="gyro_meter_calibration_default_config_compare_value">5.08765</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_x_1">persist.sensor.proximity.xaxise1</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_x_2">persist.sensor.proximity.xaxise2</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_y_1">persist.sensor.proximity.yaxise1</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_y_2">persist.sensor.proximity.yaxise2</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_z_1">persist.sensor.proximity.zaxise1</string>
+    <string name="gyro_meter_calibration_default_config_persist_param_z_2">persist.sensor.proximity.zaxise2</string>
+    <!-- Gyro-Meter Calibration critical result-->
+    <integer name="gyro_meter_calibration_default_config_standard_result">1</integer>
+
+    <!-- Vibrator  Test-->
+    <!-- Vibrator  critical result-->
+    <integer name="vibrator_default_config_standard_result">1</integer>
+
+    <integer name="battery_switch_default_config_standard_result">1</integer>
+
+    <!-- Card  Test-->
+    <!-- Micro SD  critical result-->
+    <integer name="micro_sd_default_config_standard_result">1</integer>
+    <!-- SIM Card  critical result-->
+    <integer name="sim_card_default_config_standard_result">1</integer>
+    <!-- SAM Card  critical result-->
+    <integer name="sam_card_default_config_standard_result">1</integer>
+
+    <!-- Second Camera  Test-->
+    <!-- Second Camera  critical result-->
+    <integer name="second_camera_default_config_standard_result">1</integer>
+
+    <!-- RFID  Test-->
+    <!-- RFID  critical result-->
+    <integer name="rfid_default_config_standard_result">1</integer>
+
+    <!-- RTC Time  Test-->
+    <!-- RTC Time  critical result-->
+    <integer name="rtc_time_default_config_standard_result">1</integer>
+
+    <!-- LCM  Test-->
+    <!-- line drawing mouth type  critical result-->
+    <integer name="lcm_mouth_default_config_standard_result">1</integer>
+    <!-- line drawing diagonal type  critical result-->
+    <integer name="lcm_diagonal_default_config_standard_result">1</integer>
+    <!-- line drawing three fingers type  critical result-->
+    <integer name="lcm_three_fingers_default_config_standard_result">1</integer>
+
+    <!-- RF Test -->
+    <!-- RF  critical result-->
+    <integer name="rf_default_config_standard_result">1</integer>
+
+    <!-- bt Test -->
+    <!-- bt  critical result-->
+    <integer name="bt_default_config_standard_result">1</integer>
+
+    <!-- wifi Test -->
+    <!-- wifi  critical result-->
+    <integer name="wifi_default_config_standard_result">1</integer>
+
+    <!-- gps Test -->
+    <!-- gps  critical result-->
+    <integer name="gps_default_config_standard_result">1</integer>
+
+    <!-- reader Test -->
+    <!-- reader  critical result-->
+    <integer name="reader_default_config_standard_result">1</integer>
+
+    <!-- power Test -->
+    <!-- System Power consumption  critical result-->
+    <integer name="power_consumption_default_config_standard_result">1</integer>
+
+    <!-- Information Check Test -->
+    <!-- Information Check critical result-->
+    <integer name="information_check_default_config_standard_result">1</integer>
+
+    <!-- WIFI Test -->
+    <!-- wifi mac address critical result-->
+    <integer name="wifi_mac_address_default_config_standard_result">1</integer>
+
+    <!-- Audio Function Test -->
+    <!-- Speaker   critical result  0-3-->
+    <array name="speaker_list">
+        <item>"0"</item>
+        <item>"1"</item>
+        <item>"2"</item>
+        <item>"3"</item>
+        <item>"4"</item>
+        <item>"5"</item>
+        <item>"6"</item>
+        <item>"7"</item>
+        <item>"8"</item>
+        <item>"9"</item>
+    </array>
+    <string name="speaker_select">"30"</string>
+    <string name="speaker_default_config_custom_path">Download/</string>
+    <bool name="speaker_default_config_is_use_custom_path">false</bool>
+    <string name="speaker_default_config_custom_file_name">beep.mp3</string>
+
+    <!-- Receiver/Mic  critical result-->
+    <integer name="receiver_mic_default_config_standard_result">1</integer>
+    <!-- Record   critical result-->
+    <integer name="record_default_config_standard_result">50</integer>
+    <string name="record_default_config_save_file_path">Record/</string>
+
+    <!--Software Test-->
+    <!-- Software critical result-->
+    <integer name="software_default_config_standard_result">1</integer>
+
+    <!--Charger Test-->
+    <!-- Charger critical result-->
+    <integer name="charger_default_config_standard_result">1</integer>
+
+    <!--keyboard Test-->
+    <!-- keyboard critical result-->
+    <integer name="keyboard_default_config_standard_result">1</integer>
+
+    <!--sim Test-->
+    <!-- sim critical result-->
+    <integer name="sim_default_config_standard_result">1</integer>
+
+    <!--Sim call Test-->
+    <!-- Sim call critical result-->
+    <integer name="sim_call_default_config_standard_result">1</integer>
+    <bool name="sim_call_default_config_is_use_custom_phone_number">false</bool>
+    <string name="sim_call_default_config_custom_phone_number">10086</string>
+
+    <!--Ear Phone Test-->
+    <bool name="ear_phone_default_config_hang_up_key">true</bool>
+    <!-- Ear Phone critical result-->
+    <integer name="ear_phone_default_config_standard_result">1</integer>
+
+    <!--Storage card Test-->
+    <!-- Storage card critical result-->
+    <integer name="storage_card_default_config_standard_result">1</integer>
+
+    <!--USB OTG Test-->
+    <bool name="usb_otg_default_config_udisk">false</bool>
+    <!-- USB OTG  critical result-->
+    <integer name="usb_otg_default_config_standard_result">1</integer>
+
+    <!-- scan Test -->
+    <string name="scan_default_config_pacakage_name">com.zebra.sdl</string>
+    <string name="scan_default_config_class_name">com.zebra.sdl.SDLguiActivity</string>
+    <!-- scan  critical result-->
+    <integer name="scan_default_config_standard_result">1</integer>
+
+    <integer name="second_battery_charge_default_config_standard_result">1</integer>
+
+    <string name="p_sensor_calibration_default_config_sensor_x">persist.sensor.proximity.paramx</string>
+    <string name="p_sensor_calibration_default_config_sensor_y">persist.sensor.proximity.paramy</string>
+    <string name="p_sensor_calibration_default_config_sensor_z">persist.sensor.proximity.paramz</string>
+    <string name="p_sensor_calibration_default_config_sensor_xx">persist.sensor.proximity.paramxx</string>
+    <string name="p_sensor_calibration_default_config_sensor_yy">persist.sensor.proximity.paramyy</string>
+    <string name="p_sensor_calibration_default_config_sensor_zz">persist.sensor.proximity.paramzz</string>
+
+    <!-- psam activity-->
+    <string name="psam_power_supply_path">/sys/class/leds/power-SAM/brightness</string>
+
+    <!-- 3D test -->
+    <integer name="threed_default_config_standard_result">1</integer>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- information check test save log default path-->
+    <string name="information_check_save_log_default_path">MeiGFunction/InformationCheck</string>
+    <!-- information check test save log file name-->
+    <string name="information_check_save_log_file_name">json.log</string>
+    <!-- information check test save log custom path-->
+    <string name="information_check_save_log_custom_path">MeiG/InformationCheck</string>
+    <!-- information check test save log is user custom-->
+    <bool name="information_check_save_log_is_user_custom">false</bool>
+    <!-- information check test time default One minute -->
+    <integer name="information_check_test_default_time">1</integer>
+
+</resources>

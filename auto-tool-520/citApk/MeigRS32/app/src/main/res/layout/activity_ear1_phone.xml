@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pop_txt_bg"
+    android:orientation="vertical"
+    android:overScrollMode="never"
+    tools:context=".activity.EarPhoneActivity">
+    <include
+        layout="@layout/include_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include
+            android:id="@+id/bottom"
+            layout="@layout/activity_below"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/bottom"
+            android:scrollbars="vertical"
+            android:fadingEdge="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recycleView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/tag1"
+                    android:layout_marginTop="1dp"
+                    android:overScrollMode="never"
+                    android:paddingLeft="40dp"
+                    android:paddingRight="20dp"
+                    android:scrollbars="none"
+                    android:visibility="gone"/>
+
+                <RelativeLayout
+                    android:id="@+id/earphone_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.meigsmart.meigrs32.view.VolumeView
+                        android:id="@+id/volumeView"
+                        android:layout_width="150dp"
+                        android:layout_height="60dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/vumeter"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="80dp"/>
+                    <TextView
+                        android:id="@+id/volume_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:textSize="@dimen/fontSize"
+                        android:layout_marginTop="50dp" />
+                    <TextView
+                        android:id="@+id/headset_prompt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/volumeView"
+                        android:textColor="@color/blue_dan"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="gone"
+                        android:text="@string/earphone" />
+
+                    <TextView
+                        android:id="@+id/headset_tips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_prompt"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="visible"
+                        android:text="@string/tips" />
+
+                    <TextView
+                        android:id="@+id/headset_prompt_un"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_tips"
+                        android:text="@string/earphone_un"
+                        android:textColor="@color/red"
+                        android:textSize="@dimen/fontSize" />
+
+                    <TextView
+                        android:id="@+id/headset_prompt_key"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_tips"
+                        android:text="@string/earphone_key"
+                        android:textColor="@color/blue_dan"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/headset_prompt_unkey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_prompt_un"
+                        android:text="@string/earphone_keyun"
+                        android:textColor="@color/red"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/headset_pttkey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_prompt_un"
+                        android:text="@string/earphone_keyptt"
+                        android:textColor="@color/red"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/headset_pttkey_has_pressed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_below="@+id/headset_prompt_un"
+                        android:text="@string/earphone_keyptt_has_pressed"
+                        android:textColor="@color/blue_dan"
+                        android:textSize="@dimen/fontSize"
+                        android:visibility="gone" />
+
+                </RelativeLayout>
+            </RelativeLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+</LinearLayout>
