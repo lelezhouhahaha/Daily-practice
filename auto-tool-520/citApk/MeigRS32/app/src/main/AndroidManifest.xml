@@ -123,6 +123,11 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
+            android:name=".activity.PCBAAutoActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
             android:name=".activity.PCBASignalActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|mcc|mnc" />

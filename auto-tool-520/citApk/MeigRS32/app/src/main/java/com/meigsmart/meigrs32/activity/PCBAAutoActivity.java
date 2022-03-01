@@ -1,6 +1,7 @@
 package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -12,6 +13,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
+import android.util.Xml;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -22,18 +25,29 @@ import com.meigsmart.meigrs32.R;
 import com.meigsmart.meigrs32.adapter.CheckListAdapter;
 import com.meigsmart.meigrs32.config.Const;
 import com.meigsmart.meigrs32.config.CustomConfig;
+import com.meigsmart.meigrs32.config.RuninConfig;
 import com.meigsmart.meigrs32.db.FunctionBean;
 import com.meigsmart.meigrs32.log.LogUtil;
 import com.meigsmart.meigrs32.model.PersistResultModel;
 import com.meigsmart.meigrs32.model.ResultModel;
 import com.meigsmart.meigrs32.model.TypeModel;
+import com.meigsmart.meigrs32.client.MyDiagAutoTestClient;
 import com.meigsmart.meigrs32.util.DataUtil;
 import com.meigsmart.meigrs32.util.FileUtil;
 import com.meigsmart.meigrs32.util.OdmCustomedProp;
+import com.meigsmart.meigrs32.util.PreferencesUtil;
+import com.meigsmart.meigrs32.util.ToastUtil;
+
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 
@@ -55,43 +69,38 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     private boolean isCustomPath ;
     private String mCustomPath;
     private String mFileName ;
+    private final String TAG = PCBAAutoActivity.class.getSimpleName();
 
 	private AlertDialog mAlertDialog = null;
-    //private boolean mStartFailTest = false;
-    //private int AUTO_TEST_FAIL_ITEM_COUNT = 2;
-    //private String  AUTO_TEST_FAIL_ITEM_COUNT_TAG = "common_auto_test_fail_item_count";
-    //List<Integer> mFailItems = new ArrayList<>();
-    //private int failTestPosition = 0;
 
-    private List<String> config_list = new ArrayList<>();
-
-    private boolean mNWGpioFlag = false;
-    private final String W_IO_PARTITION_GPIO_FLAG_KEY = "common_nw_iopartition_gpio_flag";
-    private final String WRITE_IO_PARTITION_GPIO_PATH_KEY = "common_write_iopartition_gpio_path";
-    private final String WRITE_IO_PARTITION_GPIO_FLAG_KEY = "common_write_iopartition_gpio_flag";
-    private String mIopartition = "/sys/iopartition/iopartition";
-    private boolean mNeedWriteGpioFlag = false;
-    private static final String GPIO_SUPPORT_PROP_KEY = "common_cit_gpio_support_prop";
-    private String gpio_support_prop = "ro.boot.gpiotestflag";
     private String projectName = "";
     private String scanType = "";
     private boolean OemScanConnected = false;
     private static int moreClickTimes;
+    public MyDiagAutoTestClient mDiagClient = null;
+    public MyHandler mHandler = null;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_pcba;
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        LogUtil.d(TAG, "onNewIntent finish current activity!");
+        mContext.finish();
+    }
+
+    @Override
     protected void initData() {
         mContext = this;
-        super.startBlockKeys = true;
+        super.startBlockKeys = false;
         moreClickTimes =0;
        // mBack.setVisibility(View.VISIBLE);
         mBack.setOnClickListener(this);
         mMore.setOnClickListener(this);
         mMore.setSelected(isLayout);
-        mTitle.setText(R.string.function_pcba);
+        mTitle.setText(R.string.function_pcba_auto);
         projectName = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, CustomConfig.SUNMI_PROJECT_MARK);
 
         mDefaultPath = getResources().getString(R.string.pcba_save_log_default_path);
@@ -104,7 +113,6 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 " mCustomPath:"+mCustomPath);
 
 
-        mNWGpioFlag = "true".equals(DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, W_IO_PARTITION_GPIO_FLAG_KEY));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new CheckListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
@@ -119,85 +127,127 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             LogUtil.d("citapk super.mList:" + super.mList);
         }
 
-        List<String> config = Const.getXmlConfig(this,Const.CONFIG_PCBA);
-        /*jicong.wang add for task 5845 start {@ */
-        if (CustomConfig.isSLB761X()){
-            config = CustomConfig.SLB761XtestItemConfig(config);
-        }
-        /*jicong.wang add for task 5845 end @*/
+        List<String> config = getPcbaAutoTestConfig();
+        Log.d(TAG, "config:<" + config + ">.");
         List<TypeModel> list = getDatas(mContext, config,super.mList);
-        String face_select = FileUtil.readFromFile("/mnt/vendor/productinfo/cit/face_select");
-        if("MT537".equals(projectName)){
-            if((face_select!=null)&&(!face_select.equals(""))&&(face_select.length()==8)) {
-                if(!face_select.substring(6, 7).equals("1")) {
-                    for (int i = 0; i < list.size(); i++) {
-                        if (list.get(i).getName().equals(getResources().getString(R.string.FingerOtgActivity))) {
-                            list.remove(i);
-                        }
-                    }
-                }
-                if(!face_select.substring(5, 6).equals("1")) {
-                    for (int i = 0; i < list.size(); i++) {
-                        if (list.get(i).getName().equals(getResources().getString(R.string.Id_Test))) {
-                            list.remove(i);
-                        }
-                    }
-                }
-            }
-        }
         if (list.size()>10)mMore.setVisibility(View.VISIBLE);
         mAdapter.setData(list);
-        for (TypeModel m:list) {
-            config_list.add(m.getName());
-        }
-        config_list.add("pcba_all");
-        //ToastUtil.showBottomLong(getResources().getString(R.string.start_tag));
-        mHandler.sendEmptyMessageDelayed(1005,100);
-        String temp = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, WRITE_IO_PARTITION_GPIO_PATH_KEY);
-        if (!TextUtils.isEmpty(temp))
-            mIopartition = temp;
-        mNeedWriteGpioFlag = "true".equals(DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, WRITE_IO_PARTITION_GPIO_FLAG_KEY));
+        mHandler = new MyHandler(mContext);
+        mDiagClient = new MyDiagAutoTestClient(mContext, mHandler);
+        //mHandler.sendEmptyMessageDelayed(1005,100);
     }
 
-    @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler(){
+    private static class MyHandler extends Handler {
+        WeakReference<Activity> reference;
+        public MyHandler(Activity activity) {
+            reference = new WeakReference<>(activity);
+        }
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
-                case 1003://test finish
-                    if(null != mBack)mBack.setVisibility(View.VISIBLE);
-                    new SaveResult().execute();
+            PCBAAutoActivity activity = (PCBAAutoActivity) reference.get();
+            switch (msg.arg1) {
+                case MyDiagAutoTestClient.ACTIVITYID:
+                    Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
+                    String strActivity = (String) msg.getData().get("content");
+                    Log.d(activity.TAG, "zll strActivity:" + strActivity);
+                    activity.mDiagClient.doSendLocalMessage(MyDiagAutoTestClient.ACK_ACTIVITYID, "SOFTWAREINFO:PASS");
                     break;
-                case 1005:
-                    if(currPosition != mAdapter.getItemCount()) {
-                        startActivity(mAdapter.getData().get(currPosition));
-                    }
+                case MyDiagAutoTestClient.ACK_ACTIVITYID:
+                    String mDataSendToService = (String) msg.getData().get("content");
+                    activity.mDiagClient.doSendMessage(msg, MyDiagAutoTestClient.ACK_SERVICEID, mDataSendToService);
                     break;
-                case 2001:
-                    //modify by wangjinfeng for task 8863
-                    if(mNWGpioFlag) {
-                        String sysGpioFlag = "sys.gpiotest.restore";
-                        SystemProperties.set(sysGpioFlag, "0");
-                    }else {
-                        FileUtil.writeToFile(mIopartition, "gpiotest#0");
-                    }
-                    sendEmptyMessageDelayed(2002, 5000);
-                    break;
-                case 2002:
-                    //add by wangjinfeng for bugid 17273
-                    if(mNWGpioFlag) {
-                        updateDialogGpioInfo("gpiotest#0".equals(SystemProperties.get("sys.gpiotest.restore.flag")));
-                    }else {
-                        String value = FileUtil.readFile(mIopartition);
-                        updateDialogGpioInfo(value.contains("gpiotest#0"));
-                    }
+                case MyDiagAutoTestClient.ACK_SAY_HELLO:
+                    //客户端接受服务端传来的消息
+                    Log.d(activity.TAG, "ACK_SAY_HELLO 服务端传来了消息=====>>>>>>>");
+                    String str = (String) msg.getData().get("content");
+                    Log.d(activity.TAG, str);
                     break;
             }
         }
-    };
+    }
 
-    private boolean isAllSuccess() {
+
+    private List<String> removeDuplicate(List<String> list)
+    {
+        Set set = new LinkedHashSet<String>();
+        set.addAll(list);
+        list.clear();
+        list.addAll(set);
+        return list;
+    }
+
+    public static List<String> getPcbaAutoTestConfig() {
+        String TAG_CONFIG = "pcba_auto_test_config";
+        String TAG_LINE = "test_line";
+        String TAG_ITEM_CMMD_ID_CONFIG = "item_cmd_id";
+        String TAG_ITEM_CLASS_CONFIG = "item_class";
+        List<String> config = new ArrayList<String>();
+        File configFile = new File(Const.PCBA_AUTO_TEST_CONFIG_XML_PATH);
+        if (!configFile.exists()) {
+            //ToastUtil.showCenterLong(getString(R.string.config_xml_not_found, Const.PCBA_AUTO_TEST_CONFIG_XML_PATH));
+            //deInit(mFatherName, NOTEST);//update state to no test
+            //finish();
+            return null;
+        }
+        try {
+            InputStream inputStream = new FileInputStream(Const.PCBA_AUTO_TEST_CONFIG_XML_PATH);
+            XmlPullParser xmlPullParser = Xml.newPullParser();
+            xmlPullParser.setInput(inputStream, "UTF-8");
+
+            int type = xmlPullParser.getEventType();
+            String mCmdId = "";
+            String mClassName = "";
+            while (type != XmlPullParser.END_DOCUMENT) {
+                switch (type) {
+                    case XmlPullParser.START_TAG:
+                        String startTagName = xmlPullParser.getName();
+                        if(TAG_LINE.equals(startTagName)) {
+                            /*if(!mCmdId.isEmpty() && !mClassName.isEmpty()){
+                                //PreferencesUtil.setStringData(mContext, "class_"+mCmdId, mClassName));
+                                //Log.d(TAG, "class_"+mCmdId + " :" + PreferencesUtil.getStringData(mContext, "class_"+mCmdId))
+                                config.add(mClassName);
+                                mClassName = "";
+                                mCmdId = "";
+                                LogUtil.d("PCBAAutoActivity", " TAG_LINE");
+                            }else{
+                                LogUtil.d("PCBAAutoActivity", " TAG_LINE 1");
+                            }*/
+                        }else if(TAG_ITEM_CMMD_ID_CONFIG.equals(startTagName)){
+                            mCmdId = xmlPullParser.nextText();
+                            LogUtil.d("PCBAAutoActivity", " mCmdId:" + mCmdId);
+                        }else if(TAG_ITEM_CLASS_CONFIG.equals(startTagName)){
+                            mClassName = xmlPullParser.nextText();
+                            LogUtil.d("PCBAAutoActivity", " mClassName:" + mClassName);
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        String endTagName = xmlPullParser.getName();
+                        if(TAG_LINE.equals(endTagName)){
+                            if(!mCmdId.isEmpty() && !mClassName.isEmpty()){
+                                //PreferencesUtil.setStringData(mContext, "class_"+mCmdId, mClassName));
+                                //Log.d(TAG, "class_"+mCmdId + " :" + PreferencesUtil.getStringData(mContext, "class_"+mCmdId))
+                                config.add(mClassName);
+                                mClassName = "";
+                                mCmdId = "";
+                                LogUtil.d("PCBAAutoActivity", " TAG_LINE end");
+                            }
+                        }else if(TAG_CONFIG.equals(endTagName)) {
+                            //LogUtil.d("PCBAAutoActivity", "tag end");
+                            return config;
+                        }
+                }
+                type = xmlPullParser.next();
+            }
+        }catch (Exception e) {
+            //setTestFailReason("Read file:" + Const.PCBA_AUTO_TEST_CONFIG_XML_PATH + " abnormal!");
+            Log.d("PCBAAutoActivity", "Read file:" + Const.PCBA_AUTO_TEST_CONFIG_XML_PATH + " abnormal!");
+            //e.printStackTrace();
+        }
+        return null;
+    }
+
+    /*private boolean isAllSuccess() {
         List<FunctionBean> list = getFatherData(PCBAAutoActivity.super.mName);
         boolean isAllSuccess = true;
         for (FunctionBean bean:list) {
@@ -211,7 +261,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             }
         }
         return isAllSuccess;
-    }
+    }*/
 
     private void saveLog() {
         List<FunctionBean> list = getFatherData(PCBAAutoActivity.super.mName);
@@ -255,9 +305,9 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         allResultModel.setResult(isAllSuccess ? Const.RESULT_SUCCESS : Const.RESULT_FAILURE);
         persistResultList.add(allResultModel);
 
-        persistResultList = DataUtil.setListOrder(config_list, persistResultList);
+        //persistResultList = DataUtil.setListOrder(config_list, persistResultList);
 
-        writeSDCardResult(isCustomPath ? mCustomPath : mDefaultPath, mFileName,  JSON.toJSONString(resultList));
+       /* writeSDCardResult(isCustomPath ? mCustomPath : mDefaultPath, mFileName,  JSON.toJSONString(resultList));
         if(SystemProperties.get("persist.sys.db_name_cit").equals("cit2_test")){
             writePersistResult(Const.getLogPath(Const.TYPE_LOG_PATH_FILE),  Const.PCBA_AUTO_RESULT_CIT2_FILE, JSON.toJSONString(persistResultList));
         }else{
@@ -266,11 +316,12 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         String atResultPath = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, Const.LOG_PATH_DIR_AT);
         if (!TextUtils.isEmpty(atResultPath))
             writeATResult(atResultPath, Const.PCBA_AUTO_RESULT_FILE, persistResultList);
+        */
         String pcba_result = isAllSuccess?"true":"false";
         SystemProperties.set(OdmCustomedProp.getPCBAResultProp(), pcba_result);
     }
 
-    private boolean writePersistResult(String path, String fileName, String result) {
+   /* private boolean writePersistResult(String path, String fileName, String result) {
         File persistPath = new File(Const.getLogPath(Const.TYPE_LOG_PATH_DIR));
         if(persistPath.exists() && persistPath.isDirectory()){
             File dir = FileUtil.mkDir(new File(path));
@@ -305,7 +356,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             sb.setLength(sb.length() - 1);
         return !"".equals(FileUtil.writeFileWithPermission(
                 new File(path),  Const.PCBA_AUTO_RESULT_FILE, sb.toString(), "0644"));
-    }
+    }*/
 
         private class SaveResult extends AsyncTask<Void, Void, Void> {
 
@@ -343,11 +394,12 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
 
     private void updateDialg(){
         String resultStr = "";
-        boolean resultStatus = isAllSuccess();
-        String temp = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, GPIO_SUPPORT_PROP_KEY);
+        boolean resultStatus = false;//isAllSuccess();
+        /*String temp = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, GPIO_SUPPORT_PROP_KEY);
         if (!TextUtils.isEmpty(temp))
             gpio_support_prop = temp;
         String lang= SystemProperties.get(gpio_support_prop);
+         */
         if(resultStatus)
             resultStr = getResources().getString(R.string.success);
         else resultStr = getResources().getString(R.string.fail);
@@ -365,10 +417,10 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         }else{
             mMessageView.setTextColor(Color.RED);
         }
-        if (resultStatus && "1".equals(lang)&& mNeedWriteGpioFlag) {
+        /*if (resultStatus && "1".equals(lang)&& mNeedWriteGpioFlag) {
             switchGpio.setVisibility(View.VISIBLE);
             mHandler.sendEmptyMessage(2001);
-        } else {
+        } else */{
             mAlertDialog.setCancelable(true);
         }
     }
@@ -417,17 +469,15 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
 
     @Override
     public void onItemClick(int position) {
-        //currPosition = position;
-        //startActivity(mAdapter.getData().get(position));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeMessages(1003);
-        mHandler.removeMessages(1005);
-        mHandler.removeMessages(2001);
-        mHandler.removeMessages(2002);
+        mHandler.removeMessages(MyDiagAutoTestClient.ACTIVITYID);
+        mHandler.removeMessages(MyDiagAutoTestClient.ACK_ACTIVITYID);
+        mHandler.removeMessages(MyDiagAutoTestClient.ACK_SAY_HELLO);
+        mDiagClient.Destroy(mContext);
     }
 
     @Override
@@ -440,18 +490,6 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                     mAdapter.notifyDataSetChanged();
                     currPosition++;
 
-
-                /*if(currPosition == mAdapter.getItemCount()){
-                    LogUtil.d("currPosition :" + currPosition);
-                    LogUtil.d("mAdapter.getItemCount():" + mAdapter.getItemCount());
-                    mHandler.sendEmptyMessageDelayed(1003,Const.DELAY_TIME);
-                    mHandler.removeMessages(1005);
-                        return;
-                }*/
-                /*if(currPosition != mAdapter.getItemCount()) {
-                    LogUtil.d("mAdapter.getItemCount():" + mAdapter.getItemCount());
-                    mHandler.sendEmptyMessageDelayed(1005, Const.DELAY_TIME);
-                }*/
             }
         }
     }

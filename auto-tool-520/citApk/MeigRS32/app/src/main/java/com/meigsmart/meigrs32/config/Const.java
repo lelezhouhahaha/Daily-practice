@@ -97,6 +97,7 @@ public class Const {
     public static final String CIT_COMMON_CONFIG_PATH = "/system/etc/meig/cit_common_config.xml";
     public static final String CIT_CUSTOMER_CONFIG_PATH = "/system/etc/meig/cit_customer_config.xml";
     public static final String SENSORTEST_CONFIG_XML_PATH = "/system/etc/meig/cit_sensor_config.xml";
+    public static final String PCBA_AUTO_TEST_CONFIG_XML_PATH = "/system/etc/meig/cit_pcba_auto_test_config.xml";
     public static final int CONFIG_FUNCTION = 0;
     public static final int CONFIG_PCBA = 1;
     public static final int CONFIG_PRE_FUNCTION = 2;
@@ -119,7 +120,6 @@ public class Const {
     public static final int CONFIG_MMI1_PRE_SIGNAL = 19;
     public static final int CONFIG_MMI2_PRE = 20;
     public static final int CONFIG_MMI2_PRE_SIGNAL = 21;
-    public static final int CONFIG_PCBA_AUTO = 22;
     private static final String TAG_CONFIG_FUNCTION = "fcuntion_config";
     private static final String TAG_CONFIG_PCBA = "pcba_config";
     private static final String TAG_CONFIG_PCBA_SIGNAL = "pcba_signal_config";
@@ -142,7 +142,6 @@ public class Const {
     private static final String TAG_CONFIG_MMI1_PRE = "mmi1_pre_config";
     private static final String TAG_CONFIG_MMI2_PRE_SIGNAL = "mmi2_pre_signal_config";
     private static final String TAG_CONFIG_MMI2_PRE = "mmi2_pre_config";
-    private static final String TAG_CONFIG_PCBA_AUTO = "pcba_auto_config";
     public static final int DELAY_TIME = 1000;
 
     public static final String PERSIST_PATH = "/persist";
@@ -297,9 +296,6 @@ public class Const {
             case CONFIG_PCBA:
                 readTag = TAG_CONFIG_PCBA;
                 break;
-            case CONFIG_PCBA_AUTO:
-                readTag = TAG_CONFIG_PCBA_AUTO;
-                break;
             case CONFIG_PRE_FUNCTION:
                 readTag = TAG_CONFIG_PRE_FUNCTION;
                 break;
@@ -379,9 +375,6 @@ public class Const {
                             if(readValues==null){
                                 return null;
                             }else {
-                                if(readTag.equals(TAG_CONFIG_PCBA_AUTO)){
-                                    return config;
-                                }
                                 readValues = readValues.replace("\r","");
                                 readValues = readValues.replace("\n","");
                                 readValues = readValues.replace("\t","");

@@ -1,7 +1,6 @@
 package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
@@ -27,12 +26,10 @@ import com.meigsmart.meigrs32.model.PersistResultModel;
 import com.meigsmart.meigrs32.model.ResultModel;
 import com.meigsmart.meigrs32.model.TypeModel;
 import com.meigsmart.meigrs32.util.DataUtil;
-import com.meigsmart.meigrs32.util.DiagJniInterface;
 import com.meigsmart.meigrs32.util.FileUtil;
 import com.meigsmart.meigrs32.util.ToastUtil;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,11 +55,6 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
     private String mCustomPath;
     private String mFileName ;
     private String projectName = "";
-    private DiagJniInterface mDiag = null;
-    private MyHandler mHandler = null;
-    public final static int HANDLER_DIAG_COMMAND = 10000;
-    public final static int HANDLER_DIAG_COMMAND_SET_RESULT = 10010;
-    private final String TAG = PCBASignalActivity.class.getSimpleName();
 
     private List<String> config_list = new ArrayList<>();
     @Override
@@ -70,47 +62,6 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
         return R.layout.activity_pcba;
     }
 
-    private static class MyHandler extends Handler {
-        WeakReference<Activity> reference;
-
-        public MyHandler(Activity activity) {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            PCBASignalActivity activity = (PCBASignalActivity) reference.get();
-            switch (msg.what) {
-                case HANDLER_DIAG_COMMAND:
-                    Log.d(activity.TAG, "diag command handler");
-                    try {
-                        Thread.sleep(10000);
-                        Log.d(activity.TAG, "send msg");
-                        String mCmmdContent = (String) msg.getData().get("diag_command");
-                        int mDiagCmmdId = Integer.valueOf(mCmmdContent);
-                        String data = "test fail";
-                        activity.mDiag.SendDiagResult(mDiagCmmdId, 1, data, data.length());
-                        //doSendLocalMessage(SERVICEID, "AT+SOFTWAREINFO");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case HANDLER_DIAG_COMMAND_SET_RESULT:
-                    Log.d(activity.TAG, "diag command handler set result");
-                    try {
-                        Thread.sleep(10000);
-                        Log.d(activity.TAG, "send msg");
-                        String mCmmdContent = (String) msg.getData().get("diag_command");
-                        int mDiagCmmdId = Integer.valueOf(mCmmdContent);
-                        activity.mDiag.SendDiagResult(mDiagCmmdId, 0, null, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-            }
-        }
-    }
     @Override
     protected void initData() {
         mContext = this;
@@ -120,10 +71,6 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
         mMore.setOnClickListener(this);
         mMore.setSelected(isLayout);
         mTitle.setText(R.string.function_pcba_signal);
-        mDiag = new DiagJniInterface();
-        mDiag.Diag_Init();
-        mHandler = new MyHandler(mContext);
-        mDiag.setHandler(mHandler);
 
         mDefaultPath = getResources().getString(R.string.pcba_signal_save_log_default_path);
         mFileName = getResources().getString(R.string.pcba_signal_save_log_file_name);
@@ -185,12 +132,6 @@ public class PCBASignalActivity extends BaseActivity implements View.OnClickList
             config_list.add(m.getName());
         }
         config_list.add("pcba_all");
-    }
-
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
-        mDiag.Diag_Deinit();
     }
 
     @Override

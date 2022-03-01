@@ -30,7 +30,6 @@ import com.meigsmart.meigrs32.model.PersistResultModel;
 import com.meigsmart.meigrs32.model.ResultModel;
 import com.meigsmart.meigrs32.model.TypeModel;
 import com.meigsmart.meigrs32.util.DataUtil;
-import com.meigsmart.meigrs32.util.DiagJniInterface;
 import com.meigsmart.meigrs32.util.FileUtil;
 import com.meigsmart.meigrs32.util.OdmCustomedProp;
 import com.meigsmart.meigrs32.util.ToastUtil;

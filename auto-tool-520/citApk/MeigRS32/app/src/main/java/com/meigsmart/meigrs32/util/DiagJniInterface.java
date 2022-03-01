@@ -32,7 +32,7 @@ public class DiagJniInterface {
         bundle.putString("diag_command", mCmmdId);
         Message msg = Message.obtain();
         msg.setData(bundle);
-        msg.what = 10000;
+        msg.arg1 = 10000;
         msg.setTarget(mHandler);
         msg.sendToTarget();
     }
@@ -50,7 +50,7 @@ public class DiagJniInterface {
         bundle.putString("diag_data", data);
         Message msg = Message.obtain();
         msg.setData(bundle);
-        msg.what = 10010;
+        msg.arg1 = 10010;
         msg.setTarget(mHandler);
         msg.sendToTarget();
     }

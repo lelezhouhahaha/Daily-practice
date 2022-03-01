@@ -22,13 +22,15 @@ public class DiagCommand {
     public static final int FTM_SUBCMD_HALL = 15;
     public static final int FTM_SUBCMD_NFC = 16;
     public static final int FTM_SUBCMD_SCANER = 17;
-    public static final int FTM_SUBCMD_FINGERPRINT = 18;
-    public static final int FTM_SUBCMD_BATTERYCHARGER = 19;
-    public static final int FTM_SUBCMD_STROBE = 20;
-    public static final int FTM_SUBCMD_VIBRATOR = 21;
-    public static final int FTM_SUBCMD_FRONTCAMERA = 22;
-    public static final int FTM_SUBCMD_BACKCAMERA = 23;
-    public static final int FTM_SUBCMD_TOUCH = 24;
+    public static final int FTM_SUBCMD_SCANER_NEAR = 18;
+    public static final int FTM_SUBCMD_SCANER_FAR = 19;
+    public static final int FTM_SUBCMD_FINGERPRINT = 20;
+    public static final int FTM_SUBCMD_BATTERYCHARGER = 21;
+    public static final int FTM_SUBCMD_STROBE = 22;
+    public static final int FTM_SUBCMD_VIBRATOR = 23;
+    public static final int FTM_SUBCMD_FRONTCAMERA = 24;
+    public static final int FTM_SUBCMD_BACKCAMERA = 25;
+    public static final int FTM_SUBCMD_TOUCH = 26;
 
     public static final int FTM_SUBCMD_HEADSET = 100;
     public static final int FTM_SUBCMD_HEADSETLEFTLOOP = 101;

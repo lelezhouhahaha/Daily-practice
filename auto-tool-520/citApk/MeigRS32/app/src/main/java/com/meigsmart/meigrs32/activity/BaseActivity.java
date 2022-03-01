@@ -634,6 +634,24 @@ public abstract class BaseActivity extends AppCompatActivity {
         return list;
     }
 
+    protected Class getCls(String className){
+        String name = "";
+        Class cls = null;
+        if(className.contains("/") || className.contains("*")) {
+            name = "com.meigsmart.meigrs32.activity." + "StartSingleActivity";
+        }else {
+            name = "com.meigsmart.meigrs32.activity." + className;
+        }
+        LogUtil.d("citapk  name:" + name);
+
+        try {
+            cls = Class.forName(name);
+        } catch (ClassNotFoundException e) {
+            LogUtil.d("not found class " + name);
+        }
+        return cls;
+    }
+
     protected void startActivity(TypeModel model){
         if (model.getCls().equals(Class.class)){
             ToastUtil.showBottomShort(getResources().getString(R.string.to_be_developed));

@@ -81,6 +81,9 @@ public class MeigRS32BroadcastReceiver extends BroadcastReceiver{
                 context.sendBroadcast(i);
             }
         }else if(intent.getAction().equals(REBOOT_TEST)){
+            Intent intent_startDiagService = new Intent("com.intent.action.meig.autotest"); // 参数为服务端的Service的action的name参数的值
+            intent_startDiagService.setPackage("com.meigsmart.meigrs32");
+            context.startService(intent_startDiagService);
             if (PreferencesUtil.getFristLogin(context,"onClickStart")) {
                 Intent main = new Intent(context, RunInActivity.class);
                 main.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
