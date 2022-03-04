@@ -229,6 +229,9 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
     private final String mLcdInfoPathKeyword = "common_SoftwareVersionActivity_lcd_version_path";
     private final String TAG = SoftwareVersionActivity.class.getSimpleName();
     private final int HANDLER_SIM_DISPLAY = 1002;
+    private final int HANDLER_SOFTWAREVERSION_TEST_RESULT = 1005;
+    private final int HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL = 1006;
+
     private boolean isMT537_version =false;
     private boolean isMT520_version =false;
     private boolean isMC520_GMS_version = false;
@@ -258,6 +261,9 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
     String mISEService_version ="";
     private boolean isBindService = false;
     private boolean doule_psam =false;
+
+    private Runnable mRun;
+
 
     @Override
     protected int getLayoutId() {
@@ -353,9 +359,31 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
         isMC526_version = SystemProperties.get("forge.cubic.ap.version").contains("MC526");
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
+        mRun = new Runnable() {
+            @Override
+            public void run() {
+                mConfigTime--;
+                LogUtil.d(TAG, " mConfigTime:" + mConfigTime);
+                updateFloatView(mContext, mConfigTime);
+                if (mConfigTime == 0 ||
+                        mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext)) {
+                    LogUtil.d(TAG, " finish current test");
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT);
+                        return;
+                    }
+                    return;
+                }
+                mHandler.postDelayed(this, 1000);
+            }
+        };
+        mRun.run();
+
         mBatteryVoltagePath = DataUtil.initConfig(Const.CIT_NODE_CONFIG_PATH, mBatteryVoltageKey);
         if (TextUtils.isEmpty(mBatteryVoltagePath))
             mBatteryVoltagePath = mBatteryVoltageDefaultPath;
@@ -1190,6 +1218,10 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                     if (!mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PreSignalNAME))
                         deInit(mFatherName, SUCCESS);
                     break;
+                case HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL:
+                    String reason = (String) msg.obj;
+                    deInit(mFatherName, FAILURE, reason);
+                    break;
                 case HANDLER_SIM_DISPLAY:
                     showSimInfo();
                     LogUtil.d(TAG, "1 mSimCardDisplaySuccessFlag:" + mSimCardDisplaySuccessFlag);
@@ -1197,16 +1229,7 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                     if(!mSimCardDisplaySuccessFlag){
                         mHandler.sendEmptyMessageDelayed(HANDLER_SIM_DISPLAY, 2000);
                     }else{
-                        if(mSimCardDisplaySuccessFlag && mSoftwareInformationSuccessFlag) {
-                            if (isMT535) {
-                                mHandler.sendEmptyMessage(1001);
-                            } else {
-                                mSuccess.setVisibility(View.VISIBLE);
-                            }
-                        }else{
-                            LogUtil.d(TAG, "mSimCardDisplaySuccessFlag:" + mSimCardDisplaySuccessFlag);
-                            LogUtil.d(TAG, "mSoftwareInformationSuccessFlag:" + mSoftwareInformationSuccessFlag);
-                        }
+                        mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT);
                     }
                     break;
                 case 1003:
@@ -1249,6 +1272,25 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                             }
                         }
                     break;
+                case HANDLER_SOFTWAREVERSION_TEST_RESULT:
+                    if(mSimCardDisplaySuccessFlag && mSoftwareInformationSuccessFlag) {
+                        if (isMT535 || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                            mHandler.sendEmptyMessage(1001);
+                        } else {
+                            mSuccess.setVisibility(View.VISIBLE);
+                        }
+                    }else{
+                        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                            Message msg1 = mHandler.obtainMessage();
+                            msg1.what = HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL;
+                            msg1.obj = "Empty content of software test item";
+                            mHandler.sendMessage(msg1);
+                            //mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL);
+                        }
+                        LogUtil.d(TAG, "mSimCardDisplaySuccessFlag:" + mSimCardDisplaySuccessFlag);
+                        LogUtil.d(TAG, "mSoftwareInformationSuccessFlag:" + mSoftwareInformationSuccessFlag);
+                    }
+                    break;
             }
         }
     };
@@ -1257,8 +1299,11 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
     @Override
     protected void onDestroy(){
         super.onDestroy();
+		mHandler.removeCallbacks(mRun);
         mHandler.removeMessages(1001);
         mHandler.removeMessages(HANDLER_SIM_DISPLAY);
+        mHandler.removeMessages(HANDLER_SOFTWAREVERSION_TEST_RESULT);
+        mHandler.removeMessages(HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL);
         mHandler.removeMessages(1003);
         if(isMT537_version&&isBindService) {
             unbindService(serviceConnection);

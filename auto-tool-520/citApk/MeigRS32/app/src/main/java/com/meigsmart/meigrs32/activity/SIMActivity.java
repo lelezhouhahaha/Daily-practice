@@ -65,6 +65,7 @@ public class SIMActivity extends BaseActivity implements View.OnClickListener, P
     private boolean isTwoCard = false;
     private String fine = "sim state fine";
     private String imeishownumber = "common_imei_show_tag_value";
+    private final String TAG  = SIMActivity.class.getSimpleName();
 
     @Override
     protected int getLayoutId() {
@@ -89,6 +90,8 @@ public class SIMActivity extends BaseActivity implements View.OnClickListener, P
         mConfigResult = getResources().getInteger(R.integer.sim_card_default_config_standard_result);
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -101,11 +104,20 @@ public class SIMActivity extends BaseActivity implements View.OnClickListener, P
             @Override
             public void run() {
                 mConfigTime--;
+                LogUtil.d(TAG, " mConfigTime:" + mConfigTime);
                 updateFloatView(mContext, mConfigTime);
                 if (mConfigTime == 0 ||
                         mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext)) {
-                    if (isInsert)
+                    LogUtil.d(TAG, " finish current test");
+                    if (isInsert) {
                         deInit(mFatherName, SUCCESS);
+                        return;
+                    }else{
+                        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                            deInit(mFatherName, FAILURE, "sim is not insert");
+                            return;
+                        }
+                    }
                    // else deInit(mFatherName, FAILURE, Const.RESULT_TIMEOUT);
                 }
 

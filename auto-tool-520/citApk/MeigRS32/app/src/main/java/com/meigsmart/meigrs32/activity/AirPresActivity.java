@@ -78,6 +78,8 @@ public class AirPresActivity extends BaseActivity implements View.OnClickListene
         mConfigResult = getResources().getInteger(R.integer.record_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -115,7 +117,15 @@ public class AirPresActivity extends BaseActivity implements View.OnClickListene
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
                 if (((mConfigTime == 0) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) && !mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PreSignalNAME)) {
-                    mHandler.sendEmptyMessage(HANDLER_AirPress_RESULT_SUCCESS_CODE);
+                    if(mFatherName.equals(MyApplication.RuninTestNAME)) {
+                        mHandler.sendEmptyMessage(HANDLER_AirPress_RESULT_SUCCESS_CODE);
+                        return;
+                    }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(mPressureNumber > 0){
+                            mHandler.sendEmptyMessage(HANDLER_AirPress_RESULT_SUCCESS_CODE);
+                        }else mHandler.sendEmptyMessage(HANDLER_AirPress_RESULT_FAILURE_CODE);
+                        return;
+                    }
                 }
                 mHandler.postDelayed(this, 1000);
             }

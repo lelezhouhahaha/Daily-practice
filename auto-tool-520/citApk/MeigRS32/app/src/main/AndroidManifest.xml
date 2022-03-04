@@ -903,6 +903,16 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".service.MyDiagAutoTestService"
+            android:process=":remote"
+            android:exported="true">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.intent.action.meig.autotest" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -138,6 +138,8 @@ public class WifiActivity extends BaseActivity implements View.OnClickListener, 
         mConfigResult = getResources().getInteger(R.integer.wifi_default_config_standard_result);
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -176,12 +178,14 @@ public class WifiActivity extends BaseActivity implements View.OnClickListener, 
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext, mConfigTime);
-                if ( mConfigTime == 0 && mFatherName.equals(MyApplication.RuninTestNAME) ) {
+                if ( mConfigTime == 0 /*&& mFatherName.equals(MyApplication.RuninTestNAME)*/ ) {
                     Log.d(TAG, "test finished.");
                     mHandler.sendEmptyMessage(1001);
                     mConfigTime = 1;
+                    return;
                 }else if( mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext)){
                     mHandler.sendEmptyMessage(1003);
+                    return;
                 }
                 if (isStartTest) mHandler.sendEmptyMessageDelayed(1006, 3000);
                 mHandler.postDelayed(this, 1000);

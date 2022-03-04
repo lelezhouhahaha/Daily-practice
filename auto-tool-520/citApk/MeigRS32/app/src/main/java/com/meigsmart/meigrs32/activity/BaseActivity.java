@@ -206,6 +206,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 MyApplication.MMI2_PreSignalName = getResources().getString(R.string.mmi_two_test_manual);
             if(MyApplication.InformationCheckName.isEmpty())
                 MyApplication.InformationCheckName = getResources().getString(R.string.function_information_check);
+            if(MyApplication.PCBAAutoTestNAME.isEmpty())
+                MyApplication.PCBAAutoTestNAME = getResources().getString(R.string.PCBAAutoActivity);
             if (SAVE_EN_LOG) {
                 if(MyApplication.PCBASignalNAME.isEmpty())
                     MyApplication.PCBASignalNAME = PCBASignalActivity.class.getSimpleName();
@@ -700,6 +702,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             return MyApplication.MMI1_PreName;
         }else if(MyApplication.MMI2_PreSignalName.equals(fatherName)){
             return MyApplication.MMI2_PreName;
+        }else if(MyApplication.PCBAAutoTestNAME.equals(fatherName)){
+            return MyApplication.PCBAAutoTestNAME;
         }
         return fatherName;
 
@@ -857,6 +861,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         Intent intent = new Intent();
         intent.putExtra("results",results);
+        intent.putExtra("reason",reason);
         setResult(1111,intent);
         finish();
     }

@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import com.meigsmart.meigrs32.model.ResultModel;
 import com.meigsmart.meigrs32.model.TypeModel;
 import com.meigsmart.meigrs32.client.MyDiagAutoTestClient;
 import com.meigsmart.meigrs32.util.DataUtil;
+import com.meigsmart.meigrs32.util.DiagCommand;
 import com.meigsmart.meigrs32.util.FileUtil;
 import com.meigsmart.meigrs32.util.OdmCustomedProp;
 import com.meigsmart.meigrs32.util.PreferencesUtil;
@@ -79,6 +81,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     private static int moreClickTimes;
     public MyDiagAutoTestClient mDiagClient = null;
     public MyHandler mHandler = null;
+    private Class mCurrentTestClass = null;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_pcba;
@@ -136,6 +139,88 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         mDiagClient = new MyDiagAutoTestClient(mContext, mHandler);
         //mHandler.sendEmptyMessageDelayed(1005,100);
     }
+    @Override
+    public void onClick(View v) {
+        if (v == mBack)mContext.finish();
+        if (v == mMore){
+            if (isLayout){
+                isLayout = false;
+                mRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
+            }else {
+                isLayout = true;
+                mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            }
+            mMore.setSelected(isLayout);
+            mAdapter.notifyDataSetChanged();
+            moreClickTimes++;
+            LogUtil.d("click more:" + moreClickTimes);
+            if(moreClickTimes >= 2){
+                moreClickTimes =0;
+                mBack.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    @Override
+    public void onItemClick(int position) {
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeMessages(MyDiagAutoTestClient.SERVICEID);
+        //mHandler.removeMessages(MyDiagAutoTestClient.ACK_ACTIVITYID);
+        mHandler.removeMessages(MyDiagAutoTestClient.ACK_SAY_HELLO);
+        mDiagClient.Destroy(mContext);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        LogUtil.d(TAG, "requestCode:" + requestCode + " resultCode:" + resultCode);
+        if (data!=null){
+            int results = data.getIntExtra("results",0);
+            String reason = data.getStringExtra("reason");
+            if(reason == null){
+                reason = "";
+                LogUtil.d(TAG, "get fail reason is null");
+            }
+            LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
+            int mDiagCmdId = getAutoTestDiagCommandId(requestCode);
+            Class cls = getClass(PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId));
+
+            if(checkCurrenTestActivity(cls, mCurrentTestClass)){
+                updateDataForUI(cls.getSimpleName(), results);
+            }
+            if(results == SUCCESS){
+                mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, null, 0);
+            }else {
+                mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, reason, reason.length());
+            }
+
+        }
+    }
+
+    private void updateDataForUI(String clsName, int result){
+        List<TypeModel> mData = mAdapter.getData();
+        int size = mData.size();
+
+        for(int i = 0; i < size; i++){
+            TypeModel mod = mData.get(i);
+           if(clsName.equals(mod.getCls().getSimpleName())){
+               mData.get(i).setType(result);
+               break;
+           }
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private boolean checkCurrenTestActivity(Class mCurrentCls, Class mCurrentStartCls){
+            String mCurrentClassName = mCurrentCls.getSimpleName();
+            if(mCurrentClassName.equals(mCurrentStartCls.getSimpleName())){
+                return true;
+            }
+            return false;
+    }
 
     private static class MyHandler extends Handler {
         WeakReference<Activity> reference;
@@ -147,24 +232,105 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             super.handleMessage(msg);
             PCBAAutoActivity activity = (PCBAAutoActivity) reference.get();
             switch (msg.arg1) {
-                case MyDiagAutoTestClient.ACTIVITYID:
-                    Log.d(activity.TAG, "ACTIVITYID ·þÎñ¶Ë´«À´ÁËÏûÏ¢=====>>>>>>>");
-                    String strActivity = (String) msg.getData().get("content");
-                    Log.d(activity.TAG, "zll strActivity:" + strActivity);
-                    activity.mDiagClient.doSendLocalMessage(MyDiagAutoTestClient.ACK_ACTIVITYID, "SOFTWAREINFO:PASS");
+                case MyDiagAutoTestClient.SERVICEID:
+                    Log.d(activity.TAG, "ACTIVITYID æœåŠ¡ç«¯ä¼ æ¥äº†æ¶ˆæ¯=====>>>>>>>");
+                    int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
+                    /*if(mCmmdContent.isEmpty()){
+                        String reason = "Diag Command is empty!";
+                        activity.mDiagClient.doSendMessage(MyDiagAutoTestClient.ACK_SERVICEID, mCmmdContent, reason, reason.length());
+                    }*/
+                    activity.startActivityDependOnCommandId(mDiagCommandId);
+                    //activity.mDiagClient.doSendLocalMessage(MyDiagAutoTestClient.ACK_ACTIVITYID, "SOFTWAREINFO:PASS");
                     break;
-                case MyDiagAutoTestClient.ACK_ACTIVITYID:
+                /*case MyDiagAutoTestClient.ACK_ACTIVITYID:
                     String mDataSendToService = (String) msg.getData().get("content");
                     activity.mDiagClient.doSendMessage(msg, MyDiagAutoTestClient.ACK_SERVICEID, mDataSendToService);
-                    break;
+                    break;*/
                 case MyDiagAutoTestClient.ACK_SAY_HELLO:
-                    //¿Í»§¶Ë½ÓÊÜ·þÎñ¶Ë´«À´µÄÏûÏ¢
-                    Log.d(activity.TAG, "ACK_SAY_HELLO ·þÎñ¶Ë´«À´ÁËÏûÏ¢=====>>>>>>>");
+                    //å®¢æˆ·ç«¯æŽ¥å—æœåŠ¡ç«¯ä¼ æ¥çš„æ¶ˆæ¯
+                    Log.d(activity.TAG, "ACK_SAY_HELLO æœåŠ¡ç«¯ä¼ æ¥äº†æ¶ˆæ¯=====>>>>>>>");
                     String str = (String) msg.getData().get("content");
                     Log.d(activity.TAG, str);
                     break;
             }
         }
+    }
+
+    private int getAutoTestDiagCommandId(int mCmdId){
+        int mDiagCmdId = 0;
+        if( ( mCmdId < DiagCommand.FTM_SUBCMD_QUERY_BASE ) && ( mCmdId > DiagCommand.FTM_SUBCMD_BASE ) ){
+            mDiagCmdId = mCmdId - DiagCommand.FTM_SUBCMD_BASE;
+        }
+        return mDiagCmdId;
+    }
+
+    private Class getClass(String className){
+        String clsName = "";
+        if(className.contains("/")) {
+            //pkgName = className.substring(0, className.indexOf("/"));
+            //clsName = pkgName + className.substring(className.indexOf("/") + 1);
+            clsName = className.replace("/", "");
+        }else if(className.contains("*")){
+            //pkgName = className.substring(0, className.indexOf("*"));
+            clsName = className.substring(className.indexOf("*")+1);
+        }else{
+            clsName = "com.meigsmart.meigrs32.activity." + className;
+        }
+
+        Class cls = null;
+        try {
+            cls = Class.forName(clsName);
+        } catch (ClassNotFoundException e) {
+            LogUtil.d("not found class " + clsName);
+        }
+        return cls;
+    }
+
+    private void startActivityDependOnCommandId(int mDiagCommandId){
+        int mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
+
+        String title = "";
+        String clsName = "";
+        //String pkgName = "";
+        Class cls = null;
+        String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
+        LogUtil.d(TAG, "className:" + className);
+        if(className.contains("/")) {
+            //pkgName = className.substring(0, className.indexOf("/"));
+            //clsName = pkgName + className.substring(className.indexOf("/") + 1);
+            clsName = className.replace("/", "");
+            title = getStringFromName(mContext, clsName);
+        }else if(className.contains("*")){
+            //pkgName = className.substring(0, className.indexOf("*"));
+            clsName = className.substring(className.indexOf("*")+1);
+            title = getStringFromName(mContext, clsName);
+        }else{
+            title = getStringFromName(mContext, className);
+            clsName = "com.meigsmart.meigrs32.activity." + className;
+        }
+
+        LogUtil.d(TAG, "zll clsName:" + clsName + " title:" + title);
+        //cls = Class.forName(clsName);
+        try {
+            cls = Class.forName(clsName);
+        } catch (ClassNotFoundException e) {
+            LogUtil.d("not found class " + clsName);
+        }
+        LogUtil.d(TAG, "zll get cls end super.mName:" + super.mName + " cls.getSimpleName():" + cls.getSimpleName());
+
+        Intent intent = new Intent(mContext, cls);
+        mCurrentTestClass = cls;
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        if(!(this.mName==null)){
+            intent.putExtra("fatherName",super.mName);
+            intent.putExtra("name", SAVE_EN_LOG ? cls.getSimpleName() : title);
+        }else{
+            intent.putExtra("fatherName",mFatherName);
+            intent.putExtra("name", SAVE_EN_LOG ? cls.getSimpleName() : title);
+        }
+        startActivityForResult(intent, mDiagCommandId);
     }
 
 
@@ -177,7 +343,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return list;
     }
 
-    public static List<String> getPcbaAutoTestConfig() {
+    public List<String> getPcbaAutoTestConfig() {
         String TAG_CONFIG = "pcba_auto_test_config";
         String TAG_LINE = "test_line";
         String TAG_ITEM_CMMD_ID_CONFIG = "item_cmd_id";
@@ -225,7 +391,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                         String endTagName = xmlPullParser.getName();
                         if(TAG_LINE.equals(endTagName)){
                             if(!mCmdId.isEmpty() && !mClassName.isEmpty()){
-                                //PreferencesUtil.setStringData(mContext, "class_"+mCmdId, mClassName));
+                                PreferencesUtil.setStringData(mContext, "class_"+mCmdId, mClassName);
                                 //Log.d(TAG, "class_"+mCmdId + " :" + PreferencesUtil.getStringData(mContext, "class_"+mCmdId))
                                 config.add(mClassName);
                                 mClassName = "";
@@ -445,52 +611,5 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         mAlertDialog.setCancelable(true);
     }
 
-    @Override
-    public void onClick(View v) {
-        if (v == mBack)mContext.finish();
-        if (v == mMore){
-            if (isLayout){
-                isLayout = false;
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
-            }else {
-                isLayout = true;
-                mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            }
-            mMore.setSelected(isLayout);
-            mAdapter.notifyDataSetChanged();
-            moreClickTimes++;
-            LogUtil.d("click more:" + moreClickTimes);
-            if(moreClickTimes >= 2){
-                moreClickTimes =0;
-                mBack.setVisibility(View.VISIBLE);
-            }
-        }
-    }
 
-    @Override
-    public void onItemClick(int position) {
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mHandler.removeMessages(MyDiagAutoTestClient.ACTIVITYID);
-        mHandler.removeMessages(MyDiagAutoTestClient.ACK_ACTIVITYID);
-        mHandler.removeMessages(MyDiagAutoTestClient.ACK_SAY_HELLO);
-        mDiagClient.Destroy(mContext);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == 1111 || resultCode == 1000){
-            if (data!=null){
-                int results = data.getIntExtra("results",0);
-                LogUtil.d("test results:" + results);
-                    mAdapter.getData().get(currPosition).setType(results);
-                    mAdapter.notifyDataSetChanged();
-                    currPosition++;
-
-            }
-        }
-    }
 }

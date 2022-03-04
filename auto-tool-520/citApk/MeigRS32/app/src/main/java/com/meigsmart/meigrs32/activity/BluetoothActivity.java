@@ -119,6 +119,8 @@ public class BluetoothActivity extends BaseActivity implements View.OnClickListe
         mConfigResult = getResources().getInteger(R.integer.bt_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -136,10 +138,12 @@ public class BluetoothActivity extends BaseActivity implements View.OnClickListe
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
                 mHandler.sendEmptyMessageDelayed(1004,3000);
-                if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME))) {
+                if (((mConfigTime == 0) /*&& mFatherName.equals(MyApplication.RuninTestNAME)*/)) {
                         mHandler.sendEmptyMessageDelayed(1002,0);
+                        return;
                 }else if(mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext)){
                     mHandler.sendEmptyMessage(1010);
+                    return;
                 }
                 /*if (!mFatherName.equals(MyApplication.RuninTestNAME))
                     mHandler.sendEmptyMessageDelayed(1002,3000);

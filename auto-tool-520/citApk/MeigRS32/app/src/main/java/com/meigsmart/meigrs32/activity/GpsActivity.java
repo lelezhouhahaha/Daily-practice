@@ -69,6 +69,10 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
     private String projectName = "";
     private String TAG_mt535 = "common_keyboard_test_bool_config";
     private boolean isMT535 = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, TAG_mt535).equals("true");
+    private boolean isGpsSuccess = false;
+    private final int HANDLER_RESULT = 2000;
+    private final int HANDLER_RESULT_SUCCESS = 2001;
+    private final int HANDLER_RESULT_FAIL = 2002;
 
     @Override
     protected int getLayoutId() {
@@ -96,6 +100,8 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
             mSuccess.setVisibility(View.GONE);
             mFail.setVisibility(View.GONE);
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
             mSuccess.setOnClickListener(this);
@@ -117,7 +123,19 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
                 if ((mConfigTime == 0) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
-                     mHandler.sendEmptyMessage(1111);
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(isGpsSuccess){
+                            mHandler.sendEmptyMessage(HANDLER_RESULT_SUCCESS);
+                        }else {
+                            Message msg1 = mHandler.obtainMessage();
+                            msg1.what = HANDLER_RESULT_FAIL;
+                            msg1.obj = "gps count < " + SATELLITE_COUNT_MIN;
+                            mHandler.sendMessage(msg1);
+                        }
+                    }else {
+                        mHandler.sendEmptyMessage(1111);
+                    }
+                     return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
@@ -187,6 +205,7 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
 
         // satellite count is ok
         if (count >= SATELLITE_COUNT_MIN) {
+            isGpsSuccess = true;
             if(!mFatherName.equals(MyApplication.RuninTestNAME)) {
                 mSuccess.setVisibility(View.VISIBLE);
                 mFail.setVisibility(View.GONE);
@@ -195,7 +214,7 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
             mLocationManager.removeUpdates(mLocationListener);
             if (mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PreNAME)||
                     (isMT535 && mFatherName.equals(MyApplication.MMI1_PreName))||
-                    (isMT535 && mFatherName.equals(MyApplication.MMI2_PreName))){
+                    (isMT535 && mFatherName.equals(MyApplication.MMI2_PreName)) || (mFatherName.equals(MyApplication.PCBAAutoTestNAME))){
                 mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                 deInit(mFatherName, SUCCESS);
             }
@@ -243,6 +262,13 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
                         deInit(mFatherName, FAILURE);
                     }
                     break;
+                case HANDLER_RESULT_SUCCESS:
+                    deInit(mFatherName, SUCCESS);
+                    break;
+                case HANDLER_RESULT_FAIL:
+                    String reason = (String) msg.obj;
+                    deInit(mFatherName, FAILURE, reason);
+                    break;
                 case 9999:
                     deInit(mFatherName, FAILURE,msg.obj.toString());
                     break;
@@ -283,6 +309,8 @@ public class GpsActivity extends BaseActivity implements View.OnClickListener{
         mHandler.removeMessages(1001);
         mHandler.removeMessages(1111);
         mHandler.removeMessages(9999);
+		mHandler.removeMessages(HANDLER_RESULT_SUCCESS);
+		mHandler.removeMessages(HANDLER_RESULT_FAIL);
     }
 
     @Override

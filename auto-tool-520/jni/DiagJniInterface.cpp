@@ -58,14 +58,24 @@ PACK(void *) CreatResponsePacket(int diagCmmdId, int diagCmmdResult, const char 
 	rsp_pkt->sftm_header.ftm_rsp_pkt_size = (uint16_t)0;
 	rsp_pkt->ftm_cmd_resp_result = (uint8_t)diagCmmdResult;
 	if(diagCmmdResult == 1){
-		uint16_t mSize = strlen(rsp_data)+1;
-		LOGD_LOG("ftm_read_file: mSize=[%d]", mSize);
-		LOGD_LOG("ftm_read_file: rsp_data=[%s]", rsp_data);
-		rsp_pkt->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
-		LOGD_LOG("ftm_read_file: iSize=%d", rsp_pkt->size);
-		
+		if(rsp_data != NULL){
+			uint16_t mSize = strlen(rsp_data)+1;
+			LOGD_LOG("ftm_read_file: mSize=[%d]", mSize);
+			LOGD_LOG("ftm_read_file: rsp_data=[%s]", rsp_data);
+			rsp_pkt->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
+			LOGD_LOG("ftm_read_file: iSize=%d", rsp_pkt->size);
+			
+			memset(rsp_pkt->Data, 0, PACK_SIZE);
+			memcpy(rsp_pkt->Data, rsp_data, sizeof(rsp_pkt->Data));
+		}else{
+			rsp_pkt->size = 0;
+			memset(rsp_pkt->Data, 0, PACK_SIZE);
+			LOGD_LOG("%s: rsp_data == NULL", __FUNCTION__);
+		}
+	}else{
+		rsp_pkt->size = 0;
 		memset(rsp_pkt->Data, 0, PACK_SIZE);
-		memcpy(rsp_pkt->Data, rsp_data, sizeof(rsp_pkt->Data));
+		LOGD_LOG("%s: 1 rsp_data == NULL", __FUNCTION__);
 	}
 	return rsp_pkt;
 }
@@ -162,11 +172,12 @@ PACK(void *) ftm_ap_dispatch(PACK(void *)req_pkt, uint16 pkt_len) {
 	if(ptr_ret != NULL){
 		LOGD_LOG("ftm_ap_dispatch called fail!");
 	}
-	LOGD_LOG("ftm_ap_dispatch called! sem_wait");
+	LOGD_LOG("ftm_ap_dispatch called! sem_wait start");
 	
 	sem_wait(&g_sem_diag_cmmd);
+	LOGD_LOG("ftm_ap_dispatch called! sem_wait end iCmd:[%d], mDiagCmmdResult:[%d]", iCmd, mDiagCmmdResult);
 
-	return CreatResponsePacket(iCmd, mDiagCmmdResult, (mDiagCmmdResult == 0)?NULL:data);
+	return CreatResponsePacket(iCmd, mDiagCmmdResult, (mDiagCmmdResult == 2)?NULL:data);
 }
 
 static const diagpkt_user_table_entry_type ftm_mmi_diag_func_table[] = {
@@ -270,8 +281,10 @@ JNIEXPORT void JNICALL Java_com_meigsmart_meigrs32_util_DiagJniInterface_SendDia
 	ftm_cmd_response *req_pkt = NULL;
 	if(jdata != NULL){
 		data = Jstring2CStr(jenv, jdata);
-		mDiagCmmdResult = jcmdresult;
+	}else{
+		data = NULL;
 	}
+	mDiagCmmdResult = jcmdresult;
 	mDiagCmmdId = jcmdId;
 	
 	sem_post(&g_sem_diag_cmmd);

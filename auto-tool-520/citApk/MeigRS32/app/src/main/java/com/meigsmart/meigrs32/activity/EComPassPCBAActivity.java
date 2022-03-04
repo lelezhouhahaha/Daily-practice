@@ -49,12 +49,15 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
     private boolean mAccFlag = false;
     private boolean mMagFlag = false;
 
+    private boolean mTestSuccessFlag = false;
+
     private String TAG_MC510 = "common_device_name_test";
     private boolean is_MC510 = false;
     String EComPassActivity_auto_judgment_key = "common_EComPassActivity_auto_judgment_bool";
     boolean B_EComPassActivity_auto_judgment = true;
     Sensor defaultSensor = null;
     Sensor defaultSensorAcc = null;
+    private final String TAG = EComPassPCBAActivity.class.getSimpleName();
 
     @Override
     protected int getLayoutId() {
@@ -83,6 +86,8 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
         mConfigResult = getResources().getInteger(R.integer.e_compass_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -95,10 +100,13 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
-                if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
+                if (((mConfigTime == 0) /*&& mFatherName.equals(MyApplication.RuninTestNAME)*/) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     LogUtil.d("EComPassActivity mConfigTime:<" + mConfigTime + "> and sendEmptyMessage 1002.");
-                    mHandler.sendEmptyMessage(1001);
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        mHandler.sendEmptyMessage(1002);
+                    }else mHandler.sendEmptyMessage(1001);
                     mConfigTime = 1;
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
@@ -148,6 +156,11 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
                     }
                     break;
                 case 1002:
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(mTestSuccessFlag)
+                            deInit(mFatherName, SUCCESS);
+                        else deInit(mFatherName, FAILURE, getTestFailReason());
+                    }
                     break;
                 case 9999:
                     deInit(mFatherName, FAILURE,msg.obj.toString());
@@ -176,12 +189,18 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
                 }
                 if(mMagFlag && mAccFlag) {
                     float value = onCalculateOrientation();
-                    LogUtil.d(" value:<" + value + ">.");
-                    if(mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBASignalNAME)){
-                        if(value != 0)
+                    LogUtil.d(TAG, " value:<" + value + ">.");
+                    if(mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBASignalNAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(value != 0) {
+                            mTestSuccessFlag  = true;
                             mSuccess.setVisibility(View.VISIBLE);
+                            if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                                mHandler.sendEmptyMessage(1002);
+                            }
+                        }
                     }else {
                         if (value > 150 && value < 230) {
+                            mTestSuccessFlag = true;
                             mSuccess.setVisibility(View.VISIBLE);
                         }
                     }
@@ -192,11 +211,17 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
             }else {
                 mCompass.setVal(event.values[0]);
                 LogUtil.d("Build.VERSION.SDK_INT <= 29 value:<" + event.values[0] + ">.");
-                if(mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBASignalNAME)){
-                    if(event.values[0] != 0)
+                if(mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBASignalNAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                    if(event.values[0] != 0) {
+                        mTestSuccessFlag = true;
                         mSuccess.setVisibility(View.VISIBLE);
+                        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                            mHandler.sendEmptyMessage(1002);
+                        }
+                    }
                 }else {
                     if (event.values[0] > 150 && event.values[0] < 230) {
+                        mTestSuccessFlag = true;
                         mSuccess.setVisibility(View.VISIBLE);
                     }
                 }
@@ -252,6 +277,7 @@ public class EComPassPCBAActivity extends BaseActivity implements View.OnClickLi
             Log.d("ecom_demo","null_sensor");
         }
         mHandler.removeMessages(1001);
+        mHandler.removeMessages(1002);
         mHandler.removeMessages(1003);
         mHandler.removeMessages(9999);
         super.onDestroy();

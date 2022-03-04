@@ -81,6 +81,8 @@ public class StorageCardActivity extends BaseActivity implements View.OnClickLis
         mConfigResult = getResources().getInteger(R.integer.sim_card_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -100,8 +102,9 @@ public class StorageCardActivity extends BaseActivity implements View.OnClickLis
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
-                if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
+                if (((mConfigTime == 0) /*&& mFatherName.equals(MyApplication.RuninTestNAME)*/) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1001);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }

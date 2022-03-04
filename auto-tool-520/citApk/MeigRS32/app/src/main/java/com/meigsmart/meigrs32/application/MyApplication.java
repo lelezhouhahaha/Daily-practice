@@ -51,6 +51,7 @@ public class MyApplication extends Application {
     public static String RuninTestNAME = "";
     public static String PCBASignalNAME = "";
     public static String PCBANAME = "";
+    public static String PCBAAutoTestNAME = "";
     public static String PreSignalNAME = "";
     public static String PreNAME = "";
     public static String MMI1_PreName = "";

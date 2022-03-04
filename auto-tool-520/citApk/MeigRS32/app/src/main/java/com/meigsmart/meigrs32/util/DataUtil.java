@@ -338,6 +338,15 @@ public class DataUtil {
         return flag;
     }
 
+    public static String getStringFromName(Context context, String str){
+        String name = "";
+        int resId = context.getResources().getIdentifier(str, "string", context.getPackageName() );
+        if(resId==0){
+            name=str;
+        }else name = context.getResources().getString(resId);
+        return name;
+    }
+
     public static List<PersistResultModel> setListOrder(List<String> regulation, List<PersistResultModel> targetList) {
         final List<String> orderRegulation = regulation;
         Collections.sort(targetList, new Comparator<PersistResultModel>() {

@@ -107,6 +107,12 @@ public class GSensorActivity extends BaseActivity implements View.OnClickListene
         mConfigResult = getResources().getInteger(R.integer.g_sensor_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
+            mUp.setVisibility(View.GONE);
+            mDown.setVisibility(View.GONE);
+            mLeft.setVisibility(View.GONE);
+            mRight.setVisibility(View.GONE);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -136,8 +142,9 @@ public class GSensorActivity extends BaseActivity implements View.OnClickListene
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
-                if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
+                if (((mConfigTime == 0) /*&& mFatherName.equals(MyApplication.RuninTestNAME)*/) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1002);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
@@ -156,7 +163,7 @@ public class GSensorActivity extends BaseActivity implements View.OnClickListene
                     mTextViewListSensor.get(0).setText(Html.fromHtml(getResources().getString(R.string.g_sensor_x) + mValues[DATA_X] + "</font>"));
                     mTextViewListSensor.get(1).setText(Html.fromHtml(getResources().getString(R.string.g_sensor_y) + mValues[DATA_Y] + "</font>"));
                     mTextViewListSensor.get(2).setText(Html.fromHtml(getResources().getString(R.string.g_sensor_z) + mValues[DATA_Z] + "</font>"));
-                    if ((!(MyApplication.PCBANAME.equals(mFatherName) || MyApplication.PCBASignalNAME.equals(mFatherName)))&& !is_mt535 ) {
+                    if ((!(MyApplication.PCBANAME.equals(mFatherName) || MyApplication.PCBASignalNAME.equals(mFatherName)))&& !is_mt535 && (!mFatherName.equals(MyApplication.PCBAAutoTestNAME)) ) {
                         if (mValues[DATA_Y] >= -10.0 && mValues[DATA_Y] < -7.0f) {
                             mUp.setBackgroundResource(R.drawable.arrow_up);
                             upok = true;
@@ -200,7 +207,7 @@ public class GSensorActivity extends BaseActivity implements View.OnClickListene
                     }
                     break;
                 case 1002:
-                    if(!mFatherName.equals(MyApplication.PCBASignalNAME)&&!mFatherName.equals(MyApplication.PreSignalNAME) && B_GSensorActivity_auto_judgment) {
+                    if( ( !mFatherName.equals(MyApplication.PCBASignalNAME)&&!mFatherName.equals(MyApplication.PreSignalNAME) && B_GSensorActivity_auto_judgment ) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
                         if (alltok || mFatherName.equals(MyApplication.RuninTestNAME)){//modify by wangxing for bug P_RK95_E-706 run in log show pass
 
                             cleanAndUnregister();

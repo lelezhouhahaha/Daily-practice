@@ -630,6 +630,7 @@
     <!-- title-->
     <string name="PCBASignalActivity">PCBA测试(手动)</string>
     <string name="PCBAActivity">PCBA测试(自动)</string>
+    <string name="PCBAAutoActivity">PCBA自动化测试</string>
     <string name="RunInActivity">老化测试</string>
     <string name="PreFunctionActivity">整机测试(自动)</string>
     <string name="PreFunctionSignalActivity">整机测试(手动)</string>

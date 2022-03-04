@@ -28,8 +28,8 @@ public class DiagJniInterface {
             return;
         }
         Bundle bundle = new Bundle();
-        String mCmmdId = String.valueOf(cmdid);
-        bundle.putString("diag_command", mCmmdId);
+        //String mCmmdId = String.valueOf(cmdid);
+        bundle.putInt(DiagCommand.FTM_SUBCMD_CMD_KEY, cmdid);
         Message msg = Message.obtain();
         msg.setData(bundle);
         msg.arg1 = 10000;
@@ -46,8 +46,9 @@ public class DiagJniInterface {
         }
         Bundle bundle = new Bundle();
         String mCmmdId = String.valueOf(cmdid);
-        bundle.putString("diag_command", mCmmdId);
-        bundle.putString("diag_data", data);
+        bundle.putInt(DiagCommand.FTM_SUBCMD_CMD_KEY, cmdid);
+        bundle.putString(DiagCommand.FTM_SUBCMD_DATA_KEY, data);
+        bundle.putInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY, data.length());
         Message msg = Message.obtain();
         msg.setData(bundle);
         msg.arg1 = 10010;

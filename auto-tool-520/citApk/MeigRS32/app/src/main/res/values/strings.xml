@@ -669,6 +669,7 @@
     <!-- title-->
     <string name="PCBASignalActivity">PCBA Test(Manual)</string>
     <string name="PCBAActivity">PCBA Test(Auto)</string>
+    <string name="PCBAAutoActivity">PCBA Auto Test</string>
     <string name="RunInActivity">Run-in</string>
     <string name="PreFunctionActivity">Pre_Function Test(Auto)</string>
     <string name="PreFunctionSignalActivity">Pre_Function Test(Manual)</string>

@@ -70,4 +70,10 @@ public class DiagCommand {
    //1002~2000: PC send command and software can judge result by self.
     //2001~4000:PC query result
     //4001~6000: set result to software.
+
+
+    public static final String FTM_SUBCMD_CMD_KEY = "diag_command";
+    public static final String FTM_SUBCMD_RESULT_KEY = "diag_result";
+    public static final String FTM_SUBCMD_DATA_KEY = "diag_data";
+    public static final String FTM_SUBCMD_DATA_SIZE_KEY = "diag_data_size";
 }
