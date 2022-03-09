@@ -64,6 +64,8 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
     private boolean mIsHoneywell4603ScanType = false;
     private boolean mIsHoneywell6703ScanType = false;
     private boolean mIsSdl4770ScanType = false;
+    private boolean mScanTestSuccess = false;
+    private final String TAG = ScanActivityFarFocus.class.getSimpleName();
 
 
 
@@ -110,6 +112,8 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
 
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -124,6 +128,14 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+
+                if(( mConfigTime == 0 ) || ( mFatherName.equals(MyApplication.PCBAAutoTestNAME) )){
+                    if(mScanTestSuccess) {
+                        mHandler.sendEmptyMessage(1001);
+                    }else mHandler.sendEmptyMessage(1002);
+                    return;
+                }
+
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1002);
                 }
@@ -165,6 +177,9 @@ void startScanActivity(){
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             intent.putExtra("ScanStartType", "auto");
             LogUtil.d("citapk L2S  ScanStartType: auto");
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+            intent.putExtra("ScanStartType", "pcbaautotest");
+            LogUtil.d("citapk L2S  pcba auto test ScanStartType: auto");
         }
             startActivityForResult(intent, 1000);
     }
@@ -191,20 +206,24 @@ void startScanActivity(){
                     }*/
                     if(mIsHoneywell4603ScanType){
                         if(result.contains(HONEYWELL_4603_FAR_COMPARE_VALUE)){
+                            mScanTestSuccess = true;
                             mHandler.sendEmptyMessage(1001);
                         } else {
                             mHandler.sendEmptyMessage(1002);
                         }
                     }else if(mIsHoneywell6703ScanType){
                         if(result.contains(HONEYWELL_6703_FAR_COMPARE_VALUE)){
+                            mScanTestSuccess = true;
                             mHandler.sendEmptyMessage(1001);
                         } else {
                             mHandler.sendEmptyMessage(1002);
                         }
                     }else if(mIsSdl4770ScanType){
                         if(result.contains(SDL_4770_FAR_COMPARE_VALUE)){
+                            mScanTestSuccess = true;
                             mHandler.sendEmptyMessage(1001);
-                        } else {                            LogUtil.d(" zll onActivityResult 3 2.");
+                        } else {
+                            LogUtil.d(" zll onActivityResult 3 2.");
                             mHandler.sendEmptyMessage(1002);
                         }
                     }
@@ -216,6 +235,7 @@ void startScanActivity(){
                 LogUtil.d(" onActivityResult result:" + result);
                 if (result.contains("https://www.sunmi.com/index")) {
                     mSuccess.setVisibility(View.VISIBLE);
+                    mScanTestSuccess = true;
                     deInit(mFatherName, SUCCESS);
                 } else {
                     deInit(mFatherName, FAILURE);

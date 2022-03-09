@@ -11,6 +11,6 @@ LOCAL_SRC_FILES := DiagJniInterface.cpp
 LOCAL_CFLAGS += -Wno-unused-variable \
                 -Wno-unused-parameter
 LOCAL_LDLIBS += -llog 
-LOCAL_SHARED_LIBRARIES := libdiag_system
-LOCAL_HEADER_LIBRARIES := vendor_common_inc libdiag_headers
+LOCAL_SHARED_LIBRARIES := libdiag_system libutils libcutils
+LOCAL_HEADER_LIBRARIES := vendor_common_inc
 include $(BUILD_SHARED_LIBRARY)  

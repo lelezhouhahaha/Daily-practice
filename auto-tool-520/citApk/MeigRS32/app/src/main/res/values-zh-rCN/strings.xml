@@ -1066,4 +1066,6 @@
     <string name="oemscan_version">扫码头型号: </string>
     <string name="oemscan_info">扫码内容: </string>
     <string name="psam_version">PSAM 版本号: </string>
+
+    <string name="PCBAAutoTouchTestActivity">触屏测试</string>
 </resources>

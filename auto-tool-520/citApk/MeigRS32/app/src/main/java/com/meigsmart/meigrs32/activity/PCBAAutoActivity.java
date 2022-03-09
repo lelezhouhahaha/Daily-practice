@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -184,17 +185,31 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 reason = "";
                 LogUtil.d(TAG, "get fail reason is null");
             }
-            LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
-            int mDiagCmdId = getAutoTestDiagCommandId(requestCode);
-            Class cls = getClass(PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId));
 
-            if(checkCurrenTestActivity(cls, mCurrentTestClass)){
-                updateDataForUI(cls.getSimpleName(), results);
-            }
             if(results == SUCCESS){
                 mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, null, 0);
             }else {
                 mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, reason, reason.length());
+            }
+
+            //update Data UI
+            LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
+            int mDiagCmdId = getAutoTestDiagCommandId(requestCode);
+            String str_className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
+            String clsName = getClassName(str_className);
+            LogUtil.d(TAG, "mDiagCmdId: " + mDiagCmdId + " className:" + str_className + " clsName:" + clsName);
+
+            Class cls = getClass(clsName);
+            LogUtil.d(TAG, "cls:" + cls);
+
+            if(cls != null) {
+                if(checkCurrenTestActivity(cls, mCurrentTestClass)) {
+                    updateDataForUI(cls.getSimpleName(), results);
+                }
+            }else if(!clsName.isEmpty()){
+                updateDataForUI(clsName, results);
+            }else{
+                LogUtil.d(TAG, "cls is null or className is empty!");
             }
 
         }
@@ -203,13 +218,23 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     private void updateDataForUI(String clsName, int result){
         List<TypeModel> mData = mAdapter.getData();
         int size = mData.size();
+        if(clsName.isEmpty()){
+            LogUtil.d(TAG, "clsName is empty!");
+            return;
+        }
+        LogUtil.d(TAG, "clsName: " + clsName + " result:" + result);
 
         for(int i = 0; i < size; i++){
             TypeModel mod = mData.get(i);
-           if(clsName.equals(mod.getCls().getSimpleName())){
-               mData.get(i).setType(result);
-               break;
-           }
+            if( (mod.getStartType() != 0) && mod.getClassName().isEmpty() ){
+                LogUtil.d(TAG, "getCls is null or className is empty!");
+                continue;
+            }
+            if ( clsName.equals(mod.getCls().getSimpleName()) || clsName.equals(mod.getClassName()) ) {
+                LogUtil.d(TAG, "match!");
+                mData.get(i).setType(result);
+                break;
+            }
         }
         mAdapter.notifyDataSetChanged();
     }
@@ -236,17 +261,8 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                     Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
                     int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
-                    /*if(mCmmdContent.isEmpty()){
-                        String reason = "Diag Command is empty!";
-                        activity.mDiagClient.doSendMessage(MyDiagAutoTestClient.ACK_SERVICEID, mCmmdContent, reason, reason.length());
-                    }*/
                     activity.startActivityDependOnCommandId(mDiagCommandId);
-                    //activity.mDiagClient.doSendLocalMessage(MyDiagAutoTestClient.ACK_ACTIVITYID, "SOFTWAREINFO:PASS");
                     break;
-                /*case MyDiagAutoTestClient.ACK_ACTIVITYID:
-                    String mDataSendToService = (String) msg.getData().get("content");
-                    activity.mDiagClient.doSendMessage(msg, MyDiagAutoTestClient.ACK_SERVICEID, mDataSendToService);
-                    break;*/
                 case MyDiagAutoTestClient.ACK_SAY_HELLO:
                     //客户端接受服务端传来的消息
                     Log.d(activity.TAG, "ACK_SAY_HELLO 服务端传来了消息=====>>>>>>>");
@@ -265,24 +281,48 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return mDiagCmdId;
     }
 
-    private Class getClass(String className){
+    private String getClassName(String str_className){
         String clsName = "";
-        if(className.contains("/")) {
-            //pkgName = className.substring(0, className.indexOf("/"));
-            //clsName = pkgName + className.substring(className.indexOf("/") + 1);
-            clsName = className.replace("/", "");
-        }else if(className.contains("*")){
-            //pkgName = className.substring(0, className.indexOf("*"));
-            clsName = className.substring(className.indexOf("*")+1);
+        if(str_className.contains("/")) {
+            clsName = str_className.replace("/", "");
+        }else if(str_className.contains("*")){
+            clsName = str_className.substring(str_className.indexOf("*")+1);
         }else{
-            clsName = "com.meigsmart.meigrs32.activity." + className;
+            clsName = "com.meigsmart.meigrs32.activity." + str_className;
         }
+        return clsName;
+    }
 
+    private String getPackageName(String str_pkgName){
+        String mPkgName = "";
+        if(str_pkgName.contains("*")){
+            mPkgName = str_pkgName.substring(0, str_pkgName.indexOf("*"));
+        }
+        return mPkgName;
+    }
+
+    private String getTitleName(String str_className){
+        String mTitle = "";
+        String mClassName = "";
+        if(str_className.contains("/")) {
+            mClassName = str_className.replace("/", "");
+            mTitle = getStringFromName(mContext, mClassName);
+        }else if(str_className.contains("*")){
+            mClassName = str_className.substring(str_className.indexOf("*")+1);
+            mTitle = getStringFromName(mContext, mClassName);
+        }else{
+            mTitle = getStringFromName(mContext, str_className);
+            mClassName = "com.meigsmart.meigrs32.activity." + str_className;
+        }
+        return mTitle;
+    }
+
+    private Class getClass(String className){
         Class cls = null;
         try {
-            cls = Class.forName(clsName);
+            cls = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            LogUtil.d("not found class " + clsName);
+            LogUtil.d("not found class " + className);
         }
         return cls;
     }
@@ -292,44 +332,46 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
 
         String title = "";
         String clsName = "";
-        //String pkgName = "";
+        String pkgName = "";
+        String mFatherNameStr = "";
+        String mClassNameStr = "";
         Class cls = null;
         String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
         LogUtil.d(TAG, "className:" + className);
-        if(className.contains("/")) {
-            //pkgName = className.substring(0, className.indexOf("/"));
-            //clsName = pkgName + className.substring(className.indexOf("/") + 1);
-            clsName = className.replace("/", "");
-            title = getStringFromName(mContext, clsName);
-        }else if(className.contains("*")){
-            //pkgName = className.substring(0, className.indexOf("*"));
-            clsName = className.substring(className.indexOf("*")+1);
-            title = getStringFromName(mContext, clsName);
-        }else{
-            title = getStringFromName(mContext, className);
-            clsName = "com.meigsmart.meigrs32.activity." + className;
-        }
-
+        clsName = getClassName(className);
+        title = getTitleName(className);
+        pkgName = getPackageName(className);
         LogUtil.d(TAG, "zll clsName:" + clsName + " title:" + title);
-        //cls = Class.forName(clsName);
+        Intent intent = null;
         try {
             cls = Class.forName(clsName);
+            LogUtil.d(TAG, "zll get cls end super.mName:" + super.mName + " cls.getSimpleName():" + cls.getSimpleName());
+            intent = new Intent(mContext, cls);
+            mCurrentTestClass = cls;
         } catch (ClassNotFoundException e) {
             LogUtil.d("not found class " + clsName);
+            //return;
+            if(!pkgName.isEmpty() && !clsName.isEmpty()) {
+                LogUtil.d(TAG, " pkgName:" + pkgName + " clsName:" + clsName);
+                    ComponentName componentName = new ComponentName(pkgName, clsName);
+                    intent = new Intent();
+                    intent.setComponent(componentName);
+            }else{
+                LogUtil.d(TAG, "pkgName is empty, or clsName is empty!");
+                return;
+            }
+            mCurrentTestClass = null;
         }
-        LogUtil.d(TAG, "zll get cls end super.mName:" + super.mName + " cls.getSimpleName():" + cls.getSimpleName());
 
-        Intent intent = new Intent(mContext, cls);
-        mCurrentTestClass = cls;
+        intent.putExtra("StartType", "pcbaautotest");
         //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        if(!(this.mName==null)){
-            intent.putExtra("fatherName",super.mName);
-            intent.putExtra("name", SAVE_EN_LOG ? cls.getSimpleName() : title);
-        }else{
-            intent.putExtra("fatherName",mFatherName);
-            intent.putExtra("name", SAVE_EN_LOG ? cls.getSimpleName() : title);
-        }
+        mFatherNameStr = (this.mName != null)?super.mName:mFatherName;
+        mClassNameStr = SAVE_EN_LOG ? cls.getSimpleName() : title;
+        LogUtil.d(TAG, "mFatherNameStr: " + mFatherNameStr + " mClassNameStr:" + mClassNameStr);
+        intent.putExtra("fatherName", mFatherNameStr);
+        intent.putExtra("name", mClassNameStr);
+        addData(mFatherNameStr, mClassNameStr);
         startActivityForResult(intent, mDiagCommandId);
     }
 

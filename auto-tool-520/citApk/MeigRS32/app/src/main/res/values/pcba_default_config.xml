@@ -11,6 +11,6 @@
     <bool name="pcba_save_log_is_user_custom">false</bool>
     <!--pcba test time default One minute -->
     <integer name="pcba_test_default_time">60</integer>
-    <integer name="pcba_auto_test_default_time">10</integer>
+    <integer name="pcba_auto_test_default_time">8</integer>
 
 </resources>

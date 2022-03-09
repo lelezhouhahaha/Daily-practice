@@ -15,6 +15,7 @@ import com.meigsmart.meigrs32.application.MyApplication;
 import com.meigsmart.meigrs32.config.Const;
 import com.meigsmart.meigrs32.config.CustomConfig;
 import com.meigsmart.meigrs32.log.LogUtil;
+import com.meigsmart.meigrs32.util.ByteUtil;
 import com.meigsmart.meigrs32.util.DataUtil;
 import com.meigsmart.meigrs32.util.FileUtil;
 
@@ -30,6 +31,8 @@ public class CameraPreview_Back extends SurfaceView implements
 	private static final String TAG = "CameraPreview_Back";
 	private int viewWidth = 0;
 	private int viewHeight = 0;
+	private int mPreviewWidth = 0;
+	private int mPreviewHeight = 0;
 	private OnCameraStatusListener listener;
 	private SurfaceHolder holder;
 	private Camera camera = null;
@@ -46,6 +49,7 @@ public class CameraPreview_Back extends SurfaceView implements
 	private final String CAMERA_PREVIEW_SIZE_METHOD = "commom_back_camera_previewsize_method";
 	private String projectName = "";
 	String face_select="";
+	private Boolean mYDataAbnormalFlag = true;   //true:abnormal   false:normal
 	private PictureCallback pictureCallback = new PictureCallback() {
 
 		@Override
@@ -63,6 +67,24 @@ public class CameraPreview_Back extends SurfaceView implements
 		}
 	};
 
+	private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback(){
+		@Override
+		public void onPreviewFrame(byte[] bytes, Camera camera) {
+			String yData = ByteUtil.bytes2HexStr(bytes, 0, mPreviewWidth*mPreviewHeight);
+			Log.d(TAG, " onPreviewFrame yData.length():<" + yData.length() + ">.");
+			Log.d(TAG, " onPreviewFrame yData:<" + yData + ">.");
+			//Boolean mYDataAbnormalFlag = true;
+			int mPreViewDataSize = mPreviewHeight*mPreviewWidth;
+			for(int i = 0; i < mPreViewDataSize; i++){
+				mYDataAbnormalFlag = mYDataAbnormalFlag && ( bytes[i] == bytes[i+1] );
+			}
+
+		}
+	};
+
+	public Boolean getPreviewYDataStatus(){
+		return !mYDataAbnormalFlag;
+	}
 	public CameraPreview_Back(Context context) {
 		super(context);
 		holder = getHolder();
@@ -130,6 +152,7 @@ public class CameraPreview_Back extends SurfaceView implements
 				// start preview with new settings
 				try {
 					camera.setPreviewDisplay(holder);
+					camera.setPreviewCallback(previewCallback);
 					camera.startPreview();
 					//hejianfeng add start for zendao12318
 					Thread.sleep(500);
@@ -219,6 +242,10 @@ public class CameraPreview_Back extends SurfaceView implements
 				try{
 					LogUtil.d("CameraPreview_Back: Exception setParameters");
 					Camera.Size previewSize = findBestPreviewSize(p);
+					mPreviewWidth = previewSize.width;
+					mPreviewHeight = previewSize.height;
+					Log.d(TAG, "zll mPreviewWidth:" + mPreviewWidth);
+					Log.d(TAG, "zll mPreviewHeight:" + mPreviewHeight);
 					p.setPreviewSize(previewSize.width, previewSize.height);
 					p.setPictureSize(previewSize.width, previewSize.height);
 					camera.setParameters(p);
@@ -293,6 +320,7 @@ public class CameraPreview_Back extends SurfaceView implements
 		long time = new Date().getTime();
 		p.setGpsTimestamp(time);
 		p.setPictureFormat(PixelFormat.JPEG);
+		p.setPreviewFormat(PixelFormat.YCbCr_420_SP);
 		Camera.Size previewSize;
 		if(is_mt535)
 		{
@@ -304,6 +332,8 @@ public class CameraPreview_Back extends SurfaceView implements
 				previewSize = selectPreviewSize(p);
 			}
 		}
+		mPreviewWidth = previewSize.width;
+		mPreviewHeight = previewSize.height;
 		Log.d(TAG," previewSize.width:" + previewSize.width + " previewSize.height: " + previewSize.height);
 		p.setPreviewSize(previewSize.width, previewSize.height);
 		p.setPictureSize(previewSize.width, previewSize.height);

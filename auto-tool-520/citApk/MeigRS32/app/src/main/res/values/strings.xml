@@ -1114,4 +1114,7 @@
     <string name="oemscan_version">OEMSCAN VERSION: </string>
     <string name="oemscan_info">OEMSCAN INFO: </string>
     <string name="psam_version">PSAM_Version: </string>
+
+
+    <string name="PCBAAutoTouchTestActivity"> Touch Test</string>
 </resources>

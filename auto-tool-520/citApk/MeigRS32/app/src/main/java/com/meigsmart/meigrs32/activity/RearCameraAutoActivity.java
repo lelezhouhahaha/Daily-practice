@@ -111,6 +111,8 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
         mConfigResult = getResources().getInteger(R.integer.rear_camera_auto_default_config_standard_result);
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -161,13 +163,14 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
                 updateFloatView(mContext, mConfigTime);
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1001);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
         };
         mRun.run();
 
-		if(mFatherName.equals(MyApplication.RuninTestNAME)){
+		if(mFatherName.equals(MyApplication.RuninTestNAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
         	mHandler.sendEmptyMessageDelayed(1003, 2000);
 		}
 
@@ -180,6 +183,17 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1001:
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(mCameraPreview.getPreviewYDataStatus()){
+                            Log.d(TAG, "zll 1001 preview data normal!");
+                            new CameraReleaseTask(0).execute();
+                        }else{
+                            Log.d(TAG, "zll 1001 preview data abnormal!");
+                            setTestFailReason(TAG + "preview picture abnormal!");
+                            new CameraReleaseTask(1).execute();
+                        }
+                        break;
+                    }
                     if (isCanOpen || mFatherName.equals(MyApplication.RuninTestNAME)) {//modify by wangxing for bug P_RK95_E-706 run in log show pass
 
                         new CameraReleaseTask(0).execute();
@@ -195,7 +209,7 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
                     //deInit(mFatherName, FAILURE, Const.RESULT_UNKNOWN);
                     break;
                 case 1003:
-                    if (mCameraPreview != null && mCameraPreview.isPreviewing) {
+                    /*if (mCameraPreview != null && mCameraPreview.isPreviewing) {
                         boolean takePhoto = mCameraPreview.takePicture();
                         LogUtil.d(TAG, "recevie 1003 takePicture:" + takePhoto);
                         if(takePhoto) {
@@ -203,7 +217,8 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
                         }else {
                             setTestFailReason(getResources().getString(R.string.fail_reason_camera_take_picture));
                         }
-                    }
+                    }*/
+                    doTakePictrue();
                     break;
                 case 9999:
                     new CameraReleaseTask(4).execute();
@@ -213,6 +228,30 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
         }
     };
 
+    private void doTakePictrue(){
+        if (mCameraPreview != null && mCameraPreview.isPreviewing) {//hejianfeng modif for zendao12318
+            boolean takePhoto = mCameraPreview.takePicture();
+            if (takePhoto) {
+                takepicture.setEnabled(false);
+                previewButton.setEnabled(true);
+                mSuccess.setVisibility(View.VISIBLE);
+                mTextViewPointInfo.setVisibility(View.GONE);
+                mTextViewPointInfo.setText("");
+                if(mFatherName.equals(MyApplication.PCBAAutoTestNAME) || mFatherName.equals(MyApplication.RuninTestNAME)){
+                    mHandler.sendEmptyMessage(1001);
+                }
+            } else {
+                if(mFatherName.equals(MyApplication.PCBAAutoTestNAME) || mFatherName.equals(MyApplication.RuninTestNAME)){
+                    setTestFailReason(getResources().getString(R.string.fail_reason_camera_take_picture));
+                    new CameraReleaseTask(1).execute();
+                }else {
+                    Toast toast = Toast.makeText(RearCameraAutoActivity.this, R.string.camera_msg_error, Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                }
+            }
+        }
+    }
 
     private void initCamera() {
         if (mCameraPreview != null) {
@@ -274,7 +313,7 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
             imageView.setVisibility(View.GONE);
         }
         if (v == takepicture) {
-            if (mCameraPreview != null && mCameraPreview.isPreviewing) {//hejianfeng modif for zendao12318
+            /*if (mCameraPreview != null && mCameraPreview.isPreviewing) {//hejianfeng modif for zendao12318
                 boolean takePhoto = mCameraPreview.takePicture();
                 if (takePhoto) {
                     takepicture.setEnabled(false);
@@ -288,7 +327,8 @@ public class RearCameraAutoActivity extends BaseActivity implements View.OnClick
                     toast.show();
                 }
 
-            }
+            }*/
+            doTakePictrue();
         }
     }
 

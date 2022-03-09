@@ -63,6 +63,8 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
 	private boolean mIsHoneywell4603ScanType = false;
     private boolean mIsHoneywell6703ScanType = false;
     private boolean mIsSdl4770ScanType = false;
+    private boolean mScanTestSuccess = false;
+    private final String TAG = ScanActivityNearFocus.class.getSimpleName();
 
     @Override
     protected int getLayoutId() {
@@ -104,6 +106,8 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
 
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -118,6 +122,14 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+
+                if(( mConfigTime == 0 ) && ( mFatherName.equals(MyApplication.PCBAAutoTestNAME) )){
+                    if(mScanTestSuccess) {
+                        mHandler.sendEmptyMessage(1001);
+                    }else mHandler.sendEmptyMessage(1002);
+                    return;
+                }
+
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1002);
                 }
@@ -144,8 +156,8 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
                 mPackageName = "com.zebra.sdl";
                 mClassName = "com.zebra.sdl.SDLguiActivity";
             }
-            LogUtil.d("citapk L2s mPackageName:" + mPackageName);
-            LogUtil.d("citapk L2s mClassName:" + mClassName);
+            LogUtil.d(TAG, "citapk L2s mPackageName:" + mPackageName);
+            LogUtil.d(TAG, "citapk L2s mClassName:" + mClassName);
             //}
         }
 
@@ -161,7 +173,10 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
         // modify for bug 25564 by huangqian,add for ScanActivityNearFocus end. -->
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             intent.putExtra("ScanStartType", "auto");
-            LogUtil.d("citapk L2S  ScanStartType: auto");
+            LogUtil.d(TAG, "citapk L2S  ScanStartType: auto");
+        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+            intent.putExtra("ScanStartType", "pcbaautotest");
+            LogUtil.d(TAG, "citapk L2S  pcba auto test ScanStartType: auto");
         }
         startActivityForResult(intent, 1000);
     }
@@ -188,18 +203,21 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
                 }*/
                 if(mIsHoneywell4603ScanType){
                     if(result.contains(HONEYWELL_4603_NEAR_COMPARE_VALUE)){
+                        mScanTestSuccess = true;
                         mHandler.sendEmptyMessage(1001);
                     } else {
                         mHandler.sendEmptyMessage(1002);
                     }
                 }else if(mIsHoneywell6703ScanType){
                     if(result.contains(HONEYWELL_6703_NEAR_COMPARE_VALUE)){
+                        mScanTestSuccess = true;
                         mHandler.sendEmptyMessage(1001);
                     } else {
                         mHandler.sendEmptyMessage(1002);
                     }
                 }else if(mIsSdl4770ScanType){
                     if(result.contains(SDL_4770_NEAR_COMPARE_VALUE)){
+                        mScanTestSuccess = true;
                         mHandler.sendEmptyMessage(1001);
                     } else {
                         mHandler.sendEmptyMessage(1002);
@@ -213,6 +231,7 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
                 LogUtil.d(" onActivityResult result:" + result);
                 if (result.contains("123456789")) {
                     mSuccess.setVisibility(View.VISIBLE);
+                    mScanTestSuccess = true;
                     deInit(mFatherName, SUCCESS);
                 } else {
                     deInit(mFatherName, FAILURE);

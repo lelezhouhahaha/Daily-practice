@@ -61,9 +61,21 @@
 		<item_class>NFCABCardActivity</item_class>
 	</test_line>
     <test_line>
-		<item_cmd_id>17</item_cmd_id>
+		<item_cmd_id>18</item_cmd_id>
 		<item_class>ScanActivityNearFocus</item_class>
 	</test_line>
+	<test_line>
+		<item_cmd_id>19</item_cmd_id>
+		<item_class>ScanActivityFarFocus</item_class>
+	</test_line>
+	<!--test_line>
+		<item_cmd_id>18</item_cmd_id>
+		<item_class>ScanActivitySS1100NearFocus</item_class>
+	</test_line>
+	<test_line>
+		<item_cmd_id>19</item_cmd_id>
+		<item_class>ScanActivitySS1100FarFocus</item_class>
+	</test_line-->
     <test_line>
 		<item_cmd_id>20</item_cmd_id>
 		<item_class>com.swfp.factory*com.swfp.activity.DetectActivity</item_class>
@@ -90,6 +102,6 @@
 	</test_line>
     <test_line>
 		<item_cmd_id>26</item_cmd_id>
-		<item_class>TouchTestActivity</item_class>
+		<item_class>PCBAAutoTouchTestActivity</item_class>
 	</test_line>
 </pcba_auto_test_config>

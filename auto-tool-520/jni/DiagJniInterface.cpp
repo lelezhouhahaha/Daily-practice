@@ -37,8 +37,8 @@ const int FTM_AP_C = 52;
   extern "C" {
 #endif
 
-PACK(void *) CreatResponsePacket(int diagCmmdId, int diagCmmdResult, const char *rsp_data){
-	ftm_cmd_response *rsp_pkt = NULL;
+PACKED void *CreatResponsePacket(int diagCmmdId, int diagCmmdResult, const char *rsp_data){
+	PACKED void *rsp_pkt = NULL;
  
     /* Allocate the same length as the request. */
     rsp_pkt = (ftm_cmd_response *) diagpkt_subsys_alloc(DIAG_SUBSYS_FTM, FTM_AP_C, sizeof(ftm_cmd_response));
@@ -50,37 +50,37 @@ PACK(void *) CreatResponsePacket(int diagCmmdId, int diagCmmdResult, const char 
         return NULL;
     }
  
-	rsp_pkt->sftm_header.cmd_code = (uint8_t)75;
-	rsp_pkt->sftm_header.sub_sys_id = (uint8_t)DIAG_SUBSYS_FTM;
-	rsp_pkt->sftm_header.sub_sys_cmd_code = (uint16_t)FTM_AP_C;
-	rsp_pkt->sftm_header.ftm_cmd_id = (uint16_t)diagCmmdId;
-	rsp_pkt->sftm_header.ftm_data_len = (uint16_t)0;
-	rsp_pkt->sftm_header.ftm_rsp_pkt_size = (uint16_t)0;
-	rsp_pkt->ftm_cmd_resp_result = (uint8_t)diagCmmdResult;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.cmd_code = (uint8_t)75;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.sub_sys_id = (uint8_t)DIAG_SUBSYS_FTM;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.sub_sys_cmd_code = (uint16_t)FTM_AP_C;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.ftm_cmd_id = (uint16_t)diagCmmdId;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.ftm_data_len = (uint16_t)0;
+	((ftm_cmd_response *)rsp_pkt)->sftm_header.ftm_rsp_pkt_size = (uint16_t)0;
+	((ftm_cmd_response *)rsp_pkt)->ftm_cmd_resp_result = (uint8_t)diagCmmdResult;
 	if(diagCmmdResult == 1){
 		if(rsp_data != NULL){
 			uint16_t mSize = strlen(rsp_data)+1;
 			LOGD_LOG("ftm_read_file: mSize=[%d]", mSize);
 			LOGD_LOG("ftm_read_file: rsp_data=[%s]", rsp_data);
-			rsp_pkt->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
-			LOGD_LOG("ftm_read_file: iSize=%d", rsp_pkt->size);
+			((ftm_cmd_response *)rsp_pkt)->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
+			LOGD_LOG("ftm_read_file: iSize=%d", ((ftm_cmd_response *)rsp_pkt)->size);
 			
-			memset(rsp_pkt->Data, 0, PACK_SIZE);
-			memcpy(rsp_pkt->Data, rsp_data, sizeof(rsp_pkt->Data));
+			memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
+			memcpy(((ftm_cmd_response *)rsp_pkt)->Data, rsp_data, sizeof(((ftm_cmd_response *)rsp_pkt)->Data));
 		}else{
-			rsp_pkt->size = 0;
-			memset(rsp_pkt->Data, 0, PACK_SIZE);
+			((ftm_cmd_response *)rsp_pkt)->size = 0;
+			memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
 			LOGD_LOG("%s: rsp_data == NULL", __FUNCTION__);
 		}
 	}else{
-		rsp_pkt->size = 0;
-		memset(rsp_pkt->Data, 0, PACK_SIZE);
+		((ftm_cmd_response *)rsp_pkt)->size = 0;
+		memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
 		LOGD_LOG("%s: 1 rsp_data == NULL", __FUNCTION__);
 	}
-	return rsp_pkt;
+	return (PACKED void *)rsp_pkt;
 }
 
-PACK(void *) cmmdHandlerAutoJudged(int mDiagCmmdId){
+PACKED void *cmmdHandlerAutoJudged(int mDiagCmmdId){
 	JNIEnv *env;
 	bool threadAttached = false;
 	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
@@ -109,16 +109,17 @@ PACK(void *) cmmdHandlerAutoJudged(int mDiagCmmdId){
 	LOGD_LOG("cmmdHandlerAutoJudged: 3");
 	/* Finally call the callback */
     jint ret = env->CallStaticIntMethod(java_class, method, mDiagCmmdId);
+	LOGD_LOG("cmmdHandlerAutoJudged ret:%d", ret);
     if(threadAttached)
         jvm->DetachCurrentThread();
 	LOGD_LOG("cmmdHandlerAutoJudged end");
 	return NULL;
 }
 
-PACK(void *) cmmdHandlerSetResult(int mCmdId, PACK(void *)req_pkt, uint16 pkt_len){
+PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
 	JNIEnv *env;
 	LOGD_LOG("cmmdHandlerSetResult: mCmdId:%d", mCmdId);
-	ftm_cmd_response *cmd = (ftm_cmd_response *)req_pkt;
+	//ftm_cmd_response *cmd = (ftm_cmd_response *)req_pkt;
 	bool threadAttached = false;
 	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
 		if(jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
@@ -144,29 +145,30 @@ PACK(void *) cmmdHandlerSetResult(int mCmdId, PACK(void *)req_pkt, uint16 pkt_le
 	  return CreatResponsePacket(mCmdId, 1, "GetObjectClass error");
     }
 	LOGD_LOG("cmmdHandlerSetResult: 3");
-	jstring data = env->NewStringUTF((char*)cmd->Data);
+	jstring jdata = env->NewStringUTF((char *)data);
 	/* Finally call the callback */
-    jint ret = env->CallStaticIntMethod(java_class, method, mCmdId, data);
+    jint ret = env->CallStaticIntMethod(java_class, method, mCmdId, jdata);
+	LOGD_LOG("cmmdHandlerSetResult ret:%d", ret);
     if(threadAttached)
         jvm->DetachCurrentThread();
 	LOGD_LOG("cmmdHandlerSetResult end");
 	return NULL;
 }
 
-PACK(void *) ftm_ap_dispatch(PACK(void *)req_pkt, uint16 pkt_len) {
+//PACKED void *ftm_ap_dispatch((void *)req_pkt, uint16_t pkt_len) {
+void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
     LOGD_LOG("ftm_ap_dispatch called!");
 	ftm_header *pheader = (ftm_header *) req_pkt;
     uint16_t iCmd = pheader->ftm_cmd_id;
 	LOGD_LOG("ftm_ap_dispatch called! iCmd:%d", iCmd);
 	LOGD_LOG("ftm_ap_dispatch called! pkt_len:%d", pkt_len);
-	PACK(void *) ptr_ret = NULL;
+	PACKED void *ptr_ret = NULL;
 	
 	if( ( (iCmd >= (FTM_SUBCMD_START + FTM_SUBCMD_BASE) ) && ( iCmd < (FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE)) ) ||
 	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){
 		ptr_ret = cmmdHandlerAutoJudged(iCmd);
 	}else{
-
-		ptr_ret = cmmdHandlerSetResult(iCmd, req_pkt, pkt_len);
+		ptr_ret = (PACKED void *)cmmdHandlerSetResult(iCmd, ((ftm_cmd_response *)req_pkt)->Data);
 	}
 	
 	if(ptr_ret != NULL){
@@ -211,6 +213,9 @@ char* Jstring2CStr(JNIEnv* env, jstring jstr)
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv *env = NULL;
 	char * mTest = (char *)reserved;
+	if(reserved == NULL){
+		LOGD_LOG("JNI_OnLoad reserved == NULL");
+	}
 
     jvm = vm;
 	LOGD_LOG("Start to process ftm 1\n");

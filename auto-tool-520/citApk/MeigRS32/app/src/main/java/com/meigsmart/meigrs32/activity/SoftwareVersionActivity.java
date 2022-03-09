@@ -1035,6 +1035,9 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                    mSoftwareInformationSuccessFlag = true;
                    mSimCardDisplaySuccessFlag = true;
                    mSuccess.setVisibility(View.VISIBLE);
+                   if( (!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                       mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT);
+                   }
                }
            }
 
@@ -1113,6 +1116,9 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                    }
                    mSimCardDisplaySuccessFlag = true;
                    mSuccess.setVisibility(View.VISIBLE);
+                   if( (!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                       mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT);
+                   }
                }
            }
        }
@@ -1269,18 +1275,24 @@ public class SoftwareVersionActivity extends BaseActivity implements View.OnClic
                                 }
                                 mSimCardDisplaySuccessFlag = true;
                                 mSuccess.setVisibility(View.VISIBLE);
+                                if((!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                                    mHandler.sendEmptyMessage(HANDLER_SOFTWAREVERSION_TEST_RESULT);
+                                }
                             }
                         }
                     break;
                 case HANDLER_SOFTWAREVERSION_TEST_RESULT:
                     if(mSimCardDisplaySuccessFlag && mSoftwareInformationSuccessFlag) {
-                        if (isMT535 || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                        if (isMT535 || ( (!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) )) {
                             mHandler.sendEmptyMessage(1001);
                         } else {
                             mSuccess.setVisibility(View.VISIBLE);
                         }
+                        if((!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                            mHandler.sendEmptyMessage(1001);
+                        }
                     }else{
-                        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if((!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
                             Message msg1 = mHandler.obtainMessage();
                             msg1.what = HANDLER_SOFTWAREVERSION_TEST_RESULT_FAIL;
                             msg1.obj = "Empty content of software test item";
