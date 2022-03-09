@@ -1,0 +1,70 @@
+[
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_ic_launcher.png.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\raw_beep3.wav.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\raw\\beep3.wav"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_previewimage_tiny.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\previewimage_tiny.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_main.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\main.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-ldpi_ic_launcher.png.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-ldpi\\ic_launcher.png"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_unchecked.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\unchecked.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-mdpi_ic_launcher.png.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_surface.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\surface.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_control.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\control.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_image.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\image.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_custom_round_edge.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\custom_round_edge.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\menu_option_menu.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\menu\\option_menu.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\layout_previewimage.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\layout\\previewimage.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_rounded_edittext.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\rounded_edittext.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_custom_buttom.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\custom_buttom.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_checked.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\checked.xml"
+    },
+    {
+        "merged": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\build\\intermediates\\res\\merged\\release\\drawable-hdpi_custom_checkbox.xml.flat",
+        "source": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\\app\\src\\main\\res\\drawable-hdpi\\custom_checkbox.xml"
+    }
+]

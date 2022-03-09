@@ -1,0 +1,89 @@
+<resources>
+    <string name="app_name">Fingerprint Test</string>
+    <string name="title_collect">current fingerprint</string>
+    <string name="title_about">about</string>
+    <string name="title_detect">test item</string>
+    <string name="title_ntx_test">NTX test</string>
+    <string name="title_sensitivity_test">sensitivity test</string>
+    <string name="title_touch_calibration_test">touch change</string>
+    <string name="title_score">fingerprint score</string>
+    <string name="fingerdown">please put your finger on the fingerprint collection device</string>
+    <string name="fingerup">please raise your finger</string>
+    <string name="test_ok">success</string>
+    <string name="test_fail">fail</string>
+    <string name="test_agc_fail">test fail</string>
+    <string name="app_ver">FpFactory version:</string>
+    <string name="sdklib_ver">sdklib version:</string>
+    <string name="unknow_version">unknow version</string>
+    <string name="title_pixel">pixel info</string>
+    <string name="title_kvalue">kvalue info</string>
+    <string name="welcome_info">welcome！</string>
+    <string name="is_calibration">is it calibrated:</string>
+    <string name="sensitivity">sensitivity:</string>
+    <string name="text_krange" formatted="false">K value range: %f - %f</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="pixel_bad_num" formatted="false">"bad points num：%d, bad blocks num：%d"</string>
+    <string name="text_image_quality">image quality:</string>
+    <string name="text_image_valid_area">valid area:</string>
+    <string name="text_zero">"0"</string>
+    <string name="text_conform">conform</string>
+
+    <string name="text_spi_title">"detection of SPI"</string>
+    <string name="text_spi_summary">"detection of SPI communication"</string>
+    <string name="text_irp_title">"detection interruption"</string>
+    <string name="text_irp_summary">"check whether the interruption is normal"</string>
+    <string name="text_pixel_title">"detection of bad points"</string>
+    <string name="text_pixel_summary">"check whether the bad points are normal"</string>
+    <string name="text_calibration_title">"detection and calibration information"</string>
+    <string name="text_calibration_summary">"whether the calibration information is normal or not"</string>
+    <string name="text_calibration_status_title">"detection and calibration"</string>
+    <string name="text_calibration_status_summary">"whether the test is calibrated"</string>
+    <string name="text_leave_and_touch_title">"check the finger to leave and touch"</string>
+    <string name="text_leave_and_touch_summary">"check whether the finger is leaving and touching is normal"</string>
+    <string name="text_quality_title">"detection of image quality"</string>
+    <string name="text_quality_summary">"whether the image quality is normal"</string>
+    <string name="text_speed_title">speed test</string>
+    <string name="text_speed_summary">test the algorithm of drawing and whether the recognition performance is qualified</string>
+    <string name="text_enroll_title">detection of fingerprint entry</string>
+    <string name="text_enroll_summary">whether the fingerprint entry is normal or not</string>
+    <string name="text_auth_title">detection of fingerprint identification</string>
+    <string name="text_auth_summary">detect whether the fingerprint is normal or not</string>
+    <!--string name="text_tips_touch">ask your finger to touch the fingerprint identifier to complete the test</string-->
+    <!--string name="text_tips_untouch">please do not touch fingerprints with your fingers</string-->
+    <string name="text_tips_touch">请手指触摸指纹识别器以完成测试</string>
+    <string name="text_tips_untouch">请不要用手指触摸指纹识别器</string>
+    <string name="text_tips_retry">retry the failure of recognition</string>
+    <string name="text_tips_auth_failed">identification failure</string>
+    <string name="title_test_input">entry test</string>
+    <string name="text_input_fingerprint">please enter the fingerprint</string>
+    <!--<string name="text_connect_error">failure to connect fingerprint service</string>-->
+    <string name="text_connect_error_tips">failed to connect the fingerprint service, please try to restart the application</string>
+    <string name="text_start_test">start</string>
+    <string name="title_count_down" formatted="false">count down:%s second</string>
+    <string name="text_hello_world">hello world!</string>
+
+    <string name="text_load_data">load data</string>
+    <string name="msg_loading_data">loading...</string>
+    <string name="text_tips_high_sensitivity">too high sensitivity！</string>
+    <string name="text_tips_low_sensitivity">too low sensitivity！</string>
+    <string name="text_tips_ok_sensitivity">normal sensitivity！</string>
+    <string name="text_tips_sensitivity" formatted="false">IC Model：%s, fold point：%s</string>
+
+    <string name="text_test">test</string>
+    <string name="text_touch_cali_use_info" formatted="false">instructions(for 8271 and later IC):\n\n1.sensor three layers of tape\n\n2.finger touch on three layers of tape\n\n3.click the test button\n\n4.get(raw-base)value\n\n5.more than this value (%s) too much，is too sensitive\n\n6.less than this value (%s) too much，is insensitive\n\n7.proper adjustment of sensitivity</string>
+    <string name="text_retest">please exit the interface and re-enter the test. Be careful not to touch the fingerprint recognizer.!</string>
+
+    <!--          ItemView            -->
+    <string name="text_nofun">----</string>
+    <string name="text_pass">PASS</string>
+    <string name="text_fail">FAIL</string>
+    <string name="text_null">(N/A)</string>
+
+    <string name="collect_start">start</string>
+    <string name="collect_stop">stop</string>
+    <string name="text_sava_data">save data</string>
+    <string name="input_tip">Please enter decimal or integer</string>
+    <string name="input_tip2">Number should be greater than 0.016</string>
+    <string name="wait_timeout">wait timeout</string>
+</resources>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Simple strings. -->
+    <string name="pressTrigger">PRESS TRIGGER</string>
+    <string name="releaseTrigger">RELEASE TRIGGER</string>
+    <string name="snap">Snapshot</string>
+    <string name="beep">Beep</string>
+    <string name="getparam">Get</string>
+    <string name="setparam">Set</string>
+    <string name="dflparam">Defaults</string>
+    <string name="decoding">decoding</string>
+    <string name="snapping">taking snapshot</string>
+    <string name="pnum">Number</string>
+    <string name="pval">Value</string>
+    <string name="sdl">SDLtestApp</string>
+    <string name="app_name">SDLgui</string>
+    <string name="enable">EnableAll</string>
+    <string name="disable">DisableAll</string>
+    <string name="reading">Reading Pane</string>
+    <string name="preview">Preview</string>
+    <string name="DecImage">DecImag</string>
+    <string name="stat">Status :</string>
+	<string name="handsfree">Hands Free</string>
+    <string name="blank"></string>
+    <string name="data">Data :</string>
+    <string name="prop">Properties</string>
+    <string name="video">Video</string>
+    <string name="Params">Parameters</string>
+    <string name="Turbo">Turbo</string>
+    <string name="application_mode">Mode</string>
+    <string name="demo">Demo Mode</string>
+    <string name="test">Test Mode</string>
+    <string name="cyclecount">Cycle Count :</string>
+    <string name="cycledelay">Cycle Delay :</string>
+    <string name="countinousmode">Continuous</string>
+    <string name="openrelease">Open/Release</string>
+    <string name="currentcount">Count</string>
+    <string name="stopdecode">Stop Decode</string>
+    <string name="successcount">Success</string>
+    <string name="scanpermin">Scan/Min</string>
+    <string name="firstscan">First</string>
+    <string name="minscan">Min</string>
+    <string name="maxscan">Max</string>
+    <string name="avgscan">AVG</string>
+    <string name="scaning_back">Scan code is not completed, please confirm whether to exit the test</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="stop_scan">ending scan ...</string>
+</resources>

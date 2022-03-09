@@ -1,0 +1,10 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="active_result_success">激活成功</string>
+    <string name="active_result_fail">激活失败</string>
+	<string name="activeing_state">激活检查中...</string>
+	<string name="activeing_reset">请点击激活按钮</string>
+    <string name="scaning_back">扫码未完整结束，请确认是否强制退出</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="decodeFailed">扫码超时</string>
+</resources>

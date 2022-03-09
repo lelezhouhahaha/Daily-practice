@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./app/libs/decoderapijni.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/decoderapijni.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

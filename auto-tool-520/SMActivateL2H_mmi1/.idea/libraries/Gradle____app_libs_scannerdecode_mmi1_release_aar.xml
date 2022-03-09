@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: ./app/libs/scannerdecode_mmi1-release.aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b546fe9e5c1978aa1b31017c93f8cd62/jetified-scannerdecode_mmi1-release/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b546fe9e5c1978aa1b31017c93f8cd62/jetified-scannerdecode_mmi1-release/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b546fe9e5c1978aa1b31017c93f8cd62/jetified-scannerdecode_mmi1-release/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/0b4d17f808066c576013e72db7346502/jetified-scannerdecode_mmi1-release/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/0b4d17f808066c576013e72db7346502/jetified-scannerdecode_mmi1-release/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/0b4d17f808066c576013e72db7346502/jetified-scannerdecode_mmi1-release/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

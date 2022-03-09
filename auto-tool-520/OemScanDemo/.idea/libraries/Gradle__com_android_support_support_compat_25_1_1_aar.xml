@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="Gradle: com.android.support:support-compat:25.1.1@aar">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-compat-25.1.1.aar/3315c12c36a32b69bbeac27bdb6b75fc/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-compat-25.1.1.aar/3315c12c36a32b69bbeac27bdb6b75fc/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-compat-25.1.1.aar/3315c12c36a32b69bbeac27bdb6b75fc/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-compat-25.1.1.aar/3315c12c36a32b69bbeac27bdb6b75fc/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://D:/Users/zll/AppData/Local/Android/Sdk/extras/android/m2repository/com/android/support/support-compat/25.1.1/support-compat-25.1.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://D:/Users/zll/AppData/Local/Android/Sdk/extras/android/m2repository/com/android/support/support-compat/25.1.1/support-compat-25.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

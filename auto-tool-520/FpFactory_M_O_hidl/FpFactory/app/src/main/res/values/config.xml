@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--坏块阈值-->
+    <integer name="threshold_block">5</integer>
+    <!--坏点阈值-->
+    <integer name="threshold_pixel">25</integer>
+    <!--图像质量-->
+    <integer name="threshold_qulity">25</integer>
+    <!--速度阈值-->
+    <integer name="threshold_speed">400</integer>
+
+    <!--检测spi-->
+    <bool name="is_test_spi">true</bool>
+    <!--检测中断-->
+    <bool name="is_test_irq">true</bool>
+    <!--检测坏点-->
+    <bool name="is_test_pixel">true</bool>
+    <!--检测校准信息(只针对8202IC)-->
+    <bool name="is_test_calibration">false</bool>
+    <!--检测图像质量-->
+    <bool name="is_test_quality">true</bool>
+    <!--速度测试-->
+    <bool name="is_test_speed">false</bool>
+    <!--录入和识别测试开关-->
+    <bool name="is_test_enroll_and_auth">false</bool>
+    <!--手指离开和触摸测试开关-->
+    <bool name="is_test_leave_and_touch">false</bool>
+
+    <!--NTX界面显示与否-->
+    <bool name="is_show_ntx_pager">false</bool>
+    <!--灵敏度界面显示与否-->
+    <bool name="is_show_sensitivity_pager">false</bool>
+    <!--触摸校准界面显示与否-->
+    <bool name="is_show_touch_cali_pager">false</bool>
+
+    <!--测试项测试结果广播的Action
+        intent.putExtra("test_result", isTestFailed ? "failed" : "success");-->
+    <string name="action_test_result">"com.swfp.factory.action.test_result"</string>
+    <!--测试项界面返回测试结果的方式-->
+    <bool name="is_return_result_by_broadcast">true</bool>
+
+    <!--测试项界面使用坏点坏块默认阈值-->
+    <bool name="is_use_default_piexl_and_block">true</bool>
+
+    <integer-array name="use_default_piexl">
+        <item>36</item><!--coating-->
+        <item>12</item><!--lens-->
+        <item>23</item><!--coating-8271-->
+        <item>36</item><!--coating-8281-->
+        <item>23</item><!--coating-8273-->
+        <item>17</item><!--coating-8233-->
+        <item>28</item><!--coating-8263-->
+        <item>31</item><!--coating-8393-->
+    </integer-array>
+    <integer-array name="use_default_block">
+        <item>6</item><!--coating-->
+        <item>4</item><!--lens-->
+        <item>4</item><!--coating-8271-->
+        <item>6</item><!--coating-8281-->
+        <item>4</item><!--coating-8273-->
+        <item>3</item><!--coating-8233-->
+        <item>5</item><!--coating-8263-->
+        <item>5</item><!--coating-8393-->
+    </integer-array>
+
+    <!--other标准坏点坏块阈值-->
+    <integer-array name="use_other_piexl">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </integer-array>
+    <integer-array name="use_other_block">
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+        <item>1</item>
+    </integer-array>
+
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="toolbar_left_text_size">20dp</dimen>
+    <dimen name="toolbar_title_text_size">20dp</dimen>
+    <dimen name="toolbar_right_text_size">20dp</dimen>
+
+    <dimen name="setting_icon_text_size">20dp</dimen>
+
+    <dimen name="menu_item_textview_text_size">20dp</dimen>
+
+    <dimen name="codeset_item_textview_text_size">16dp</dimen>
+    <dimen name="codeset_item_textview_btn_text_size">16dp</dimen>
+
+</resources>

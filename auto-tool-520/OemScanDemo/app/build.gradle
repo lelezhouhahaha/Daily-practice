@@ -1,0 +1,26 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.example.oemscandemo"
+        minSdkVersion 26
+        targetSdkVersion 29
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:support-v4:24.2.1'
+    implementation 'com.android.support:appcompat-v7:25.1.1'
+    implementation files('libs/decoderapijni.jar')
+    implementation files('libs\\classes.jar')
+}

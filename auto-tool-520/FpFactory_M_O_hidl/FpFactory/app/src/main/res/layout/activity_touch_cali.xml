@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/activity_touch_cali_base_tv"
+        android:layout_marginTop="10dp"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:gravity="center"
+        android:textSize="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/activity_touch_cali_line"
+        android:layout_below="@+id/activity_touch_cali_base_tv"
+        android:background="#ff0000"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="2dp" />
+
+    <TextView
+        android:id="@+id/activity_touch_cali_use_info"
+        android:layout_below="@+id/activity_touch_cali_line"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:layout_marginTop="20dp"
+        android:textSize="20dp"
+        android:paddingLeft="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/activity_touch_cali_start_bt"
+        android:text="@string/text_test"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>

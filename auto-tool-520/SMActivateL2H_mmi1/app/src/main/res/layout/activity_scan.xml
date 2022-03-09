@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cs_background"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvScanTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:textStyle="bold"
+        android:textSize="24dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/ll_scanx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/msg_bg"
+            android:visibility="visible"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/scanType"
+                        android:textSize="25sp"
+                        android:textColor="@color/text_c1"
+                        />
+
+                    <LinearLayout
+                        android:id="@+id/ll_soft_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:text="@string/scanXVersion"
+                            android:textColor="@color/text_c1"
+                            android:textSize="15sp"
+                            />
+                        <TextView
+                            android:id="@+id/tv_scanner_soft_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:textColor="@color/text_c1"
+                            android:textSize="15sp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_decode_library_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:text="@string/decodeLibraryVersion"
+                            android:textColor="@color/text_c1"
+                            android:textSize="15sp"
+                            />
+                        <TextView
+                            android:id="@+id/tv_decode_library_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:textColor="@color/text_c1"
+                            android:textSize="15sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/help_you_margin_top"
+                android:background="@color/tab_bg"
+                android:gravity="center_vertical">
+                <!-- 解码库解码结果-->
+                <TextView
+                    android:id="@+id/tv_barcodeResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/text_c1"
+                    android:textSize="@dimen/text_size" />
+
+            </RelativeLayout>
+
+            <!-- 扫描和停止扫描按钮-->
+            <Button
+                android:id="@+id/btn_operation"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="4"
+                android:background="@drawable/login_selector2"
+                android:text="@string/scan"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="50dp"
+                android:gravity="center"
+                android:textColor="@color/tab_bg"
+                android:textSize="19dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

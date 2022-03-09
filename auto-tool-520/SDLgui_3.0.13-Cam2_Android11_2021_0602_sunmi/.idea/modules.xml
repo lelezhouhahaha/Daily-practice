@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi.iml" filepath="$PROJECT_DIR$/.idea/modules/SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi.app.iml" />
+    </modules>
+  </component>
+</project>

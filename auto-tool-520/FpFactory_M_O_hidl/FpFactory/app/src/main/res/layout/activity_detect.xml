@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_spi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_spi_summary"
+        app:itv_title="@string/text_spi_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_irq"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_irp_summary"
+        app:itv_title="@string/text_irp_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_pixel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_pixel_summary"
+        app:itv_title="@string/text_pixel_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_calibration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_calibration_summary"
+        app:itv_title="@string/text_calibration_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_leave_and_touch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_leave_and_touch_summary"
+        app:itv_title="@string/text_leave_and_touch_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_quality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_quality_summary"
+        app:itv_title="@string/text_quality_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_speed_summary"
+        app:itv_title="@string/text_speed_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_enroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_enroll_summary"
+        app:itv_title="@string/text_enroll_title" />
+
+    <com.swfp.view.ItemView
+        android:id="@+id/itv_auth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:visibility="gone"
+        app:itv_fcolor="@color/colorFail"
+        app:itv_ncolor="@color/colorNull"
+        app:itv_pcolor="@color/colorPass"
+        app:itv_result="@string/text_null"
+        app:itv_state="nulll"
+        app:itv_summary="@string/text_auth_summary"
+        app:itv_title="@string/text_auth_title" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/colorBlack"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tv_tips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/text_tips_untouch"
+            android:textColor="@color/colorWhite"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_count_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/tv_tips"
+            android:layout_marginBottom="10dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:textColor="@color/colorWhite"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/bt_start_test"
+            android:text="@string/text_start_test"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+</LinearLayout>

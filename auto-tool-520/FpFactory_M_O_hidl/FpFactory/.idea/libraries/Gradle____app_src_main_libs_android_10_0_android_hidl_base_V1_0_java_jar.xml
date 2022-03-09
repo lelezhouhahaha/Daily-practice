@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./app/src/main/libs/android_10.0/android.hidl.base-V1.0-java.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/src/main/libs/android_10.0/android.hidl.base-V1.0-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

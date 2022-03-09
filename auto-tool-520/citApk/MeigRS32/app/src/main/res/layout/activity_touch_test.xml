@@ -6,7 +6,6 @@
     android:background="@color/pop_txt_bg"
     android:orientation="vertical"
     android:overScrollMode="never"
-    android:focusableInTouchMode="true"
     tools:context=".activity.TouchTestActivity">
 
     <include

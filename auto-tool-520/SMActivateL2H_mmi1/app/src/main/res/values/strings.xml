@@ -1,0 +1,33 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">ActMMI1</string>
+    <string name="action_settings">Settings</string>
+    <string name="scan">Scan</string>
+    <string name="stop">Stop</string>
+    <string name="symbologyType">symbology type:</string>
+    <string name="scanXVersion">App version:</string>
+    <string name="decodeLibraryVersion">Library version:</string>
+    <string name="AEVersion">AE version:</string>
+    <string name="decodeResult">decode result:</string>
+    <string name="decodeTime">decode time:</string>
+    <string name="allTime">all time:</string>
+    <string name="decodeCounts">decode counts:</string>
+    <string name="decodeCountIndex">decode count index:</string>
+    <string name="decodeFailed">decode failed.</string>
+    <string name="decodePrecentCounts">decode success counts:<xliff:g>%d</xliff:g>, decode failed counts:<xliff:g>%d</xliff:g>, success precent:<xliff:g>%s</xliff:g></string>
+    <string name="decode_version_info_unknow">Unknow</string>
+
+    <string name="active_result_success">Activated Success</string>
+    <string name="active_result_fail">Activated Failed</string>
+    <string name="test_h_active_result">Test H Active <xliff:g>%s</xliff:g> Times is <xliff:g>%d</xliff:g>, The current time is <xliff:g>%d</xliff:g>,The longest time is <xliff:g>%d</xliff:g></string>
+	<string name="activeing_state">Activated Checking...</string>
+	<string name="activeing_reset">Click Activated</string>
+    <string name="scaning_back">Scan code is not completed, please confirm whether to exit the test</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+
+    <string-array name="cameraId">
+        <item>Camera0</item>
+        <item>Camera1</item>
+        <item>Camera2</item>
+    </string-array>
+</resources>

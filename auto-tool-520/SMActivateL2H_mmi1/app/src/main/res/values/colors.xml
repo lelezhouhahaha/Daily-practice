@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FF8B00</color>
+    <color name="colorPrimaryDark">#FF8B00</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="text_c1">#131417</color>
+
+    <!-- tab栏背景-->
+    <color name="tab_bg">#FFFFFF</color>
+    <!-- 页面背景-->
+    <color name="cs_background">#F2F2F2</color>
+
+
+    <!-- 消息首页背景-->
+    <color name="msg_bg">#F2F2F2</color>
+
+    <color name="transparent">@android:color/transparent</color>
+
+    <color name="c">#cccccc</color>
+    <color name="calendar_text_inactive">#40778088</color>
+    <color name="text_normal_color">#ABAFBB</color>
+
+
+    <color name="login_bg">#FF8B00</color>
+
+    <color name="red">#ffff0000</color>
+    <color name="white">#ffffffff</color>
+    <color name="blue">#0000FF</color>
+    <color name="orange">#FFA500</color>
+    <color name="lightgray">#ffe6e6e6</color>
+    <color name="general_bg">#EFF2F1</color>
+    <color name="black">#ff000000</color>
+</resources>
+
+
+

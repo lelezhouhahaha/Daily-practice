@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string msgid="4600421777120114993" name="abc_action_bar_home_description">"转到主屏幕"</string>
+    <string msgid="1397052879051804371" name="abc_action_bar_home_description_format">"%1$s：%2$s"</string>
+    <string msgid="6623331958280229229" name="abc_action_bar_home_subtitle_description_format">"%1$s - %2$s：%3$s"</string>
+    <string msgid="1594238315039666878" name="abc_action_bar_up_description">"转到上一层级"</string>
+    <string msgid="3588849162933574182" name="abc_action_menu_overflow_description">"更多选项"</string>
+    <string msgid="4076576682505996667" name="abc_action_mode_done">"完成"</string>
+    <string msgid="7468859129482906941" name="abc_activity_chooser_view_see_all">"查看全部"</string>
+    <string msgid="2031811694353399454" name="abc_activitychooserview_choose_application">"选择应用"</string>
+    <string msgid="121134116657445385" name="abc_capital_off">"关闭"</string>
+    <string msgid="3405795526292276155" name="abc_capital_on">"开启"</string>
+    <string msgid="7723749260725869598" name="abc_search_hint">"搜索…"</string>
+    <string msgid="3691816814315814921" name="abc_searchview_description_clear">"清除查询"</string>
+    <string msgid="2550479030709304392" name="abc_searchview_description_query">"搜索查询"</string>
+    <string msgid="8264924765203268293" name="abc_searchview_description_search">"搜索"</string>
+    <string msgid="8928215447528550784" name="abc_searchview_description_submit">"提交查询"</string>
+    <string msgid="893419373245838918" name="abc_searchview_description_voice">"语音搜索"</string>
+    <string msgid="3421042268587513524" name="abc_shareactionprovider_share_with">"分享方式"</string>
+    <string msgid="7165123711973476752" name="abc_shareactionprovider_share_with_application">"通过%s分享"</string>
+    <string msgid="1603543279005712093" name="abc_toolbar_collapse_description">"收起"</string>
+    <string name="action_test_result">"com.swfp.factory.action.test_result"</string>
+    <string name="app_name">Fingerprint Test</string>
+    <string name="app_ver">FpFactory version:</string>
+    <string name="collect_start">开始</string>
+    <string name="collect_stop">停止</string>
+    <string name="fingerdown">请将手指放置在指纹采集设备上</string>
+    <string name="fingerup">请抬起手指</string>
+    <string name="input_tip">请输入小数或整数</string>
+    <string name="input_tip2">数字应该大于0.016</string>
+    <string name="is_calibration">是否已校准:</string>
+    <string name="msg_loading_data">正在加载数据，请稍后...</string>
+    <string name="no">否</string>
+    <string formatted="false" name="pixel_bad_num">"坏点数量：%d, 坏块数量：%d"</string>
+    <string name="sdklib_ver">sdklib version:</string>
+    <string msgid="146198913615257606" name="search_menu_title">"搜索"</string>
+    <string name="sensitivity">灵敏度:</string>
+    <string msgid="2869576371154716097" name="status_bar_notification_info_overflow">"999+"</string>
+    <string name="test_agc_fail">测试失败</string>
+    <string name="test_fail">失败</string>
+    <string name="test_ok">成功</string>
+    <string name="text_auth_summary">检测指纹识别是否正常</string>
+    <string name="text_auth_title">检测指纹识别</string>
+    <string name="text_calibration_status_summary">"检测是否校准"</string>
+    <string name="text_calibration_status_title">"检测校准"</string>
+    <string name="text_calibration_summary">"检测校准信息是否正常"</string>
+    <string name="text_calibration_title">"检测校准信息"</string>
+    <string name="text_conform">确定</string>
+    <string name="text_connect_error_tips">连接指纹服务失败,请尝试重启应用</string>
+    <string name="text_enroll_summary">检测指纹录入是否正常</string>
+    <string name="text_enroll_title">检测指纹录入</string>
+    <string name="text_fail">FAIL</string>
+    <string name="text_hello_world">hello world!</string>
+    <string name="text_image_quality">图像质量:</string>
+    <string name="text_image_valid_area">有效面积:</string>
+    <string name="text_input_fingerprint">请录入指纹</string>
+    <string name="text_irp_summary">"检测中断是否正常"</string>
+    <string name="text_irp_title">"检测中断"</string>
+    <string formatted="false" name="text_krange">k值范围: %f - %f</string>
+    <string name="text_leave_and_touch_summary">"检测手指离开和触摸是否正常"</string>
+    <string name="text_leave_and_touch_title">"检测手指离开和触摸"</string>
+    <string name="text_load_data">加载数据</string>
+    <string name="text_nofun">----</string>
+    <string name="text_null">(N/A)</string>
+    <string name="text_pass">PASS</string>
+    <string name="text_pixel_summary">"检测坏点是否正常"</string>
+    <string name="text_pixel_title">"检测坏点"</string>
+    <string name="text_quality_summary">"检测图像质量是否正常"</string>
+    <string name="text_quality_title">"检测图像质量"</string>
+    <string name="text_retest">请退出界面，再重新进入测试，注意不要触摸指纹识别器!</string>
+    <string name="text_sava_data">保存数据</string>
+    <string name="text_speed_summary">测试采图算法和识别性能是否合格</string>
+    <string name="text_speed_title">速度测试</string>
+    <string name="text_spi_summary">"检测SPI通讯"</string>
+    <string name="text_spi_title">"检测SPI"</string>
+    <string name="text_start_test">开始</string>
+    <string name="text_test">测试</string>
+    <string name="text_tips_auth_failed">识别失败</string>
+    <string name="text_tips_high_sensitivity">灵敏度太高！</string>
+    <string name="text_tips_low_sensitivity">灵敏度太低！</string>
+    <string name="text_tips_ok_sensitivity">灵敏度正常！</string>
+    <string name="text_tips_retry">识别失败请重试</string>
+    <string formatted="false" name="text_tips_sensitivity">IC型号：%s, 折点为：%s</string>
+    <string name="text_tips_touch">请手指触摸指纹识别器以完成测试</string>
+    <string name="text_tips_untouch">请不要用手指触摸指纹识别器</string>
+    <string formatted="false" name="text_touch_cali_use_info">使用说明(针对8271及以后IC):\n\n1.sensor贴三层胶带\n\n2.手指触摸在三层胶带上\n\n3.点击测试按钮\n\n4.得到(raw-base)值\n\n5.大于此值(%s)过多，则过灵敏\n\n6.小于此值(%s)过多，则不灵敏\n\n7.适当调节灵敏度值</string>
+    <string name="text_zero">"0"</string>
+    <string name="title_about">关于</string>
+    <string name="title_collect">实时指纹</string>
+    <string formatted="false" name="title_count_down">倒计时:%s秒</string>
+    <string name="title_detect">测试项</string>
+    <string name="title_kvalue">校正信息</string>
+    <string name="title_ntx_test">NTX测试</string>
+    <string name="title_pixel">坏点信息</string>
+    <string name="title_score">指纹打分</string>
+    <string name="title_sensitivity_test">灵敏度测试</string>
+    <string name="title_test_input">录入测试</string>
+    <string name="title_touch_calibration_test">触摸变化量</string>
+    <string name="unknow_version">未知版本</string>
+    <string name="wait_timeout">等待超时</string>
+    <string name="welcome_info">深圳信炜科技有限公司欢迎您！</string>
+    <string name="yes">是</string>
+</resources>

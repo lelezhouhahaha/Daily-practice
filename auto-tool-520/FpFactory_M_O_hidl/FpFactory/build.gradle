@@ -1,0 +1,36 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+    }
+
+// 使用自己编译的 framework.jar 替换 sdk 的，以便开发系统应用时，访问 framework 内部成员
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            if (project.TARGET_PLATFORM == "ANDROID_Q") {
+//                options.compilerArgs.add('-Xbootclasspath/p:app\\src\\libs\\android_10.0\\framework.jar;app\\src\\libs\\android_10.0\\android.hidl.base-V1.0-java.jar;app\\src\\libs\\android_10.0\\hwbinder.jar')
+//                options.compilerArgs.add('-Xbootclasspath/p:app\\src\\libs\\android_10.0\\hwbinder.jar')
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

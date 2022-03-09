@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!--
+    0: off
+    1: on
+    -->
+    <bool name="exposure_default">true</bool>
+
+    <!--
+   0: off
+   1: on
+   -->
+    <bool name="multiple_default">false</bool>
+
+    <!--
+    0: off
+    1: on
+    -->
+    <bool name="contiuns_default">false</bool>
+
+    <!--
+    0: off
+    1: on
+    -->
+    <bool name="holly_decode_mode_default">false</bool>
+
+    <!--
+    0: off
+    1: on
+    -->
+    <bool name="scanner_mode_default">true</bool>
+
+</resources>

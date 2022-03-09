@@ -1,0 +1,148 @@
+-- Merging decision tree log ---
+manifest
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+MERGED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:support-v4:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-v4-25.1.1.aar\edd9646804b020ea18720818c29f326c\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:animated-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-25.1.1.aar\f6a5f9f0f875a9edf0b3e8acfb3715dd\AndroidManifest.xml:17:1-24:12
+MERGED from [com.android.support:support-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-25.1.1.aar\16895e7e9de63d2458223d58a1e662e3\AndroidManifest.xml:17:1-25:12
+MERGED from [com.android.support:support-fragment:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-fragment-25.1.1.aar\44accd0599f4c9c830b12553fc6b5e5d\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:support-media-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-media-compat-25.1.1.aar\72ddd2ae05f53944151750ae1bcb288a\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:support-core-utils:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-utils-25.1.1.aar\774accc7b3f829b2e533289118f26dd9\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:support-core-ui:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-ui-25.1.1.aar\8fdb3136ae072bf457c639df5d0f5e84\AndroidManifest.xml:17:1-27:12
+MERGED from [com.android.support:support-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-compat-25.1.1.aar\3315c12c36a32b69bbeac27bdb6b75fc\AndroidManifest.xml:17:1-27:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:1-41:12
+	package
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:3:5-38
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+	android:sharedUserId
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:4:5-46
+	android:versionName
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:6:5-30
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:2:11-69
+	android:versionCode
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:5:5-28
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:8:5-80
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:8:22-78
+uses-permission#android.permission.CAMERA
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:9:5-64
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:9:22-62
+application
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:12:5-39:19
+MERGED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-v4:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-v4-25.1.1.aar\edd9646804b020ea18720818c29f326c\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-v4:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-v4-25.1.1.aar\edd9646804b020ea18720818c29f326c\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:animated-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-25.1.1.aar\f6a5f9f0f875a9edf0b3e8acfb3715dd\AndroidManifest.xml:22:5-20
+MERGED from [com.android.support:animated-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-25.1.1.aar\f6a5f9f0f875a9edf0b3e8acfb3715dd\AndroidManifest.xml:22:5-20
+MERGED from [com.android.support:support-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-25.1.1.aar\16895e7e9de63d2458223d58a1e662e3\AndroidManifest.xml:23:5-20
+MERGED from [com.android.support:support-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-25.1.1.aar\16895e7e9de63d2458223d58a1e662e3\AndroidManifest.xml:23:5-20
+MERGED from [com.android.support:support-fragment:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-fragment-25.1.1.aar\44accd0599f4c9c830b12553fc6b5e5d\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-fragment:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-fragment-25.1.1.aar\44accd0599f4c9c830b12553fc6b5e5d\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-media-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-media-compat-25.1.1.aar\72ddd2ae05f53944151750ae1bcb288a\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-media-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-media-compat-25.1.1.aar\72ddd2ae05f53944151750ae1bcb288a\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-utils:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-utils-25.1.1.aar\774accc7b3f829b2e533289118f26dd9\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-utils:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-utils-25.1.1.aar\774accc7b3f829b2e533289118f26dd9\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-ui:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-ui-25.1.1.aar\8fdb3136ae072bf457c639df5d0f5e84\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-ui:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-ui-25.1.1.aar\8fdb3136ae072bf457c639df5d0f5e84\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-compat-25.1.1.aar\3315c12c36a32b69bbeac27bdb6b75fc\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-compat-25.1.1.aar\3315c12c36a32b69bbeac27bdb6b75fc\AndroidManifest.xml:25:5-20
+	android:label
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:15:9-41
+	android:icon
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:14:9-45
+	android:allowBackup
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:13:9-35
+	android:theme
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:16:9-40
+activity#com.example.oemscandemo.MainActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:17:9-26:20
+	android:screenOrientation
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:20:13-49
+	android:label
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:19:13-45
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:18:13-64
+intent-filter#action:name:android.intent.action.MAIN
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:21:13-25:29
+action#android.intent.action.MAIN
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:22:17-69
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:22:25-66
+activity#com.example.oemscandemo.UserSettingActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:27:9-80
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:27:19-77
+activity#com.example.oemscandemo.ImageCaptureSettingActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:28:9-88
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:28:19-85
+activity#com.example.oemscandemo.BarcodeConfigSettingsActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:29:9-90
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:29:19-87
+activity#com.example.oemscandemo.ConfigurationSettingsActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:30:9-90
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:30:19-87
+activity#com.example.oemscandemo.ImageCaptureActivity
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:31:9-38:20
+	android:parentActivityName
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:34:13-78
+	android:label
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:33:13-65
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:32:13-72
+meta-data#android.support.PARENT_ACTIVITY
+ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:35:13-37:72
+	android:value
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:37:17-69
+	android:name
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml:36:17-63
+uses-sdk
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+MERGED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:21:5-23:78
+MERGED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:21:5-23:78
+MERGED from [com.android.support:support-v4:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-v4-25.1.1.aar\edd9646804b020ea18720818c29f326c\AndroidManifest.xml:21:5-23:54
+MERGED from [com.android.support:support-v4:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-v4-25.1.1.aar\edd9646804b020ea18720818c29f326c\AndroidManifest.xml:21:5-23:54
+MERGED from [com.android.support:animated-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-25.1.1.aar\f6a5f9f0f875a9edf0b3e8acfb3715dd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-25.1.1.aar\f6a5f9f0f875a9edf0b3e8acfb3715dd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-25.1.1.aar\16895e7e9de63d2458223d58a1e662e3\AndroidManifest.xml:21:5-43
+MERGED from [com.android.support:support-vector-drawable:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-25.1.1.aar\16895e7e9de63d2458223d58a1e662e3\AndroidManifest.xml:21:5-43
+MERGED from [com.android.support:support-fragment:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-fragment-25.1.1.aar\44accd0599f4c9c830b12553fc6b5e5d\AndroidManifest.xml:21:5-23:60
+MERGED from [com.android.support:support-fragment:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-fragment-25.1.1.aar\44accd0599f4c9c830b12553fc6b5e5d\AndroidManifest.xml:21:5-23:60
+MERGED from [com.android.support:support-media-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-media-compat-25.1.1.aar\72ddd2ae05f53944151750ae1bcb288a\AndroidManifest.xml:21:5-23:63
+MERGED from [com.android.support:support-media-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-media-compat-25.1.1.aar\72ddd2ae05f53944151750ae1bcb288a\AndroidManifest.xml:21:5-23:63
+MERGED from [com.android.support:support-core-utils:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-utils-25.1.1.aar\774accc7b3f829b2e533289118f26dd9\AndroidManifest.xml:21:5-23:61
+MERGED from [com.android.support:support-core-utils:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-utils-25.1.1.aar\774accc7b3f829b2e533289118f26dd9\AndroidManifest.xml:21:5-23:61
+MERGED from [com.android.support:support-core-ui:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-ui-25.1.1.aar\8fdb3136ae072bf457c639df5d0f5e84\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support:support-core-ui:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-core-ui-25.1.1.aar\8fdb3136ae072bf457c639df5d0f5e84\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support:support-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-compat-25.1.1.aar\3315c12c36a32b69bbeac27bdb6b75fc\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support:support-compat:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\support-compat-25.1.1.aar\3315c12c36a32b69bbeac27bdb6b75fc\AndroidManifest.xml:21:5-23:58
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+	tools:overrideLibrary
+		ADDED from [com.android.support:appcompat-v7:25.1.1] C:\Users\zll\.gradle\caches\transforms-1\files-1.1\appcompat-v7-25.1.1.aar\18365e9ba2a7fe8b9d610eedd9d9ddd9\AndroidManifest.xml:23:9-75
+	android:targetSdkVersion
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		ADDED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml
+		INJECTED from E:\Android studio project\MC520\520-cit-auto-test-tool\OemScanDemo\app\src\main\AndroidManifest.xml

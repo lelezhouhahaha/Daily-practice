@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "E:\\Android studio project\\MC520\\520-cit-auto-test-tool\\FpFactory_M_O_hidl\\FpFactory\\app\\build\\intermediates\\incremental\\mergeReleaseResources\\merged.dir\\values-h720dp-v13\\values-h720dp-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\zll\\.gradle\\caches\\transforms-2\\files-2.1\\da2244c2b60b11aca4a27b98b5673b37\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "66",
+                        "endOffsets": "117"
+                    }
+                }
+            ]
+        }
+    ]
+}

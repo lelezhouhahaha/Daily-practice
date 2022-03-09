@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<!--    <item
+        android:id="@+id/action_collect"
+        android:title="@string/title_collect"
+        app:showAsAction="never" />  -->
+    <item
+        android:id="@+id/action_score"
+        android:title="@string/title_score"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_pixel"
+        android:title="@string/title_pixel"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_kvalue"
+        android:title="@string/title_kvalue"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_detect"
+        android:title="@string/title_detect"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ntx_test"
+        android:title="@string/title_ntx_test"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_sensitivity_test"
+        android:title="@string/title_sensitivity_test"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_touch_calibration"
+        android:title="@string/title_touch_calibration_test"
+        app:showAsAction="never" />
+</menu>

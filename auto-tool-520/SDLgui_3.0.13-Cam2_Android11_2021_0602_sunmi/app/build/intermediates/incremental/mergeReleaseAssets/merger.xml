@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="E:\Android studio project\MC520\520-cit-auto-test-tool\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\app\src\main\assets"/><source path="E:\Android studio project\MC520\520-cit-auto-test-tool\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\app\build\generated\assets\shaders\release"/></dataSet><dataSet config="release"><source path="E:\Android studio project\MC520\520-cit-auto-test-tool\SDLgui_3.0.13-Cam2_Android11_2021_0602_sunmi\app\src\release\assets"/></dataSet></merger>

@@ -1,0 +1,4 @@
+#Mon Mar 07 15:24:04 CST 2022
+base.0=E\:\\Android studio project\\MC520\\520-cit-auto-test-tool\\FpFactory_M_O_hidl\\FpFactory\\app\\build\\intermediates\\transforms\\dexMerger\\release\\0
+path.0=classes.dex
+renamed.0=classes.dex

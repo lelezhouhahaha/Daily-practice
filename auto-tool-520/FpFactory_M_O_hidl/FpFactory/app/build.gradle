@@ -1,0 +1,186 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+    defaultConfig {
+        applicationId "com.swfp.factory"
+        minSdkVersion 23
+        targetSdkVersion 29
+        versionCode 20210507
+        versionName "v5.2.9.20210507"
+    }
+    signingConfigs {
+        release {
+            storeFile file('D:\\签名\\520debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebug'
+            keyPassword 'android'
+        }
+        debug {
+            storeFile file('D:\\签名\\520debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebug'
+            keyPassword 'android'
+        }
+    }
+
+    lintOptions {
+
+        checkReleaseBuilds false
+
+        abortOnError false
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+
+
+    sourceSets {
+        main {
+            if (project.TARGET_PLATFORM == "TEE") {
+                java.srcDirs = ['src/main/java']
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID8_0") {
+                java.srcDirs = ['src/main/java', 'src/main/android8_0_src']
+                manifest.srcFile 'src/main/ex_manifest_o/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID8_1") {
+                java.srcDirs = ['src/main/java', 'src/main/android8_1_src']
+                manifest.srcFile 'src/main/ex_manifest_o/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID9_0") {
+                java.srcDirs = ['src/main/java', 'src/main/android9_src']
+                manifest.srcFile 'src/main/ex_manifest_o/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID_Q") {
+                java.srcDirs = ['src/main/java', 'src/main/android10_src']
+                manifest.srcFile 'src/main/ex_manifest_o/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "ANDROIDO_FW") {
+                java.srcDirs = ['src/main/java', 'src/main/android_o_fw_src']
+                manifest.srcFile 'src/main/ex_manifest_o_fw/AndroidManifest.xml'
+            }
+            else if (project.TARGET_PLATFORM == "REE") {
+                java.srcDirs = ['src/main/java']
+                manifest.srcFile 'src/main/ex_manifest_ree/AndroidManifest.xml'
+            }
+            else {
+                java.srcDirs = ['src/main/java', 'src/main/android8_1_src']
+                manifest.srcFile 'src/main/ex_manifest_o/AndroidManifest.xml'
+            }
+
+            res.srcDirs = ['src/main/res', 'src/main/res/layout']
+            jniLibs.srcDirs = ['libs']
+            aidl.srcDirs = ['src/main/java']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            def package_file_name
+
+            if (project.TARGET_PLATFORM == "TEE") {
+                package_file_name = "FpFactoryM_TEE"
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID8_0") {
+                package_file_name = "FpFactoryO_hidl_8_0"
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID8_1") {
+                package_file_name = "FpFactoryO_hidl_8_1"
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID9_0") {
+                package_file_name = "FpFactory_P_hidl"
+            }
+            else if (project.TARGET_PLATFORM == "ANDROID_Q") {
+                package_file_name = "FpFactory_Q_hidl"
+            }
+            else if (project.TARGET_PLATFORM == "ANDROIDO_FW") {
+                package_file_name = "FpFactoryO_fw"
+            }
+            else if (project.TARGET_PLATFORM == "REE") {
+                package_file_name = "FpFactoryM"
+            }
+            else {
+                package_file_name = "FpFactoryO_hidl_8_1"
+            }
+
+            def fileName = package_file_name + "-" + buildType.name + "-" +
+                    defaultConfig.versionName + /*"-" + releaseTime() + */".apk"
+            outputFileName = fileName
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    /*
+        * android.hidl.base-V1.0-java.jar(8.0/8.1/9.0):
+        *     ---> <AOSP>/out/target/common/obj/JAVA_LIBRARIES/android.hidl.base-V1.0-java_intermediates/classes.jar
+        *
+        * framework.jar(8.0):
+        *     ---> <AOSP>/out/target/common/obj/JAVA_LIBRARIES/framework_intermediates/classes.jar
+        *
+        * hwbinder.jar(8.1):
+        *     ---> <AOSP>/out/target/common/obj/JAVA_LIBRARIES/hwbinder_intermediates/classes.jar
+        *
+        * hwbinder.jar(9.0):
+        *     ---> <AOSP>/out/soong/.intermediates/frameworks/base/hwbinder/android_common/javac/hwbinder.jar
+        * */
+    if (project.TARGET_PLATFORM == "ANDROID8_0") {
+        implementation files('src/main/libs/com.swfp.manager.jar')
+        implementation files('src/main/libs/android_8.0/android.hidl.base-V1.0-java.jar')
+        compileOnly files('src/main/libs/android_8.0/framework.jar')
+    } else if (project.TARGET_PLATFORM == "ANDROID8_1") {
+        implementation files('src/main/libs/com.swfp.manager.jar')
+        implementation files('src/main/libs/android_8.1/android.hidl.base-V1.0-java.jar')
+        compileOnly files('src/main/libs/android_8.1/hwbinder.jar')
+    } else if (project.TARGET_PLATFORM == "ANDROID9_0") {
+        implementation files('src/main/libs/com.swfp.manager.jar')
+        implementation files('src/main/libs/android_9.0/android.hidl.base-V1.0-java.jar')
+        compileOnly files('src/main/libs/android_9.0/hwbinder.jar')
+    } else if (project.TARGET_PLATFORM == "ANDROID_Q") {
+        implementation files('src/main/libs/com.swfp.manager.jar')
+        implementation files('src/main/libs/android_10.0/android.hidl.base-V1.0-java.jar')
+        compileOnly files('src/main/libs/android_10.0/hwbinder.jar')
+    } else {
+        implementation files('src/main/libs/com.swfp.manager.jar')
+    }
+}
+preBuild {
+    doLast {
+        def imlFile = file(project.name + ".iml")
+        println('Change ' + project.name + '.iml order')
+        try {
+            def parsedXml = (new XmlParser()).parse(imlFile)
+
+            def jdkNode = parsedXml.component[1].orderEntry.find { it.'@type' == 'jdk' }
+            parsedXml.component[1].remove(jdkNode)
+            def sdkString = "Android API " + android.compileSdkVersion.substring("android-".length()) + " Platform"
+            new groovy.util.Node(parsedXml.component[1], 'orderEntry', ['type': 'jdk', 'jdkName': sdkString, 'jdkType': 'Android SDK'])
+            groovy.xml.XmlUtil.serialize(parsedXml, new FileOutputStream(imlFile))
+        } catch (FileNotFoundException e) {
+            // nop, iml not found
+        }
+    }
+}
+def releaseTime() {
+    return new Date().format("yyyyMMdd_HH_mm_ss.SSS")
+}
