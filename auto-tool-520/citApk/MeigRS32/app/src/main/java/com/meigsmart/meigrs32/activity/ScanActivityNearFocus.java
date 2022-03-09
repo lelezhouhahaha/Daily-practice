@@ -176,7 +176,7 @@ public class ScanActivityNearFocus extends BaseActivity implements View.OnClickL
             LogUtil.d(TAG, "citapk L2S  ScanStartType: auto");
         }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
             intent.putExtra("ScanStartType", "pcbaautotest");
-            LogUtil.d(TAG, "citapk L2S  pcba auto test ScanStartType: auto");
+            LogUtil.d(TAG, "citapk L2S  pcba auto test ScanStartType: pcbaautotest");
         }
         startActivityForResult(intent, 1000);
     }
