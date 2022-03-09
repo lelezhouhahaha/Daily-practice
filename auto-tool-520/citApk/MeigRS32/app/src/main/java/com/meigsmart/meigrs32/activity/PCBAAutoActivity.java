@@ -98,7 +98,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void initData() {
         mContext = this;
-        super.startBlockKeys = false;
+        super.startBlockKeys = true;
         moreClickTimes =0;
        // mBack.setVisibility(View.VISIBLE);
         mBack.setOnClickListener(this);
@@ -185,6 +185,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 reason = "";
                 LogUtil.d(TAG, "get fail reason is null");
             }
+            LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
 
             if(results == SUCCESS){
                 mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, null, 0);
@@ -193,49 +194,26 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             }
 
             //update Data UI
-            LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
-            int mDiagCmdId = getAutoTestDiagCommandId(requestCode);
-            String str_className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
-            String clsName = getClassName(str_className);
-            LogUtil.d(TAG, "mDiagCmdId: " + mDiagCmdId + " className:" + str_className + " clsName:" + clsName);
-
-            Class cls = getClass(clsName);
-            LogUtil.d(TAG, "cls:" + cls);
-
-            if(cls != null) {
-                if(checkCurrenTestActivity(cls, mCurrentTestClass)) {
-                    updateDataForUI(cls.getSimpleName(), results);
-                }
-            }else if(!clsName.isEmpty()){
-                updateDataForUI(clsName, results);
-            }else{
-                LogUtil.d(TAG, "cls is null or className is empty!");
-            }
-
+            updateDataForUI(requestCode, results);
         }
     }
 
-    private void updateDataForUI(String clsName, int result){
-        List<TypeModel> mData = mAdapter.getData();
-        int size = mData.size();
-        if(clsName.isEmpty()){
-            LogUtil.d(TAG, "clsName is empty!");
+    private void updateDataForUI(int requestCode, int results){
+        String title = "";
+        int mMatchIdex = -1;
+        int mDiagCmdId = -1;
+
+        mDiagCmdId = getAutoTestDiagCommandId(requestCode);
+        String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
+        LogUtil.d(TAG, "className:" + className);
+        title = getTitleName(className);
+        mMatchIdex = getMatchData(title);
+        LogUtil.d(TAG, "title:" + title + " mMatchIdex:" + mMatchIdex);
+        if(mMatchIdex == -1){
+            LogUtil.d(TAG, "get Match Adapter data is null");
             return;
         }
-        LogUtil.d(TAG, "clsName: " + clsName + " result:" + result);
-
-        for(int i = 0; i < size; i++){
-            TypeModel mod = mData.get(i);
-            if( (mod.getStartType() != 0) && mod.getClassName().isEmpty() ){
-                LogUtil.d(TAG, "getCls is null or className is empty!");
-                continue;
-            }
-            if ( clsName.equals(mod.getCls().getSimpleName()) || clsName.equals(mod.getClassName()) ) {
-                LogUtil.d(TAG, "match!");
-                mData.get(i).setType(result);
-                break;
-            }
-        }
+        mAdapter.getData().get(mMatchIdex).setType(results);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -281,12 +259,14 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return mDiagCmdId;
     }
 
-    private String getClassName(String str_className){
+    /*private String getClassName(String str_className){
         String clsName = "";
         if(str_className.contains("/")) {
-            clsName = str_className.replace("/", "");
+            //clsName = str_className.replace("/", "");
+            clsName = "com.meigsmart.meigrs32.activity." + "StartSingleActivity";
         }else if(str_className.contains("*")){
-            clsName = str_className.substring(str_className.indexOf("*")+1);
+            //clsName = str_className.substring(str_className.indexOf("*")+1);
+            clsName = "com.meigsmart.meigrs32.activity." + "StartSingleActivity";
         }else{
             clsName = "com.meigsmart.meigrs32.activity." + str_className;
         }
@@ -299,7 +279,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             mPkgName = str_pkgName.substring(0, str_pkgName.indexOf("*"));
         }
         return mPkgName;
-    }
+    }*/
 
     private String getTitleName(String str_className){
         String mTitle = "";
@@ -327,52 +307,51 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return cls;
     }
 
+    private int getMatchData(String title){
+        List<TypeModel> mData = mAdapter.getData();
+        int mDataSize = mData.size();
+        for(int i = 0; i < mDataSize; i++){
+            String mTitleName = mData.get(i).getName();
+            LogUtil.d(TAG, "mTitleName:" + mTitleName);
+            if(!mTitleName.isEmpty() && mTitleName.equals(title)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private void startActivityDependOnCommandId(int mDiagCommandId){
         int mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
 
         String title = "";
-        String clsName = "";
-        String pkgName = "";
-        String mFatherNameStr = "";
-        String mClassNameStr = "";
-        Class cls = null;
         String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
         LogUtil.d(TAG, "className:" + className);
-        clsName = getClassName(className);
         title = getTitleName(className);
-        pkgName = getPackageName(className);
-        LogUtil.d(TAG, "zll clsName:" + clsName + " title:" + title);
-        Intent intent = null;
-        try {
-            cls = Class.forName(clsName);
-            LogUtil.d(TAG, "zll get cls end super.mName:" + super.mName + " cls.getSimpleName():" + cls.getSimpleName());
-            intent = new Intent(mContext, cls);
-            mCurrentTestClass = cls;
-        } catch (ClassNotFoundException e) {
-            LogUtil.d("not found class " + clsName);
-            //return;
-            if(!pkgName.isEmpty() && !clsName.isEmpty()) {
-                LogUtil.d(TAG, " pkgName:" + pkgName + " clsName:" + clsName);
-                    ComponentName componentName = new ComponentName(pkgName, clsName);
-                    intent = new Intent();
-                    intent.setComponent(componentName);
-            }else{
-                LogUtil.d(TAG, "pkgName is empty, or clsName is empty!");
-                return;
-            }
-            mCurrentTestClass = null;
+        LogUtil.d(TAG, "title:" + title);
+        int mMatchIdex = getMatchData(title);
+        if(mMatchIdex == -1){
+            LogUtil.d(TAG, "get Match Data idex is -1");
+            return;
         }
-
-        intent.putExtra("StartType", "pcbaautotest");
-        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        mFatherNameStr = (this.mName != null)?super.mName:mFatherName;
-        mClassNameStr = SAVE_EN_LOG ? cls.getSimpleName() : title;
-        LogUtil.d(TAG, "mFatherNameStr: " + mFatherNameStr + " mClassNameStr:" + mClassNameStr);
-        intent.putExtra("fatherName", mFatherNameStr);
-        intent.putExtra("name", mClassNameStr);
-        addData(mFatherNameStr, mClassNameStr);
-        startActivityForResult(intent, mDiagCommandId);
+        TypeModel model = mAdapter.getData().get(mMatchIdex);
+        if (model.getCls() != null){
+            Intent intent = new Intent(this,model.getCls());
+            intent.putExtra("StartType", "pcbaautotest");
+            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if(!(this.mName==null)){
+                intent.putExtra("fatherName",this.mName);
+                intent.putExtra("name", SAVE_EN_LOG ? model.getCls().getSimpleName() : model.getName());
+            }else{
+                intent.putExtra("fatherName",mFatherName);
+                intent.putExtra("name", SAVE_EN_LOG ? model.getCls().getSimpleName() : model.getName());
+            }
+            if(model.getStartType() == 1){
+                LogUtil.d("citapk 1");
+                intent.putExtra("packageName", model.getPackageName());
+                intent.putExtra("className", model.getClassName());
+            }
+            startActivityForResult(intent,mDiagCommandId);
+        }
     }
 
 

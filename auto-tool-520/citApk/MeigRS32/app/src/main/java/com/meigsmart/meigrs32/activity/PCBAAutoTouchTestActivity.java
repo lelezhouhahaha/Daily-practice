@@ -212,7 +212,7 @@ public class PCBAAutoTouchTestActivity extends BaseActivity implements View.OnCl
             switch (msg.what) {
                 case HANDLER_TEST_REAULT:
                     if(activity.mTouchTestResult){
-                        Toast.makeText(activity.mContext, "success", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(activity.mContext, "success", Toast.LENGTH_SHORT).show();
                         activity.deInit(activity.mFatherName, activity.SUCCESS);
                     }else activity.deInit(activity.mFatherName, activity.FAILURE, "Touch not receive event.");
                     break;

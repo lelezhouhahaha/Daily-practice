@@ -78,6 +78,7 @@ public class MyDiagAutoTestService extends Service {
                                 LogUtil.d(TAG, "finish PCBAAutoActivity");
                                 getApplication().startActivity(intent_finish);
                                 mDiag.SendDiagResult(mDiagCmmdId, 2, null, 0);
+                                mDiag.setmToolStartStatus(false);
                                 break;
                             default:
                                 //doSendMessage(msg, HANDLER_DIAG_COMMAND, mDiagCmmdId);
@@ -124,6 +125,7 @@ public class MyDiagAutoTestService extends Service {
                     break;
                 case SAY_HELLO:
                     Log.d(TAG, "客服端传来的消息===>>>>>>");
+                    mDiag.setmToolStartStatus(true);
                     String mDiagCmdIdStr = (String)msg.getData().get("content");
                     Log.d(TAG, "mDiagCmdId:" + mDiagCmdIdStr);
                     if(mClientMessage == null) {
@@ -132,7 +134,6 @@ public class MyDiagAutoTestService extends Service {
                     doSendAckSayHelloToClinet();
                     //doSendMessage(ACK_SAY_HELLO, "ACK");
                     break;
-
             }
         }
     }

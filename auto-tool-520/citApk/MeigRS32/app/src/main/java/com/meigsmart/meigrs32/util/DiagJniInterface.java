@@ -9,6 +9,7 @@ public class DiagJniInterface {
 
     public static String TAG = "DiagJniInterfaceJava";
     private boolean status = false;
+    private static boolean mToolStartStatus = false;
     public static Handler mHandler = null;
 
     public boolean isStatus() {
@@ -16,6 +17,14 @@ public class DiagJniInterface {
     }
     public void setStatus(boolean result) {
         status = result;
+    }
+
+    public void setmToolStartStatus(boolean status){
+        mToolStartStatus = status;
+    }
+
+    public static boolean getToolStartStatus(){
+        return mToolStartStatus;
     }
 
     //notice ap to handler diag cmmd

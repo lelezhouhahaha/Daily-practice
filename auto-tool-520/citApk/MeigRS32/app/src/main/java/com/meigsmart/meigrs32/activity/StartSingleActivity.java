@@ -57,6 +57,8 @@ public class StartSingleActivity extends BaseActivity implements View.OnClickLis
     private String mClassName = "";
     private String mScantestName = "";
     private String projectName = "";
+
+    private final String TAG = StartSingleActivity.class.getSimpleName();
     @Override
     protected int getLayoutId() {
         return R.layout.activity_startsingle;
@@ -98,6 +100,8 @@ public class StartSingleActivity extends BaseActivity implements View.OnClickLis
 
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -129,6 +133,11 @@ public class StartSingleActivity extends BaseActivity implements View.OnClickLis
             if(mFatherName.equals(MyApplication.RuninTestNAME) && (mPackageName.contains("zebra") || mPackageName.contains("oemscandemo")|| mPackageName.contains("newlandscan"))) {
                 intent.putExtra("ScanStartType", "auto");
                 LogUtil.d("citapk L2S  ScanStartType: auto");
+            }
+            if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                intent.putExtra("StartType", "pcbaautotest");
+                //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                LogUtil.d(TAG,"citapk L2S  ScanStartType: pcbaautotest");
             }
             startActivityForResult(intent, 1000);
        }

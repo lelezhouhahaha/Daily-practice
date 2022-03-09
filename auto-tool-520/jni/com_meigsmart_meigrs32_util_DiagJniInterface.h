@@ -23,7 +23,7 @@ typedef struct {
     ftm_header sftm_header;
     uint8_t ftm_cmd_resp_result;   //0:success  1:fail 3:not test
 	uint16_t size;
-    uint8_t Data[PACK_SIZE];
+uint8_t Data[PACK_SIZE+4];
 } __attribute__ ((packed)) ftm_cmd_response;
 
 const int FTM_SUBCMD_BASE = 1000;

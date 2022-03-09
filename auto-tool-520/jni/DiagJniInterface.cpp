@@ -32,6 +32,9 @@ int mDiagCmmdId = 0;
 int mDiagCmmdResult = 0;
 char *data = NULL;
 const int FTM_AP_C = 52;
+const int FAIL = 1;
+const int SUCCESS = 2;
+const int NOTEST = 0;
 
 #ifdef __cplusplus
   extern "C" {
@@ -57,25 +60,23 @@ PACKED void *CreatResponsePacket(int diagCmmdId, int diagCmmdResult, const char 
 	((ftm_cmd_response *)rsp_pkt)->sftm_header.ftm_data_len = (uint16_t)0;
 	((ftm_cmd_response *)rsp_pkt)->sftm_header.ftm_rsp_pkt_size = (uint16_t)0;
 	((ftm_cmd_response *)rsp_pkt)->ftm_cmd_resp_result = (uint8_t)diagCmmdResult;
-	if(diagCmmdResult == 1){
-		if(rsp_data != NULL){
-			uint16_t mSize = strlen(rsp_data)+1;
-			LOGD_LOG("ftm_read_file: mSize=[%d]", mSize);
-			LOGD_LOG("ftm_read_file: rsp_data=[%s]", rsp_data);
-			((ftm_cmd_response *)rsp_pkt)->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
-			LOGD_LOG("ftm_read_file: iSize=%d", ((ftm_cmd_response *)rsp_pkt)->size);
-			
-			memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
-			memcpy(((ftm_cmd_response *)rsp_pkt)->Data, rsp_data, sizeof(((ftm_cmd_response *)rsp_pkt)->Data));
-		}else{
-			((ftm_cmd_response *)rsp_pkt)->size = 0;
-			memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
-			LOGD_LOG("%s: rsp_data == NULL", __FUNCTION__);
-		}
-	}else{
+	
+	if( ( diagCmmdResult != FAIL ) || ( rsp_data == NULL ) ){
 		((ftm_cmd_response *)rsp_pkt)->size = 0;
-		memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE);
-		LOGD_LOG("%s: 1 rsp_data == NULL", __FUNCTION__);
+		memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE+4);
+		LOGD_LOG("%s: 1 diagCmmdResult:[%d] or rsp_data == NULL", __FUNCTION__, diagCmmdResult);
+		return (PACKED void *)rsp_pkt;
+	}
+	
+	if(rsp_data != NULL){
+		uint16_t mSize = strlen(rsp_data)+1;
+		LOGD_LOG("ftm_read_file: mSize=[%d]", mSize);
+		LOGD_LOG("ftm_read_file: rsp_data=[%s]", rsp_data);
+		((ftm_cmd_response *)rsp_pkt)->size = mSize > PACK_SIZE? PACK_SIZE:mSize;
+		LOGD_LOG("ftm_read_file: iSize=%d", ((ftm_cmd_response *)rsp_pkt)->size);
+		
+		memset(((ftm_cmd_response *)rsp_pkt)->Data, 0, PACK_SIZE+4);
+		memcpy(((ftm_cmd_response *)rsp_pkt)->Data, rsp_data, ((ftm_cmd_response *)rsp_pkt)->size);
 	}
 	return (PACKED void *)rsp_pkt;
 }
@@ -90,7 +91,7 @@ PACKED void *cmmdHandlerAutoJudged(int mDiagCmmdId){
 		}
 		threadAttached = true;
 	}
-	LOGE("cmmdHandlerAutoJudged: 1");
+	LOGD_LOG("cmmdHandlerAutoJudged: 1");
 	jclass java_class = env->GetObjectClass(gDiagJNIInterfaceObject);
 	if(!java_class){
 		if(threadAttached)
@@ -98,7 +99,7 @@ PACKED void *cmmdHandlerAutoJudged(int mDiagCmmdId){
         LOGD_LOG("cmmdHandlerAutoJudged: GetObjectClass error");
 		return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
 	}
-	LOGE("cmmdHandlerAutoJudged: 2");
+	LOGD_LOG("cmmdHandlerAutoJudged: 2");
 	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerAutoJudged", "(I)V");
 	if(!method) {
       if(threadAttached)
@@ -128,7 +129,7 @@ PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
 		}
 		threadAttached = true;
 	}
-	LOGE("cmmdHandlerSetResult: 1");
+	LOGD_LOG("cmmdHandlerSetResult: 1");
 	jclass java_class = env->GetObjectClass(gDiagJNIInterfaceObject);
 	if(!java_class){
 		if(threadAttached)
@@ -136,7 +137,7 @@ PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
         LOGD_LOG("cmmdHandlerSetResult: GetObjectClass error");
 		return CreatResponsePacket(mCmdId, 1, "GetObjectClass error");
 	}
-	LOGE("cmmdHandlerSetResult: 2");
+	LOGD_LOG("cmmdHandlerSetResult: 2");
 	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerSetResult", "(ILjava/lang/String;)V");
 	if(!method) {
       if(threadAttached)
@@ -155,6 +156,44 @@ PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
 	return NULL;
 }
 
+jboolean getToolStartStatus(){
+	
+	JNIEnv *env;
+	jboolean mToolStartStatus = false;
+	bool threadAttached = false;
+	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
+		if(jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
+			LOGD_LOG("getToolStartStatus: AttachCurrentThread error");
+			return mToolStartStatus;
+		}
+		threadAttached = true;
+	}
+	LOGD_LOG("getToolStartStatus: 1");
+	jclass java_class = env->GetObjectClass(gDiagJNIInterfaceObject);
+	if(!java_class){
+		if(threadAttached)
+            jvm->DetachCurrentThread();
+        LOGD_LOG("getToolStartStatus: GetObjectClass error");
+		return mToolStartStatus;
+	}
+	LOGD_LOG("getToolStartStatus: 2");
+	jmethodID method = env->GetStaticMethodID(java_class, "getToolStartStatus", "()Z");
+	if(!method) {
+      if(threadAttached)
+          jvm->DetachCurrentThread();
+      LOGD_LOG("getToolStartStatus: GetStaticMethodID error");
+	  return mToolStartStatus;
+    }
+	LOGD_LOG("getToolStartStatus: 3");
+	/* Finally call the callback */
+    mToolStartStatus = env->CallStaticBooleanMethod(java_class, method);
+	LOGD_LOG("getToolStartStatus mToolStartStatus:%s", mToolStartStatus?"true":"false");
+    if(threadAttached)
+        jvm->DetachCurrentThread();
+	LOGD_LOG("getToolStartStatus end");
+	return mToolStartStatus;
+}
+
 //PACKED void *ftm_ap_dispatch((void *)req_pkt, uint16_t pkt_len) {
 void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
     LOGD_LOG("ftm_ap_dispatch called!");
@@ -163,6 +202,15 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 	LOGD_LOG("ftm_ap_dispatch called! iCmd:%d", iCmd);
 	LOGD_LOG("ftm_ap_dispatch called! pkt_len:%d", pkt_len);
 	PACKED void *ptr_ret = NULL;
+	jboolean mToolStartStatus = false;
+	
+	mToolStartStatus = getToolStartStatus();
+	LOGD_LOG("ftm_ap_dispatch mToolStartStatus:%s", mToolStartStatus?"true":"false");
+	
+	if((iCmd > (FTM_SUBCMD_END + FTM_SUBCMD_BASE) ) && !mToolStartStatus){
+		LOGD_LOG("ftm_ap_dispatch  PCBA Auto Test tool is not start, Please start PCBA Auto Test Tool first!");
+		return CreatResponsePacket(iCmd, 1, "Please start PCBA Auto Test Tool first!");
+	}
 	
 	if( ( (iCmd >= (FTM_SUBCMD_START + FTM_SUBCMD_BASE) ) && ( iCmd < (FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE)) ) ||
 	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){
