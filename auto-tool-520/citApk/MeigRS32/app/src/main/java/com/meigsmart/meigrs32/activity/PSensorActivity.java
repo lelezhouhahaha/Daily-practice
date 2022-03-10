@@ -67,6 +67,8 @@ public class PSensorActivity extends BaseActivity implements View.OnClickListene
 
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -91,13 +93,13 @@ public class PSensorActivity extends BaseActivity implements View.OnClickListene
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && ( !mFatherName.isEmpty() ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    mHandler.sendEmptyMessage(1002);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1002);
-                }
-                if(!mFatherName.equals(MyApplication.PCBASignalNAME)&&!mFatherName.equals(MyApplication.PreSignalNAME)) {
-                    if (maxValue && minValue) deInit(mFatherName, SUCCESS);
-                }else{
-                    if( maxValue && minValue) mSuccess.setVisibility(View.VISIBLE);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
@@ -139,12 +141,11 @@ public class PSensorActivity extends BaseActivity implements View.OnClickListene
                     if(f >= mFloatMaxValue) maxValue = true;
                     /*jicong.wang modify for bug 11652 end @}*/
                     if (f == 0) minValue = true;
-
+                    if (maxValue && minValue) mHandler.sendEmptyMessage(1002);
                     break;
                 case 1002:
                     if(!mFatherName.equals(MyApplication.PCBASignalNAME)&&!mFatherName.equals(MyApplication.PreSignalNAME)) {
                         if ((maxValue && minValue) || mFatherName.equals(MyApplication.RuninTestNAME)) {//modify by wangxing for bug P_RK95_E-706 run in log show pass
-
                             deInit(mFatherName, SUCCESS);
                         } else {
                             deInit(mFatherName, FAILURE,Const.RESULT_UNKNOWN);

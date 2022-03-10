@@ -88,7 +88,8 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
     private int mConfigTime = 0;
     private int mCurrentThresholdValue = 0;
     private int charingStatus = 0;
-    private static final int MSG_DEINIT = 8888;
+    private static final int MSG_DEINIT_SUCCESS = 8888;
+    private static final int MSG_DEINIT_FAIL = 8889;
     private final String TAG_CHARGING_TYPE_NODE = "dc_charging_type_node";
     private final String TAG = BatteryChargePCBAActivity.class.getSimpleName();
     private Runnable mRun;
@@ -136,6 +137,8 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
 
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -150,8 +153,16 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    Message msg = mHandler.obtainMessage();
+                    msg.what = MSG_DEINIT_FAIL;
+                    msg.obj = "Battery Charge abnormal!";
+                    mHandler.sendMessage(msg);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
-                    mHandler.sendEmptyMessage(MSG_DEINIT);
+                    mHandler.sendEmptyMessage(MSG_DEINIT_SUCCESS);
+                    return;
                 }
                 //if (isStartTest)mHandler.sendEmptyMessage(1003);
                 mHandler.postDelayed(this, 1000);
@@ -243,7 +254,7 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
         if(mFatherName.equals(getString(R.string.PowerBoardSingleActivity)) ||
 		mFatherName.equals(getString(R.string.PowerBoardActivity)) ||
 		mFatherName.equals(MyApplication.PCBASignalNAME) ||
-		mFatherName.equals(MyApplication.PCBANAME) ){
+		mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
              return true;
         }
 
@@ -308,7 +319,7 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
                     if ( isUSBConnected() ){
                         if((charingStatus == BatteryManager.BATTERY_STATUS_CHARGING) && isOkCurrentNow(currentNow)) {
                             updateView(currentNow, true);
-                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME))) {
+                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME)) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
                                 mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                                 deInit(mFatherName, SUCCESS);//auto pass pcba & pre
                             }else {
@@ -329,10 +340,15 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
                     mStatus.setText(String.format(getString(R.string.statusNow), getChangeStatusString(charingStatus)));
                     mHandler.sendEmptyMessageDelayed(1001, getResources().getInteger(R.integer.loop_delay_time));
                     break;
-                case MSG_DEINIT:
+                case MSG_DEINIT_SUCCESS:
                     if (mFatherName.equals(MyApplication.RuninTestNAME)) {
                         deInit(mFatherName,  SUCCESS );
                     }
+                    break;
+                case MSG_DEINIT_FAIL: {
+                    String reason = (String)msg.obj;
+                    deInit(mFatherName, FAILURE, reason);
+                }
                     break;
                 case 9999:
                     deInit(mFatherName, FAILURE, msg.obj.toString());
@@ -349,7 +365,8 @@ public class BatteryChargePCBAActivity extends BaseActivity implements View.OnCl
         mHandler.removeCallbacks(mRun);
         mHandler.removeMessages(1001);
         mHandler.removeMessages(9999);
-        mHandler.removeMessages(MSG_DEINIT);
+        mHandler.removeMessages(MSG_DEINIT_SUCCESS);
+		mHandler.removeMessages(MSG_DEINIT_FAIL);
 
     }
 

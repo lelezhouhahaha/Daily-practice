@@ -59,6 +59,7 @@ public class HallActivity extends BaseActivity implements View.OnClickListener
     private boolean isOpenSuccessed = false;
 
     private static final int MSG_TEST_SUCCESS = 8888;
+    private final String TAG = HallActivity.class.getSimpleName();
 
     private static final String HALL_RECEIVER_ACTION = "com.meig.broadcast.hallswitch";
     private static final String HALL_CHECK_KEYEVENT = "common_hal_keyevent_check";
@@ -117,10 +118,12 @@ public class HallActivity extends BaseActivity implements View.OnClickListener
         mConfigResult = getResources().getInteger(R.integer.leds_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
-            addData(mFatherName,super.mName);
         }
+        addData(mFatherName,super.mName);
         LogUtil.d("mConfigResult:" + mConfigResult + " mConfigTime:" + mConfigTime);
         String str = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, HALL_TEST_CONFIG_KEY);
         if(!str.isEmpty())
@@ -135,6 +138,13 @@ public class HallActivity extends BaseActivity implements View.OnClickListener
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    Message msg = mHandler.obtainMessage();
+                    msg.what = 9999;
+                    msg.obj = "Hall Test fail!";
+                    mHandler.sendMessage(msg);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1001);
                 }

@@ -105,7 +105,7 @@ public class NFCABCardActivity extends BaseActivity implements View.OnClickListe
             return;
         }
 
-        mIsPCBATest = mFatherName.equals(MyApplication.PCBASignalNAME) || mFatherName.equals(MyApplication.PCBANAME);
+        mIsPCBATest = mFatherName.equals(MyApplication.PCBASignalNAME) || mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME);
         if(mIsPCBATest){
             mNFCInfoA4.setVisibility(View.GONE);
             mNFCInfoB0.setVisibility(View.GONE);
@@ -114,6 +114,8 @@ public class NFCABCardActivity extends BaseActivity implements View.OnClickListe
         mConfigResult = getResources().getInteger(R.integer.nfc_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -166,8 +168,13 @@ public class NFCABCardActivity extends BaseActivity implements View.OnClickListe
                     mConfigTime = 1;
                 LogUtil.d(TAG, "initTest mConfigTime:" + mConfigTime);
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    mHandler.sendEmptyMessage(1001);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1001);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }

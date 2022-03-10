@@ -3,6 +3,7 @@ package com.meigsmart.meigrs32.activity;
 import android.content.ContentResolver;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Handler;
 import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Log;
@@ -70,6 +71,8 @@ public class KeyboardMore_Activity extends BaseActivity implements View.OnClickL
     private String COMMON_KEY_ACCESSIBILITY = "common_key_accessibility";
     private boolean needKeyAccessibility;
     private ContentResolver contentResolver;
+    private Runnable mRun = null;
+    private Handler mHandler = null;
 
     @Override
     protected int getLayoutId() {
@@ -90,6 +93,8 @@ public class KeyboardMore_Activity extends BaseActivity implements View.OnClickL
 
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -108,6 +113,25 @@ public class KeyboardMore_Activity extends BaseActivity implements View.OnClickL
         IntentFilter filter = new IntentFilter();
         filter.addAction("android.intent.action.SEND_RECENT_BUTTON");
         registerReceiver(RecentApp_Broadcast, filter);
+
+        if(!mFatherName.isEmpty() && mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            LogUtil.d(TAG, "Current test is " + MyApplication.PCBAAutoTestNAME);
+            mHandler = new Handler();
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    updateFloatView(mContext, mConfigTime);
+
+                    if (mConfigTime == 0) {
+                        deInit(mFatherName, FAILURE, "key is not all pass!");
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
     }
 
 
@@ -393,6 +417,9 @@ public class KeyboardMore_Activity extends BaseActivity implements View.OnClickL
 
     @Override
     protected void onDestroy() {
+        if(mHandler != null) {
+            mHandler.removeMessages(mRun);
+        }
         Intent Intent_KeyTest = new Intent("com.cipherlab.keymappingmanager.KEY_TEST_MODE");
         Intent_KeyTest.putExtra("KeyTest_Data", false);
         sendBroadcast(Intent_KeyTest);

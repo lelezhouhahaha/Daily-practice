@@ -72,6 +72,8 @@ public class GyroMeterActivity extends BaseActivity implements View.OnClickListe
         mConfigResult = getResources().getInteger(R.integer.gyro_meter_default_config_standard_result);
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -84,6 +86,10 @@ public class GyroMeterActivity extends BaseActivity implements View.OnClickListe
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && ( !mFatherName.isEmpty() ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    mHandler.sendEmptyMessage(1002);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1002);
                 }
@@ -122,6 +128,12 @@ public class GyroMeterActivity extends BaseActivity implements View.OnClickListe
                     mGyroList.get(2).setText(Html.fromHtml(getResources().getString(R.string.gyro_z_angle)+"&nbsp;"+Float.toString(0)));
                     break;
                 case 1002:
+                    if( (!mFatherName.isEmpty()) && mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(isFinished){
+                            deInit(mFatherName, SUCCESS);
+                        }else deInit(mFatherName, FAILURE, "sensor unreported value!");
+                        break;
+                    }
                     if(!mFatherName.equals(MyApplication.PCBASignalNAME)&&!mFatherName.equals(MyApplication.PreSignalNAME)) {
                         deInit(mFatherName, SUCCESS);
                     }else {
