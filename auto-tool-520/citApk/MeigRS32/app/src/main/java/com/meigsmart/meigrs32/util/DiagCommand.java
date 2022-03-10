@@ -76,4 +76,13 @@ public class DiagCommand {
     public static final String FTM_SUBCMD_RESULT_KEY = "diag_result";
     public static final String FTM_SUBCMD_DATA_KEY = "diag_data";
     public static final String FTM_SUBCMD_DATA_SIZE_KEY = "diag_data_size";
+
+    public final static int SERVICEID = 0x0001; //server
+    public final static int ACK_SERVICEID = 0X0002; //ack_server
+    public final static int ACTIVITYID = 0X0003; //client
+    public final static int ACK_ACTIVITYID = 0X0004; //ack_client
+    public final static int SAY_HELLO = 0x0005; //server only for handshark
+    public final static int ACK_SAY_HELLO = 0X0006; //client only for handshark
+    public final static int SERVICEID_SET_RESULT = 0X0007; //
+    public final static int ACK_SERVICEID_SET_RESULT = 0X0008; //
 }

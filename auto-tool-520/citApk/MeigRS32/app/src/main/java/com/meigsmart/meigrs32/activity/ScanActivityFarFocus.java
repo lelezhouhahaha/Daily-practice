@@ -67,8 +67,6 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
     private boolean mScanTestSuccess = false;
     private final String TAG = ScanActivityFarFocus.class.getSimpleName();
 
-
-
     @Override
     protected int getLayoutId() {
         return R.layout.activity_startsingle;
@@ -92,19 +90,17 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
 
         mTitle.setText(R.string.ScanActivityFarFocus);
         projectName = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, CustomConfig.SUNMI_PROJECT_MARK);
-        LogUtil.d("citapk projectName:" + projectName);
+        LogUtil.d(TAG,"citapk projectName:" + projectName);
         if(projectName.contains("MC520") || projectName.contains("MC520_GMS")){
             String scanType = DataUtil.readLineFromFile("/dev/sunmi/scan/scan_head_type");
-            LogUtil.d("citapk scanType:" + scanType);
+            LogUtil.d(TAG,"citapk scanType:" + scanType);
             if (!scanType.isEmpty()){
-                LogUtil.d("citapk 1 scanType:" + scanType);
+                LogUtil.d(TAG,"citapk 1 scanType:" + scanType);
                 if(scanType.contains("HONEYWELL4603")){
                     mIsHoneywell4603ScanType = true;
                 }else if(scanType.contains("HONEYWELL6703")){
                     mIsHoneywell6703ScanType = true;
                 }else if(scanType.contains("ZABRA4770")){
-                    mIsSdl4770ScanType = true;
-                }else{
                     mIsSdl4770ScanType = true;
                 }
             }
@@ -129,7 +125,7 @@ public class ScanActivityFarFocus extends BaseActivity implements View.OnClickLi
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
 
-                if(( mConfigTime == 0 ) || ( mFatherName.equals(MyApplication.PCBAAutoTestNAME) )){
+                if(( mConfigTime == 0 ) && ( mFatherName.equals(MyApplication.PCBAAutoTestNAME) )){
                     if(mScanTestSuccess) {
                         mHandler.sendEmptyMessage(1001);
                     }else mHandler.sendEmptyMessage(1002);
@@ -161,8 +157,8 @@ void startScanActivity(){
                 mPackageName = "com.zebra.sdl";
                 mClassName = "com.zebra.sdl.SDLguiActivity";
             }
-            LogUtil.d("citapk L2s mPackageName:" + mPackageName);
-            LogUtil.d("citapk L2s mClassName:" + mClassName);
+            LogUtil.d(TAG,"citapk L2s mPackageName:" + mPackageName);
+            LogUtil.d(TAG,"citapk L2s mClassName:" + mClassName);
         }
         ComponentName componentName = new ComponentName(mPackageName, mClassName);
         Intent intent = new Intent();
@@ -176,10 +172,10 @@ void startScanActivity(){
         // modify for bug 25564 by huangqian,add for ScanActivityFarFocus end. -->
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             intent.putExtra("ScanStartType", "auto");
-            LogUtil.d("citapk L2S  ScanStartType: auto");
+            LogUtil.d(TAG,"citapk L2S  ScanStartType: auto");
         }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
             intent.putExtra("ScanStartType", "pcbaautotest");
-            LogUtil.d("citapk L2S  pcba auto test ScanStartType: auto");
+            LogUtil.d(TAG,"citapk L2S  pcba auto test ScanStartType: auto");
         }
             startActivityForResult(intent, 1000);
     }
@@ -187,17 +183,17 @@ void startScanActivity(){
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        LogUtil.d(" citapk ScanActivityFarFocus resultCode: <" + resultCode + ">.");
-        LogUtil.d(" citapk ScanActivityFarFocus requestCode: <" + requestCode + ">.");
+        LogUtil.d(TAG," citapk ScanActivityFarFocus resultCode: <" + resultCode + ">.");
+        LogUtil.d(TAG," citapk ScanActivityFarFocus requestCode: <" + requestCode + ">.");
         if(!"MT537".equals(projectName)) {
             if (data != null) {
                 if (mFatherName.equals(MyApplication.RuninTestNAME)) {
                     mSuccess.setVisibility(View.VISIBLE);
                     deInit(mFatherName, SUCCESS);
                 } else {
-                    LogUtil.d(" onActivityResult defaultCompareValue:" + defaultCompareValue);
+                    LogUtil.d(TAG," onActivityResult defaultCompareValue:" + defaultCompareValue);
                     String result = data.getStringExtra("results");
-                    LogUtil.d(" onActivityResult result:" + result);
+                    LogUtil.d(TAG," onActivityResult result:" + result);
                     /*if (result.contains(defaultCompareValue)) {
                         mSuccess.setVisibility(View.VISIBLE);
                         deInit(mFatherName, SUCCESS);
@@ -223,7 +219,7 @@ void startScanActivity(){
                             mScanTestSuccess = true;
                             mHandler.sendEmptyMessage(1001);
                         } else {
-                            LogUtil.d(" zll onActivityResult 3 2.");
+                            LogUtil.d(TAG," zll onActivityResult 3 2.");
                             mHandler.sendEmptyMessage(1002);
                         }
                     }
@@ -232,7 +228,7 @@ void startScanActivity(){
         }else{
             if(data!=null) {
                 String result = data.getStringExtra("results");
-                LogUtil.d(" onActivityResult result:" + result);
+                LogUtil.d(TAG," onActivityResult result:" + result);
                 if (result.contains("https://www.sunmi.com/index")) {
                     mSuccess.setVisibility(View.VISIBLE);
                     mScanTestSuccess = true;

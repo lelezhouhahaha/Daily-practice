@@ -17,12 +17,6 @@ import com.meigsmart.meigrs32.util.DiagCommand;
 
 public class MyDiagAutoTestClient{
     private final String TAG = MyDiagAutoTestClient.class.getSimpleName();
-    public final static int SERVICEID = 0x0001; //server
-    public final static int ACK_SERVICEID = 0X0002; //ack_server
-    public final static int ACTIVITYID = 0X0003; //client
-    public final static int ACK_ACTIVITYID = 0X0004; //ack_client
-    public final static int SAY_HELLO = 0x0005; //server only for handshark
-    public final static int ACK_SAY_HELLO = 0X0006; //client only for handshark
 
 
     //服务端传来的Messenger
@@ -116,7 +110,7 @@ public class MyDiagAutoTestClient{
 
     public void doSayHelloToService(){
         Message message = Message.obtain();
-        message.arg1 = SAY_HELLO;
+        message.arg1 = DiagCommand.SAY_HELLO;
         //注意这里，把`Activity`的`Messenger`赋值给了`message`中，当然可能你已经发现这个就是`Service`中我们调用的`msg.replyTo`了。
         message.replyTo = mClientMessenger;
 

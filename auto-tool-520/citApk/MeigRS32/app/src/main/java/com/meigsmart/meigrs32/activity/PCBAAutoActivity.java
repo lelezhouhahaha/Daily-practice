@@ -82,7 +82,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     private static int moreClickTimes;
     public MyDiagAutoTestClient mDiagClient = null;
     public MyHandler mHandler = null;
-    private Class mCurrentTestClass = null;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_pcba;
@@ -169,9 +169,9 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeMessages(MyDiagAutoTestClient.SERVICEID);
+        mHandler.removeMessages(DiagCommand.SERVICEID);
         //mHandler.removeMessages(MyDiagAutoTestClient.ACK_ACTIVITYID);
-        mHandler.removeMessages(MyDiagAutoTestClient.ACK_SAY_HELLO);
+        mHandler.removeMessages(DiagCommand.ACK_SAY_HELLO);
         mDiagClient.Destroy(mContext);
     }
 
@@ -188,9 +188,9 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
 
             if(results == SUCCESS){
-                mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, null, 0);
+                mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, requestCode, results, null, 0);
             }else {
-                mDiagClient.doSendResultMessage(MyDiagAutoTestClient.ACK_SERVICEID, requestCode, results, reason, reason.length());
+                mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, requestCode, results, reason, reason.length());
             }
 
             //update Data UI
@@ -198,31 +198,15 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    private void updateDataForUI(int requestCode, int results){
-        String title = "";
+    private void updateDataForUI(int mDiagCommandId, int results){
         int mMatchIdex = -1;
-        int mDiagCmdId = -1;
-
-        mDiagCmdId = getAutoTestDiagCommandId(requestCode);
-        String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
-        LogUtil.d(TAG, "className:" + className);
-        title = getTitleName(className);
-        mMatchIdex = getMatchData(title);
-        LogUtil.d(TAG, "title:" + title + " mMatchIdex:" + mMatchIdex);
+        mMatchIdex = getMatchData(mDiagCommandId);
         if(mMatchIdex == -1){
             LogUtil.d(TAG, "get Match Adapter data is null");
             return;
         }
         mAdapter.getData().get(mMatchIdex).setType(results);
         mAdapter.notifyDataSetChanged();
-    }
-
-    private boolean checkCurrenTestActivity(Class mCurrentCls, Class mCurrentStartCls){
-            String mCurrentClassName = mCurrentCls.getSimpleName();
-            if(mCurrentClassName.equals(mCurrentStartCls.getSimpleName())){
-                return true;
-            }
-            return false;
     }
 
     private static class MyHandler extends Handler {
@@ -235,13 +219,38 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             super.handleMessage(msg);
             PCBAAutoActivity activity = (PCBAAutoActivity) reference.get();
             switch (msg.arg1) {
-                case MyDiagAutoTestClient.SERVICEID:
+                case DiagCommand.SERVICEID:
                     Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
                     int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
                     activity.startActivityDependOnCommandId(mDiagCommandId);
                     break;
-                case MyDiagAutoTestClient.ACK_SAY_HELLO:
+                case DiagCommand.SERVICEID_SET_RESULT: {
+                    int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    int mResult = msg.getData().getInt(DiagCommand.FTM_SUBCMD_RESULT_KEY);
+                    String mData = (String) msg.getData().get(DiagCommand.FTM_SUBCMD_DATA_KEY);
+                    int mDataSize = msg.getData().getInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY);
+                    LogUtil.d(activity.TAG, "mDiagCmmdId: " + mDiagCmmdId + " mResult:" + mResult + " mData:" + mData + " mDataSize:" + mDataSize);
+                    int mMatchIdx = activity.getMatchData(mDiagCmmdId);
+                    {
+                        TypeModel model = activity.mAdapter.getData().get(mMatchIdx);
+                        String mFatherName = activity.mName;
+                        String mName = SAVE_EN_LOG ? model.getCls().getSimpleName() : model.getName();
+                        LogUtil.d(activity.TAG, "mData:"+ mData);
+                        LogUtil.d(activity.TAG, "mDataSize:"+ mDataSize +  " mResult:" + mResult + " mDiagCmmdId:" + mDiagCmmdId);
+                        LogUtil.d(activity.TAG, "mFatherName:"+ mFatherName + " mName:" + mName);
+                        activity.addData(mFatherName, mName);   //if not exist, create it, if exist, return;
+                        if( ( mData == null ) || (mDataSize <= 1)){
+                            activity.updateData(mFatherName, mName, mResult, "");
+                        }else activity.updateData(mFatherName, mName, mResult, mData);
+                        //update result UI
+                        activity.updateDataForUI(mDiagCmmdId, mResult);
+                        //send ack
+                        activity.mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID_SET_RESULT, mDiagCmmdId, activity.SUCCESS, null, 0);
+                    }
+                }
+                    break;
+                case DiagCommand.ACK_SAY_HELLO:
                     //客户端接受服务端传来的消息
                     Log.d(activity.TAG, "ACK_SAY_HELLO 服务端传来了消息=====>>>>>>>");
                     String str = (String) msg.getData().get("content");
@@ -255,31 +264,13 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         int mDiagCmdId = 0;
         if( ( mCmdId < DiagCommand.FTM_SUBCMD_QUERY_BASE ) && ( mCmdId > DiagCommand.FTM_SUBCMD_BASE ) ){
             mDiagCmdId = mCmdId - DiagCommand.FTM_SUBCMD_BASE;
+        }else if( ( mCmdId < DiagCommand.FTM_SUBCMD_SET_RESULT_BASE ) && ( mCmdId > DiagCommand.FTM_SUBCMD_QUERY_BASE ) ){
+            mDiagCmdId = mCmdId - DiagCommand.FTM_SUBCMD_QUERY_BASE;
+        }else {
+            mDiagCmdId = mCmdId - DiagCommand.FTM_SUBCMD_SET_RESULT_BASE;
         }
         return mDiagCmdId;
     }
-
-    /*private String getClassName(String str_className){
-        String clsName = "";
-        if(str_className.contains("/")) {
-            //clsName = str_className.replace("/", "");
-            clsName = "com.meigsmart.meigrs32.activity." + "StartSingleActivity";
-        }else if(str_className.contains("*")){
-            //clsName = str_className.substring(str_className.indexOf("*")+1);
-            clsName = "com.meigsmart.meigrs32.activity." + "StartSingleActivity";
-        }else{
-            clsName = "com.meigsmart.meigrs32.activity." + str_className;
-        }
-        return clsName;
-    }
-
-    private String getPackageName(String str_pkgName){
-        String mPkgName = "";
-        if(str_pkgName.contains("*")){
-            mPkgName = str_pkgName.substring(0, str_pkgName.indexOf("*"));
-        }
-        return mPkgName;
-    }*/
 
     private String getTitleName(String str_className){
         String mTitle = "";
@@ -292,7 +283,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             mTitle = getStringFromName(mContext, mClassName);
         }else{
             mTitle = getStringFromName(mContext, str_className);
-            mClassName = "com.meigsmart.meigrs32.activity." + str_className;
+            //mClassName = "com.meigsmart.meigrs32.activity." + str_className;
         }
         return mTitle;
     }
@@ -307,7 +298,15 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return cls;
     }
 
-    private int getMatchData(String title){
+    public int getMatchData(int mDiagCommandId){
+        String title = "";
+        String className = "";
+        int mDiagCmdId = -1;
+        mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
+        className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
+        title = getTitleName(className);
+        LogUtil.d(TAG, "className:" + className +  " title:" + title);
+
         List<TypeModel> mData = mAdapter.getData();
         int mDataSize = mData.size();
         for(int i = 0; i < mDataSize; i++){
@@ -321,14 +320,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void startActivityDependOnCommandId(int mDiagCommandId){
-        int mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
-
-        String title = "";
-        String className = PreferencesUtil.getStringData(mContext, "class_" + mDiagCmdId);
-        LogUtil.d(TAG, "className:" + className);
-        title = getTitleName(className);
-        LogUtil.d(TAG, "title:" + title);
-        int mMatchIdex = getMatchData(title);
+        int mMatchIdex = getMatchData(mDiagCommandId);
         if(mMatchIdex == -1){
             LogUtil.d(TAG, "get Match Data idex is -1");
             return;
@@ -390,16 +382,6 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                     case XmlPullParser.START_TAG:
                         String startTagName = xmlPullParser.getName();
                         if(TAG_LINE.equals(startTagName)) {
-                            /*if(!mCmdId.isEmpty() && !mClassName.isEmpty()){
-                                //PreferencesUtil.setStringData(mContext, "class_"+mCmdId, mClassName));
-                                //Log.d(TAG, "class_"+mCmdId + " :" + PreferencesUtil.getStringData(mContext, "class_"+mCmdId))
-                                config.add(mClassName);
-                                mClassName = "";
-                                mCmdId = "";
-                                LogUtil.d("PCBAAutoActivity", " TAG_LINE");
-                            }else{
-                                LogUtil.d("PCBAAutoActivity", " TAG_LINE 1");
-                            }*/
                         }else if(TAG_ITEM_CMMD_ID_CONFIG.equals(startTagName)){
                             mCmdId = xmlPullParser.nextText();
                             LogUtil.d("PCBAAutoActivity", " mCmdId:" + mCmdId);
@@ -427,210 +409,8 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 type = xmlPullParser.next();
             }
         }catch (Exception e) {
-            //setTestFailReason("Read file:" + Const.PCBA_AUTO_TEST_CONFIG_XML_PATH + " abnormal!");
             Log.d("PCBAAutoActivity", "Read file:" + Const.PCBA_AUTO_TEST_CONFIG_XML_PATH + " abnormal!");
-            //e.printStackTrace();
         }
         return null;
     }
-
-    /*private boolean isAllSuccess() {
-        List<FunctionBean> list = getFatherData(PCBAAutoActivity.super.mName);
-        boolean isAllSuccess = true;
-        for (FunctionBean bean:list) {
-            switch (bean.getResults()) {
-                case 0:
-                    isAllSuccess = false;
-                    break;
-                case 1:
-                    isAllSuccess = false;
-                    break;
-            }
-        }
-        return isAllSuccess;
-    }*/
-
-    private void saveLog() {
-        List<FunctionBean> list = getFatherData(PCBAAutoActivity.super.mName);
-        List<ResultModel> resultList = new ArrayList<>();
-        List<PersistResultModel> persistResultList = new ArrayList<>();
-
-        boolean isAllSuccess = true;
-        for (FunctionBean bean:list){
-            ResultModel model = new ResultModel();
-            PersistResultModel persistModel = new PersistResultModel();
-
-            switch (bean.getResults()){
-                case 0:
-                    model.setResult(Const.RESULT_NOTEST);
-                    persistModel.setResult(Const.RESULT_NOTEST);
-                    isAllSuccess = false;
-                    break;
-                case 1:
-                    model.setResult(Const.RESULT_FAILURE);
-                    persistModel.setResult(Const.RESULT_FAILURE);
-                    isAllSuccess = false;
-                    break;
-                case 2:
-                    model.setResult(Const.RESULT_SUCCESS);
-                    persistModel.setResult(Const.RESULT_SUCCESS);
-                    break;
-            }
-
-            model.setFatherName(bean.getFatherName());
-            model.setSubName(bean.getSubclassName());
-            model.setReason(bean.getReason());
-
-            persistModel.setName(bean.getSubclassName());
-
-            resultList.add(model);
-            persistResultList.add(persistModel);
-        }
-
-        PersistResultModel allResultModel = new PersistResultModel();
-        allResultModel.setName("pcba_auto_all");
-        allResultModel.setResult(isAllSuccess ? Const.RESULT_SUCCESS : Const.RESULT_FAILURE);
-        persistResultList.add(allResultModel);
-
-        //persistResultList = DataUtil.setListOrder(config_list, persistResultList);
-
-       /* writeSDCardResult(isCustomPath ? mCustomPath : mDefaultPath, mFileName,  JSON.toJSONString(resultList));
-        if(SystemProperties.get("persist.sys.db_name_cit").equals("cit2_test")){
-            writePersistResult(Const.getLogPath(Const.TYPE_LOG_PATH_FILE),  Const.PCBA_AUTO_RESULT_CIT2_FILE, JSON.toJSONString(persistResultList));
-        }else{
-            writePersistResult(Const.getLogPath(Const.TYPE_LOG_PATH_FILE),  Const.PCBA_AUTO_RESULT_FILE, JSON.toJSONString(persistResultList));
-        }
-        String atResultPath = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, Const.LOG_PATH_DIR_AT);
-        if (!TextUtils.isEmpty(atResultPath))
-            writeATResult(atResultPath, Const.PCBA_AUTO_RESULT_FILE, persistResultList);
-        */
-        String pcba_result = isAllSuccess?"true":"false";
-        SystemProperties.set(OdmCustomedProp.getPCBAResultProp(), pcba_result);
-    }
-
-   /* private boolean writePersistResult(String path, String fileName, String result) {
-        File persistPath = new File(Const.getLogPath(Const.TYPE_LOG_PATH_DIR));
-        if(persistPath.exists() && persistPath.isDirectory()){
-            File dir = FileUtil.mkDir(new File(path));
-            return !"".equals(FileUtil.writeFile(dir, fileName, result));
-        }
-        return false;
-    }
-
-    private boolean writeSDCardResult(String path, String fileName, String result){
-        if (!TextUtils.isEmpty(path) && !TextUtils.isEmpty(fileName)) {
-            File dir = FileUtil.mkDir(FileUtil.createRootDirectory(path));
-            LogUtil.d("PCBA writeSDCardResult fileName:" + fileName + " result:" + result);
-            return !"".equals(FileUtil.writeFile(dir, fileName,result));
-        }
-        return false;
-    }
-
-    private boolean writeATResult(String path, String fileName, List<PersistResultModel> lists) {
-        StringBuilder sb = new StringBuilder();
-        for (PersistResultModel m : lists) {
-            sb.append(m.getName());
-            sb.append(":");
-            if (Const.RESULT_FAILURE.equals(m.getResult()))
-                sb.append("f");
-            else if (Const.RESULT_NOTEST.equals(m.getResult()))
-                sb.append("n");
-            else if (Const.RESULT_SUCCESS.equals(m.getResult()))
-                sb.append("p");
-            sb.append(",");
-        }
-        if (sb.length() > 0)
-            sb.setLength(sb.length() - 1);
-        return !"".equals(FileUtil.writeFileWithPermission(
-                new File(path),  Const.PCBA_AUTO_RESULT_FILE, sb.toString(), "0644"));
-    }*/
-
-        private class SaveResult extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-           //createDialog();
-        }
-    
-        @Override
-        protected Void doInBackground(Void... params) {
-    
-            try {
-    
-                saveLog();
-    
-                Thread.sleep(5000);
-    
-            } catch (Exception e) {
-    
-            }
-    
-            return null;   
-    
-        }
-    
-        @Override
-        protected void onPostExecute(Void e) {
-    
-            LogUtil.d("SaveResult -- >onPostExecute");
-            updateDialg();
-    
-        }
-    
-    }
-
-    private void updateDialg(){
-        String resultStr = "";
-        boolean resultStatus = false;//isAllSuccess();
-        /*String temp = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, GPIO_SUPPORT_PROP_KEY);
-        if (!TextUtils.isEmpty(temp))
-            gpio_support_prop = temp;
-        String lang= SystemProperties.get(gpio_support_prop);
-         */
-        if(resultStatus)
-            resultStr = getResources().getString(R.string.success);
-        else resultStr = getResources().getString(R.string.fail);
-        ProgressBar mProgressBar = (ProgressBar)mAlertDialog.findViewById(R.id.save_loading);
-        TextView mMessageView = (TextView) mAlertDialog.findViewById(R.id.result_textView);
-        TextView mSaveResult = (TextView) mAlertDialog.findViewById(R.id.save_result);
-        TextView switchGpio = (TextView) mAlertDialog.findViewById(R.id.switch_gpio);
-        mProgressBar.setVisibility(View.GONE);
-        mMessageView.setVisibility(View.VISIBLE);
-        mMessageView.setText(resultStr);
-        mSaveResult.setText(R.string.save_finish);
-        mSaveResult.setTextColor(Color.GREEN);
-        if(resultStatus) {
-            mMessageView.setTextColor(Color.GREEN);
-        }else{
-            mMessageView.setTextColor(Color.RED);
-        }
-        /*if (resultStatus && "1".equals(lang)&& mNeedWriteGpioFlag) {
-            switchGpio.setVisibility(View.VISIBLE);
-            mHandler.sendEmptyMessage(2001);
-        } else */{
-            mAlertDialog.setCancelable(true);
-        }
-    }
-
-    private void createDialog(){
-        String title = getResources().getString(R.string.pcba_auto_test_result);
-        View view = View.inflate(getApplicationContext(), R.layout.dialog_result, null);
-        mAlertDialog = new AlertDialog.Builder(mContext)
-                            .setTitle(title)
-                            .setView(view)
-                            .create();
-        mAlertDialog.setCancelable(false);
-        mAlertDialog.show();
-
-    }
-
-    private void updateDialogGpioInfo(boolean state) {
-        TextView switchGpio = (TextView) mAlertDialog.findViewById(R.id.switch_gpio);
-        switchGpio.setText(state ? R.string.test_success_write_gpio_flag_success
-                                 : R.string.test_success_write_gpio_flag_failed);
-        switchGpio.setTextColor(state ? Color.GREEN : Color.RED);
-        mAlertDialog.setCancelable(true);
-    }
-
-
 }

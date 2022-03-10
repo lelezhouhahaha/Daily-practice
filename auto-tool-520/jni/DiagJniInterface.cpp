@@ -117,7 +117,7 @@ PACKED void *cmmdHandlerAutoJudged(int mDiagCmmdId){
 	return NULL;
 }
 
-PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
+PACKED void *cmmdHandlerSetResult(int mCmdId, int mResult, uint8_t *data, int mDataSize){
 	JNIEnv *env;
 	LOGD_LOG("cmmdHandlerSetResult: mCmdId:%d", mCmdId);
 	//ftm_cmd_response *cmd = (ftm_cmd_response *)req_pkt;
@@ -138,7 +138,7 @@ PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
 		return CreatResponsePacket(mCmdId, 1, "GetObjectClass error");
 	}
 	LOGD_LOG("cmmdHandlerSetResult: 2");
-	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerSetResult", "(ILjava/lang/String;)V");
+	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerSetResult", "(IILjava/lang/String;I)V");
 	if(!method) {
       if(threadAttached)
           jvm->DetachCurrentThread();
@@ -148,7 +148,8 @@ PACKED void *cmmdHandlerSetResult(int mCmdId, uint8_t *data){
 	LOGD_LOG("cmmdHandlerSetResult: 3");
 	jstring jdata = env->NewStringUTF((char *)data);
 	/* Finally call the callback */
-    jint ret = env->CallStaticIntMethod(java_class, method, mCmdId, jdata);
+	LOGD_LOG("cmmdHandlerSetResult mCmdId:%d] mResult:[%d] mDataSize:[%d]", mCmdId, mResult, mDataSize);
+    jint ret = env->CallStaticIntMethod(java_class, method, mCmdId, mResult, jdata, mDataSize);
 	LOGD_LOG("cmmdHandlerSetResult ret:%d", ret);
     if(threadAttached)
         jvm->DetachCurrentThread();
@@ -216,7 +217,7 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){
 		ptr_ret = cmmdHandlerAutoJudged(iCmd);
 	}else{
-		ptr_ret = (PACKED void *)cmmdHandlerSetResult(iCmd, ((ftm_cmd_response *)req_pkt)->Data);
+		ptr_ret = (PACKED void *)cmmdHandlerSetResult(iCmd, ((ftm_cmd_response *)req_pkt)->ftm_cmd_resp_result, ((ftm_cmd_response *)req_pkt)->Data, ((ftm_cmd_response *)req_pkt)->size);
 	}
 	
 	if(ptr_ret != NULL){

@@ -26,15 +26,6 @@ public class MyDiagAutoTestService extends Service {
     public final static String TAG = "MyDiagAutoTestService";
     Messenger mClientMessage = null;
     private DiagJniInterface mDiag = null;
-    //SerialPort mSerialPort = new SerialPort();
-
-    public final static int SERVICEID = 0x0001; //server
-    public final static int ACK_SERVICEID = 0X0002; //ack_server
-    public final static int ACTIVITYID = 0X0003; //client
-    public final static int ACK_ACTIVITYID = 0X0004; //ack_client
-    public final static int SAY_HELLO = 0x0005; //server only for handshark
-    public final static int ACK_SAY_HELLO = 0X0006; //client only for handshark
-
     public final static int HANDLER_DIAG_COMMAND = 10000;
     public final static int HANDLER_DIAG_COMMAND_SET_RESULT = 10010;
     public boolean SAVE_EN_LOG = false;
@@ -49,9 +40,7 @@ public class MyDiagAutoTestService extends Service {
                 case HANDLER_DIAG_COMMAND:
                     Log.d(TAG, "diag command handler");
                 {
-                    //try {
-                    //Thread.sleep(10000);
-                    Log.d(TAG, "send msg");
+
                     int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     if (mDiagCmmdId < DiagCommand.FTM_SUBCMD_SET_RESULT_BASE) {
                         int id = mDiagCmmdId - DiagCommand.FTM_SUBCMD_BASE;
@@ -84,37 +73,23 @@ public class MyDiagAutoTestService extends Service {
                                 //doSendMessage(msg, HANDLER_DIAG_COMMAND, mDiagCmmdId);
                                 String mDiagData = (String) msg.getData().get(DiagCommand.FTM_SUBCMD_DATA_KEY);
                                 int mDiagDataSize = msg.getData().getInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY);
-                                doSendMessage(SERVICEID, mDiagCmmdId, mDiagData, mDiagDataSize);
+                                doSendMessage(DiagCommand.SERVICEID, mDiagCmmdId, mDiagData, mDiagDataSize);
                                 break;
                         }
                     }
-                    //String data = "test fail";
-                    //mDiag.SendDiagResult(mDiagCmmdId, 1, data, data.length());
-                    /*} catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }*/
                 }
                     break;
                 case HANDLER_DIAG_COMMAND_SET_RESULT: {
                     Log.d(TAG, "diag command handler set result");
-                    // try {
-                    //Thread.sleep(10000);
-                    Log.d(TAG, "send msg");
                     int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
-                    //int mDiagCmmdId = Integer.valueOf(mCmmdContent);
-                    mDiag.SendDiagResult(mDiagCmmdId, 0, null, 0);
-                    /*} catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }*/
+                    int mResult = msg.getData().getInt(DiagCommand.FTM_SUBCMD_RESULT_KEY);
+                    String mData = (String)msg.getData().get(DiagCommand.FTM_SUBCMD_DATA_KEY);
+                    int mSize = msg.getData().getInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY);
+                    Log.d(TAG, "zll HANDLER_DIAG_COMMAND_SET_RESULT mCmmdResultContent:" + mDiagCmmdId + " mResult:[" +  mResult + "] mData:[" + mData + "] mSize:[" + mSize + "].");
+                    doSendResultMessage(DiagCommand.SERVICEID_SET_RESULT, mDiagCmmdId, mResult, mData, mSize);
                 }
                     break;
-                /*case SERVICEID:
-                    Log.d(TAG, "zll SERVICEID start");
-                    String mCmmdContent = (String) msg.getData().get("content");
-                    Log.d(TAG, "zll SERVICEID mCmmdContent:[" + mCmmdContent +"].");
-                    doSendMessage(msg, ACTIVITYID, mCmmdContent);
-                    break;*/
-                case ACK_SERVICEID: {
+                case DiagCommand.ACK_SERVICEID: {
                     int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     int mResult = msg.getData().getInt(DiagCommand.FTM_SUBCMD_RESULT_KEY);
                     String mData = (String)msg.getData().get(DiagCommand.FTM_SUBCMD_DATA_KEY);
@@ -123,7 +98,16 @@ public class MyDiagAutoTestService extends Service {
                     mDiag.SendDiagResult(mDiagCmmdId, mResult, mData, mSize);
                 }
                     break;
-                case SAY_HELLO:
+                case DiagCommand.ACK_SERVICEID_SET_RESULT: {
+                    int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    int mResult = msg.getData().getInt(DiagCommand.FTM_SUBCMD_RESULT_KEY);
+                    String mData = (String) msg.getData().get(DiagCommand.FTM_SUBCMD_DATA_KEY);
+                    int mSize = msg.getData().getInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY);
+                    Log.d(TAG, "zll ACK_SERVICEID_SET_RESULT mCmmdResultContent:" + mDiagCmmdId + " mResult:[" + mResult + "] mData:[" + mData + "] mSize:[" + mSize + "].");
+                    mDiag.SendDiagResult(mDiagCmmdId, mResult, mData, mSize);
+                }
+                    break;
+                case DiagCommand.SAY_HELLO:
                     Log.d(TAG, "客服端传来的消息===>>>>>>");
                     mDiag.setmToolStartStatus(true);
                     String mDiagCmdIdStr = (String)msg.getData().get("content");
@@ -132,7 +116,6 @@ public class MyDiagAutoTestService extends Service {
                         mClientMessage = (Messenger) msg.replyTo;
                     }
                     doSendAckSayHelloToClinet();
-                    //doSendMessage(ACK_SAY_HELLO, "ACK");
                     break;
             }
         }
@@ -189,7 +172,7 @@ public class MyDiagAutoTestService extends Service {
 
     public void doSendAckSayHelloToClinet(){
         Message message = Message.obtain();
-        message.arg1 = ACK_SAY_HELLO;
+        message.arg1 = DiagCommand.ACK_SAY_HELLO;
         //注意这里，把`Activity`的`Messenger`赋值给了`message`中，当然可能你已经发现这个就是`Service`中我们调用的`msg.replyTo`了。
         message.replyTo = mServerMessenger;
 
@@ -236,31 +219,6 @@ public class MyDiagAutoTestService extends Service {
             mDiag.setHandler(null);
             mDiag.Diag_Deinit();
             mDiag = null;
-        }
-        //mSerialPort.setLoopFlag(false);
-    }
-
-    public class SerialPort {
-        private Boolean mLoopFlag =  true;
-        SerialPort(){
-            Log.d(TAG, "SerialPort send msg");
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (mLoopFlag) {
-                        try {
-                            Thread.sleep(3000);
-                            Log.d(TAG, "send msg");
-                            //doSendLocalMessage(SERVICEID, "AT+SOFTWAREINFO");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }).start();
-        }
-        public void setLoopFlag(Boolean enable){
-            mLoopFlag = enable;
         }
     }
 }

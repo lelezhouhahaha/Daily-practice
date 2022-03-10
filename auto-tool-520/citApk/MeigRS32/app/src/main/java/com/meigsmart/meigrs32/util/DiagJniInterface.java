@@ -46,7 +46,7 @@ public class DiagJniInterface {
         msg.sendToTarget();
     }
 
-    public static void doNoticeApHandlerSetResult(int cmdid, String data){
+    public static void doNoticeApHandlerSetResult(int cmdid, int mResult, String data, int mDataSize){
         Log.d(TAG, "cmdid:" + cmdid);
         if(mHandler == null){
             //Log.d("DiagJniInterfaceJava", "mHandler is null");
@@ -56,8 +56,9 @@ public class DiagJniInterface {
         Bundle bundle = new Bundle();
         String mCmmdId = String.valueOf(cmdid);
         bundle.putInt(DiagCommand.FTM_SUBCMD_CMD_KEY, cmdid);
+        bundle.putInt(DiagCommand.FTM_SUBCMD_RESULT_KEY, mResult);
         bundle.putString(DiagCommand.FTM_SUBCMD_DATA_KEY, data);
-        bundle.putInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY, data.length());
+        bundle.putInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY, mDataSize);
         Message msg = Message.obtain();
         msg.setData(bundle);
         msg.arg1 = 10010;
