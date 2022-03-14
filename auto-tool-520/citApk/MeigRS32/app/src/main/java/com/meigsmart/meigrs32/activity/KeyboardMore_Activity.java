@@ -418,7 +418,7 @@ public class KeyboardMore_Activity extends BaseActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         if(mHandler != null) {
-            mHandler.removeMessages(mRun);
+            mHandler.removeCallbacks(mRun);
         }
         Intent Intent_KeyTest = new Intent("com.cipherlab.keymappingmanager.KEY_TEST_MODE");
         Intent_KeyTest.putExtra("KeyTest_Data", false);

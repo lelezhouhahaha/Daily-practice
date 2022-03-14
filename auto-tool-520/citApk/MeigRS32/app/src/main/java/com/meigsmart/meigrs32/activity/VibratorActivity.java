@@ -76,6 +76,8 @@ public class VibratorActivity extends BaseActivity implements View.OnClickListen
             mStart.setVisibility(View.INVISIBLE);
             mStop.setVisibility(View.INVISIBLE);
             mFail.setVisibility(View.INVISIBLE);
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -102,9 +104,13 @@ public class VibratorActivity extends BaseActivity implements View.OnClickListen
                     }
                     //}
                 }*/
-
+                if( ( mConfigTime == 0 ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    mHandler.sendEmptyMessage(1003);
+                    return;
+                }
                 if (((mConfigTime == 0) && mFatherName.equals(MyApplication.RuninTestNAME)) || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mHandler.sendEmptyMessage(1003);
+                    return;
                 }
 
                 mHandler.postDelayed(this, 1000);
@@ -145,6 +151,9 @@ public class VibratorActivity extends BaseActivity implements View.OnClickListen
                         deInit(mFatherName, SUCCESS);
                     }else {
                         mConfigTime = 60;
+                    }
+                    if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                        deInit(mFatherName, SUCCESS); //Just close current test
                     }
                     break;
                 case 9999:

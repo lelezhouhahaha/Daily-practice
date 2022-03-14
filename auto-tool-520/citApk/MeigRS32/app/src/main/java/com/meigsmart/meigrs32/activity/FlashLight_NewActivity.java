@@ -86,6 +86,8 @@ public class FlashLight_NewActivity extends BaseActivity implements View.OnClick
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
             mStart.setVisibility(View.INVISIBLE);
             mStop.setVisibility(View.INVISIBLE);
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -102,9 +104,14 @@ public class FlashLight_NewActivity extends BaseActivity implements View.OnClick
             public void run() {
                 mConfigTime--;
                 updateFloatView(mContext,mConfigTime);
+                if( ( mConfigTime == 0 ) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                    mHandler.sendEmptyMessage(1001);
+                    return;
+                }
                 if(mConfigTime <= 0 || (mFatherName.equals(MyApplication.RuninTestNAME) && RuninConfig.isOverTotalRuninTime(mContext))) {
                     mConfigTime = 1;
                     mHandler.sendEmptyMessage(1001);
+                    return;
                 }
                 mHandler.postDelayed(this, 1000);
             }
