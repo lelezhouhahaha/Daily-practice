@@ -46,6 +46,12 @@ public class MyDiagAutoTestService extends Service {
                         int id = mDiagCmmdId - DiagCommand.FTM_SUBCMD_BASE;
                         switch (id) {
                             case DiagCommand.FTM_SUBCMD_START:
+                                if(DiagJniInterface.getToolStartStatus()){
+                                    LogUtil.d(TAG, "PCBA Auto Tool is start already!");
+                                    String req_data = "PCBA Auto Tool is start already!";
+                                    mDiag.SendDiagResult(mDiagCmmdId, 2, req_data, req_data.length());
+                                    break;
+                                }
                                 Intent intent = new Intent(getBaseContext(), PCBAAutoActivity.class);
                                 String title = DataUtil.getStringFromName(getBaseContext(), PCBAAutoActivity.class.getSimpleName());
 
@@ -57,6 +63,12 @@ public class MyDiagAutoTestService extends Service {
                                 mDiag.SendDiagResult(mDiagCmmdId, 2, null, 0);
                                 break;
                             case DiagCommand.FTM_SUBCMD_END:
+                                if(!DiagJniInterface.getToolStartStatus()){
+                                    LogUtil.d(TAG, "PCBA Auto Tool is not start already!");
+                                    String req_data = "PCBA Auto Tool is not start already!";
+                                    mDiag.SendDiagResult(mDiagCmmdId, 2, req_data, req_data.length());
+                                    break;
+                                }
                                 Intent intent_finish = new Intent(getBaseContext(), PCBAAutoActivity.class);
                                 String title_finish = DataUtil.getStringFromName(getBaseContext(), PCBAAutoActivity.class.getSimpleName());
 

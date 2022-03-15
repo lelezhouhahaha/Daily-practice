@@ -186,11 +186,8 @@ public class PCBAAutoLCDBrightnessActivity extends BaseActivity implements View.
     @Override
     public void run() {
         //background+=100;
-        if(background>255) {
+        if(( background>255 ) || ( background < 50 )) {
             background = 50;
-        }
-        if(background==150){
-            mSuccess.setVisibility(View.VISIBLE);
         }
         mFlag.setText(R.string.brightness_title);
         mValues.setText(String.valueOf(background));
