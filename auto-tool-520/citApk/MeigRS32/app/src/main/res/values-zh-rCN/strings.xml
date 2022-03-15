@@ -1068,4 +1068,7 @@
     <string name="psam_version">PSAM 版本号: </string>
 
     <string name="PCBAAutoTouchTestActivity">触屏测试</string>
+    <string name="PCBAAutoLCDRGBActivity">屏幕测试</string>
+    <string name="PCBAAutoLEDActivity">LED灯测试</string>
+    <string name="PCBAAutoLCDBrightnessActivity">LCM背光测试</string>
 </resources>

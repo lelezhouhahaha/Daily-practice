@@ -50,6 +50,9 @@ public class DiagCommand {
     public static final int FTM_SUBCMD_LCDRED = 141;
     public static final int FTM_SUBCMD_LCDGREEN = 142;
     public static final int FTM_SUBCMD_LCDBLUE = 143;
+    public static final int FTM_SUBCMD_LCDGRAY = 144;
+    public static final int FTM_SUBCMD_LCDBLACK = 145;
+    public static final int FTM_SUBCMD_LCDWHITE = 146;
 
 
     public static final int FTM_SUBCMD_MAINMIC = 500;

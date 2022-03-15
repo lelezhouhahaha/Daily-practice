@@ -213,8 +213,9 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 		return CreatResponsePacket(iCmd, 1, "Please start PCBA Auto Test Tool first!");
 	}
 	
-	if( ( (iCmd >= (FTM_SUBCMD_START + FTM_SUBCMD_BASE) ) && ( iCmd < (FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE)) ) ||
-	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){
+	/*if( ( (iCmd >= (FTM_SUBCMD_START + FTM_SUBCMD_BASE) ) && ( iCmd < (FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE)) ) ||
+	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){*/
+	if( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE) ){
 		ptr_ret = cmmdHandlerAutoJudged(iCmd);
 	}else{
 		ptr_ret = (PACKED void *)cmmdHandlerSetResult(iCmd, ((ftm_cmd_response *)req_pkt)->ftm_cmd_resp_result, ((ftm_cmd_response *)req_pkt)->Data, ((ftm_cmd_response *)req_pkt)->size);

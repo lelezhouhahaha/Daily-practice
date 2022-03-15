@@ -2,7 +2,9 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -131,7 +133,8 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             LogUtil.d("citapk super.mList:" + super.mList);
         }
 
-        List<String> config = getPcbaAutoTestConfig();
+        List<String> mTmpConfig = getPcbaAutoTestConfig();
+        List<String> config =  removeDuplicate(mTmpConfig);
         Log.d(TAG, "config:<" + config + ">.");
         List<TypeModel> list = getDatas(mContext, config,super.mList);
         if (list.size()>10)mMore.setVisibility(View.VISIBLE);
@@ -342,6 +345,38 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 intent.putExtra("packageName", model.getPackageName());
                 intent.putExtra("className", model.getClassName());
             }
+            LogUtil.d(TAG, "zll mDiagCommandId:" + mDiagCommandId);
+            int mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
+            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT50){
+                intent.putExtra("backlight", "50");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT100){
+                intent.putExtra("backlight", "100");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT150){
+                intent.putExtra("backlight", "150");
+            }
+
+            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDRED){
+                intent.putExtra("ledname", "red");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDGREEN){
+                intent.putExtra("ledname", "green");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDBLUE){
+                intent.putExtra("ledname", "blue");
+            }
+
+            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDRED){
+                intent.putExtra("lcd", "0");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDGREEN){
+                intent.putExtra("lcd", "1");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDBLUE){
+                intent.putExtra("lcd", "2");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDGRAY){
+                intent.putExtra("lcd", "3");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDBLACK){
+                intent.putExtra("lcd", "4");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDWHITE){
+                intent.putExtra("lcd", "5");
+            }
+
             startActivityForResult(intent,mDiagCommandId);
         }
     }

@@ -1116,5 +1116,8 @@
     <string name="psam_version">PSAM_Version: </string>
 
 
-    <string name="PCBAAutoTouchTestActivity"> Touch Test</string>
+    <string name="PCBAAutoTouchTestActivity">Touch Test</string>
+    <string name="PCBAAutoLCDRGBActivity">LCD RGB Test</string>
+    <string name="PCBAAutoLEDActivity">LED Test</string>
+    <string name="PCBAAutoLCDBrightnessActivity">LCD Brightness Test</string>
 </resources>

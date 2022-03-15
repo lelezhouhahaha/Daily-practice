@@ -891,6 +891,21 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoLCDBrightnessActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoLCDRGBActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoLEDActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
 
         <receiver android:name=".activity.MeigRS32BroadcastReceiver">
             <intent-filter>
