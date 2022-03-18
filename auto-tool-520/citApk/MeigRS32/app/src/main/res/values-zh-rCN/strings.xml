@@ -1071,4 +1071,12 @@
     <string name="PCBAAutoLCDRGBActivity">屏幕测试</string>
     <string name="PCBAAutoLEDActivity">LED灯测试</string>
     <string name="PCBAAutoLCDBrightnessActivity">LCM背光测试</string>
+    <string name="PCBAAutoMainMicActiviy">主MIC测试</string>
+    <string name="PCBAAutoDeputyMicActiviy">副MIC测试</string>
+    <string name="PCBAAutoSpeakerActivity">喇叭测试</string>
+
+
+    <!--  test   -->
+    <string name="PCBAAutoMainMicTestActiviy">test主MIC测试</string>
+    <string name="PCBAAutoDeputyMicTestActiviy">test副MIC测试</string>
 </resources>

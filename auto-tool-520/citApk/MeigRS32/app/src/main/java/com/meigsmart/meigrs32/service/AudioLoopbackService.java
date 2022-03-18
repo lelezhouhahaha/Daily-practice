@@ -9,13 +9,16 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder.AudioSource;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.meigsmart.meigrs32.application.MyApplication;
+import com.meigsmart.meigrs32.log.LogUtil;
 
 public class AudioLoopbackService extends Service {
     public static final String ACTION_VOLUME_UPDATED = "com.meigsmart.function.service.VOLUME_UPDATED";
@@ -23,7 +26,7 @@ public class AudioLoopbackService extends Service {
     public static final String OLD_VOLUME = "old_volume";
 
     private final int STREAM_TYPE = AudioManager.STREAM_VOICE_CALL;
-    private final int SAMPLE_RATE = 8000;
+    private final int SAMPLE_RATE = 44100;
     private final int CHANNEL_CONFIG_IN = AudioFormat.CHANNEL_IN_STEREO;
     private final int CHANNEL_CONFIG_OUT = AudioFormat.CHANNEL_OUT_STEREO;
     private final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -37,6 +40,7 @@ public class AudioLoopbackService extends Service {
 
     //added by Yar for speakerloop begin
     private boolean isEarPhone = false;
+    private String mSoundChannel = "";
     //added by Yar for speakerloop end
     public void startLoopbackThread() {
         if(mHandlerThread==null){
@@ -88,6 +92,8 @@ public class AudioLoopbackService extends Service {
 
             mOldVolume = intent.getIntExtra(OLD_VOLUME, 0);
             isEarPhone = intent.getBooleanExtra("isEarPhone", false);
+            mSoundChannel = intent.getStringExtra("soundchannel");
+            LogUtil.d("zll", "isEarPhone:" + isEarPhone + " mSoundChannel:" +mSoundChannel);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -98,8 +104,8 @@ public class AudioLoopbackService extends Service {
 
 
 //    private AudioLoopbackThread m_recordAudioThread = null;
-    private AudioRecord mRecord;
-    private AudioTrack mTrack;
+    private AudioRecord mRecord = null;
+    private AudioTrack mTrack = null;
 
     private HandlerThread mHandlerThread = null;
     private MyHandler mHandler = null;
@@ -204,10 +210,11 @@ public class AudioLoopbackService extends Service {
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1000:
+                    LogUtil.d("zll","zll 1000");
                     mode = mAudioManager.getMode();
                     mAudioManager.setSpeakerphoneOn(!isEarPhone);//modified by Yar
                     boolean isheadseton = mAudioManager.isWiredHeadsetOn();
-                    if (isheadseton || !isEarPhone) {//modified by Yar
+                    if (isheadseton || isEarPhone) {//modified by Yar
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                         int maxVolume = mAudioManager.getStreamMaxVolume(STREAM_TYPE);
                         mAudioManager.setStreamVolume(STREAM_TYPE, 15, 0);
@@ -239,8 +246,20 @@ public class AudioLoopbackService extends Service {
                     && mRecord.getRecordingState() == AudioRecord.RECORDSTATE_STOPPED) {
                 mRecord.startRecording();
             }
-            mTrack.setStereoVolume(1.0f, 1.0f);
+
             mTrack.play();
+			//mTrack.setStereoVolume(0.0f, 1.0f);
+            if(isEarPhone && (mSoundChannel != null) && (!mSoundChannel.isEmpty())) {
+                Boolean left = mSoundChannel.equals("left");
+                Boolean right = mSoundChannel.equals("right");
+                LogUtil.d("zll", "set left or right channel left:" + left + " right:" + right);
+                //mTrack.setStereoVolume(1.0f, 0.0f);
+                mTrack.setStereoVolume(left?1.0f:0.0f, right?1.0f:0.0f);
+            }else {
+                mTrack.setStereoVolume(1.0f, 1.0f);
+                LogUtil.d("zll", "set left and right channel");
+            }
+
             buff = new short[mBufferSize / 2];
             playrun();
         } catch (Exception e) {
@@ -256,6 +275,8 @@ public class AudioLoopbackService extends Service {
             }
             mAudioManager.setStreamVolume(STREAM_TYPE, mOldVolume, 0);
             mAudioManager.setMode(mode);
+            mTrack = null;
+            mRecord = null;
         }
 
 

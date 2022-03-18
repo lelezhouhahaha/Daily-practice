@@ -104,4 +104,172 @@
 		<item_cmd_id>26</item_cmd_id>
 		<item_class>PCBAAutoTouchTestActivity</item_class>
 	</test_line>
+	
+	<test_line>
+	<item_cmd_id>100</item_cmd_id>
+		<item_class>EarPhoneActivity</item_class>
+	</test_line>
+	<test_line>
+		<item_cmd_id>101</item_cmd_id>
+		<item_class>EarPhoneActivity</item_class>
+	</test_line>
+	<test_line>
+		<item_cmd_id>102</item_cmd_id>
+		<item_class>EarPhoneActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>120</item_cmd_id>
+		<item_class>PCBAAutoLCDBrightnessActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>121</item_cmd_id>
+		<item_class>PCBAAutoLCDBrightnessActivity</item_class>
+	</test_line>
+	<test_line>
+		<item_cmd_id>122</item_cmd_id>
+		<item_class>PCBAAutoLCDBrightnessActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>123</item_cmd_id>
+		<item_class>PCBAAutoLCDBrightnessActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>130</item_cmd_id>
+		<item_class>PCBAAutoLEDActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>131</item_cmd_id>
+		<item_class>PCBAAutoLEDActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>132</item_cmd_id>
+		<item_class>PCBAAutoLEDActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>133</item_cmd_id>
+		<item_class>PCBAAutoLEDActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>140</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>141</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>142</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>143</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>144</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>145</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>146</item_cmd_id>
+		<item_class>PCBAAutoLCDRGBActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>500</item_cmd_id>
+		<item_class>PCBAAutoMainMicActiviy</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>501</item_cmd_id>
+		<item_class>PCBAAutoDeputyMicActiviy</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>502</item_cmd_id>
+		<item_class>SpeakPhoneActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>503</item_cmd_id>
+		<item_class>PCBAAutoSpeakerActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>504</item_cmd_id>
+		<item_class>RecActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>505</item_cmd_id>
+		<item_class>UsbTypeCOtgActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>506</item_cmd_id>
+		<item_class>PogoPin2ChargeActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>507</item_cmd_id>
+		<item_class>PogoPin8ChargeActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>508</item_cmd_id>
+		<item_class>PogopinOtgActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>509</item_cmd_id>
+		<item_class>BatterySwitchActivity</item_class>
+	</test_line>
+
+	<test_line>
+		<item_cmd_id>510</item_cmd_id>
+		<item_class>UARTActivity</item_class>
+	</test_line>
+
+	<test_line>
+		<item_cmd_id>511</item_cmd_id>
+		<item_class>I2CActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>800</item_cmd_id>
+		<item_class>PCBAAutoMainTestMICActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>801</item_cmd_id>
+		<item_class>PCBAAutoDeputyTestMICActivity</item_class>
+	</test_line>
+	
+	<test_line>
+		<item_cmd_id>803</item_cmd_id>
+		<item_class>SpeakerLeftActivity</item_class>
+	</test_line>
+	
+		<test_line>
+		<item_cmd_id>804</item_cmd_id>
+		<item_class>SpeakerRightActivity</item_class>
+	</test_line>
+	
 </pcba_auto_test_config>

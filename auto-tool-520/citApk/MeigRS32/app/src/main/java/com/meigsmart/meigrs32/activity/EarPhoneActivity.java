@@ -118,6 +118,8 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
     private boolean isSound = false;
     private int passVolume =0;
     boolean button_test_completed =false;
+    private String mEarPhoneSoundChannel = "";
+    private final String TAG = EarPhoneActivity.class.getSimpleName();
 
 
     private int mOldVolume;
@@ -156,7 +158,10 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
         mDialog.setCallBack(this);
         mFatherName = getIntent().getStringExtra("fatherName");
         super.mName = getIntent().getStringExtra("name");
-        addData(mFatherName,super.mName);
+        if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mEarPhoneSoundChannel = getIntent().getStringExtra("soundchannel");
+        }
+        addData(mFatherName, super.mName);
 
         Random random=new Random();
         randomInt=0;
@@ -166,6 +171,8 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
 
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        } else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime = getResources().getInteger(R.integer.pcba_auto_test_default_time) * 4;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -215,10 +222,24 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
         LogUtil.d("tempVol:" + temp);
         if (!TextUtils.isEmpty(temp))
             passVolume = Integer.parseInt(temp);
+        if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    updateFloatView(mContext,mConfigTime);
+                    if ( (mConfigTime == 0) && mFatherName.equals(MyApplication.PCBAAutoTestNAME) ){
+                        deInit(mFatherName, NOTEST);
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
     }
-
-
-    @SuppressLint("HandlerLeak")
+	@SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -279,7 +300,9 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
                     deInit(mFatherName, FAILURE);
                     break;
                 case 1004:
-                    songplay();
+                    if(!mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                        songplay();
+                    }else LogUtil.d(TAG, "1004 mFatherName:" + mFatherName);
                     break;
                 case 9999:
                     deInit(mFatherName, FAILURE,"Wrong choice sound");
@@ -370,6 +393,7 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
         if(!isRunAudioService) {
             Intent intent = new Intent(this, AudioLoopbackService.class);
             intent.putExtra("isEarPhone", true);
+            intent.putExtra("soundchannel", mEarPhoneSoundChannel);
             intent.putExtra(AudioLoopbackService.OLD_VOLUME, mOldVolume);
             startService(intent);
             isRunAudioService=true;
@@ -509,6 +533,14 @@ public class EarPhoneActivity extends BaseActivity implements OnClickListener, P
     }
 
     private void initSoundList(String[] str){
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+            LogUtil.d(TAG, "current test can do handler nothing!");
+            SuccessClick = true;
+            SuccessClick2 = true;
+            ManualTestFinish = true;
+            mHandler.sendEmptyMessage(1002);
+            return;
+        }
         List<TypeModel> list = new ArrayList<>();
         for (int i=0;i< str.length;i++){
             TypeModel model = new TypeModel();

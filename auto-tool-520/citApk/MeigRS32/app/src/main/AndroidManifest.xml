@@ -906,6 +906,33 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoMainMicActiviy"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoDeputyMicActiviy"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.PCBAAutoMainTestMICActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+        <activity
+            android:name=".activity.PCBAAutoDeputyTestMICActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
+
+        <activity
+            android:name=".activity.PCBAAutoSpeakerActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|mcc|mnc" />
 
         <receiver android:name=".activity.MeigRS32BroadcastReceiver">
             <intent-filter>

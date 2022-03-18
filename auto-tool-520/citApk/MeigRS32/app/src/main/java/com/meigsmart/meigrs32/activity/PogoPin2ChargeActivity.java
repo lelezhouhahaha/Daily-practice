@@ -86,6 +86,9 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
 
     private String POGOPIN_CHARGE_STATUS_NODE = "/sys/bus/platform/drivers/musb-sprd/20200000.usb/vbus_status";
     private String POGOPIN_USB_TYPE_PATH = "dc_charging_type_node";
+    private final String TAG = PogoPin2ChargeActivity.class.getSimpleName();
+    private Boolean mCurrentTestResult = false;
+    private Runnable mRun = null;
 
 
     private boolean isPogopinCharge(){
@@ -129,6 +132,8 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
 
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -139,6 +144,27 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
         registerReceiver(mBroadcastReceiver, filter);
 
         mHandler.sendEmptyMessageDelayed(1001, getResources().getInteger(R.integer.start_delay_time));
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    updateFloatView(mContext, mConfigTime);
+                    if ((mConfigTime == 0) && (mFatherName.equals(MyApplication.PCBAAutoTestNAME))) {
+                        if (mCurrentTestResult) {
+                            deInit(mFatherName, SUCCESS);
+                        } else {
+                            LogUtil.d(TAG, "Pogopin 2 Test fail!");
+                            deInit(mFatherName, FAILURE, "Pogopin 2 Test fail!");
+                        }
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
     }
 
     private void initNode() {
@@ -244,6 +270,7 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
             mFail.setVisibility(View.VISIBLE);
             mShowInfo.setText(String.format(getString(R.string.show_info), getString(R.string.fail)));
         } else {
+            mCurrentTestResult = true;
             mSuccess.setVisibility(View.VISIBLE);
             mFail.setVisibility(View.GONE);
             mShowInfo.setText(String.format(getString(R.string.show_info), getString(R.string.success)));
@@ -281,10 +308,12 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
 						LogUtil.d("isOkCurrentNow(currentNow):" + isOkCurrentNow(currentNow));
 						if((charingStatus == BatteryManager.BATTERY_STATUS_CHARGING) && isOkCurrentNow(currentNow)) {
                             updateView(currentNow, true);
-                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME))) {
+                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME)) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
                                 mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
+                                mCurrentTestResult = true;
                                 deInit(mFatherName, SUCCESS);//auto pass pcba & pre
                             }else {
+                                mCurrentTestResult = true;
                             mSuccess.setVisibility(View.VISIBLE);
                             mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                             }
@@ -316,6 +345,9 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver);
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mHandler.removeCallbacks(mRun);
+        }
         mHandler.removeMessages(1001);
         mHandler.removeMessages(9999);
         mHandler.removeMessages(MSG_DEINIT);

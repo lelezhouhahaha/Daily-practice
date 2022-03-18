@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.hardware.input.InputManager;
 import android.hardware.usb.UsbManager;
+import android.os.Handler;
 import android.os.storage.DiskInfo;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
@@ -68,6 +69,10 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
     boolean isMC520 = "MC520".equals(mProjectName);
     boolean isMC520_GMS_version = "MC520_GMS".equals(mProjectName);
     private static final String POGOPIN_OTG_UHF = "/sys/class/sunmi_uhf/uhf/chargeUhf";
+    private Boolean mCurrentTestResult = false;
+    private Runnable mRun = null;
+    private Handler mHandler = null;
+    private int mConfigTime = 0;
 
     private boolean isPogopinOtg(){
             /*pogopinStatus = readNodeValue(POGOPIN_OTG_STATUS_NODE);
@@ -110,6 +115,14 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
         projectName = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, CustomConfig.SUNMI_PROJECT_MARK);
         if(isMC520 || isMC520_GMS_version){
             writeToFile(POGOPIN_OTG_UHF,"1");
+        }
+
+        if (mFatherName.equals(MyApplication.RuninTestNAME)) {
+            mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
+        }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
+        } else {
+            mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
         mMouseArea.setOnHoverListener(new View.OnHoverListener() {
             @Override
@@ -168,11 +181,36 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
         IntentFilter usbDeviceStateFilter = new IntentFilter();
         usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mHandler = new Handler();
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    updateFloatView(mContext, mConfigTime);
+                    if ((mConfigTime == 0) && (mFatherName.equals(MyApplication.PCBAAutoTestNAME))) {
+                        if (mCurrentTestResult) {
+                            deInit(mFatherName, SUCCESS);
+                        } else {
+                            LogUtil.d(TAG, "Pogopin 2 Test fail!");
+                            deInit(mFatherName, FAILURE, "Pogopin 2 Test fail!");
+                        }
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mHandler.removeCallbacks(mRun);
+        }
         if(isMC520 || isMC520_GMS_version){
             writeToFile(POGOPIN_OTG_UHF,"0");
         }

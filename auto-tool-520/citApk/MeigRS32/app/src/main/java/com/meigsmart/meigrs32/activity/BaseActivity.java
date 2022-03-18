@@ -606,6 +606,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                     title = getStringFromName(context, className);
                     model.setName(title);
                     name = "com.meigsmart.meigrs32.activity." + className;
+                    model.setPackageName("com.meigsmart.meigrs32");
+                    model.setClassName(name);
                 }
                 LogUtil.d("citapk  name:" + name);
 

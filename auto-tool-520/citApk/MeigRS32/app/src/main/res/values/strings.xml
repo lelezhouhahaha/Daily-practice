@@ -1120,4 +1120,14 @@
     <string name="PCBAAutoLCDRGBActivity">LCD RGB Test</string>
     <string name="PCBAAutoLEDActivity">LED Test</string>
     <string name="PCBAAutoLCDBrightnessActivity">LCD Brightness Test</string>
+    <string name="PCBAAutoMainMicActiviy">Mic Test</string>
+    <string name="PCBAAutoDeputyMicActiviy">Deputy Mic Test</string>
+    <string name="PCBAAutoSpeakerActivity">Speaker Test</string>
+
+
+    <!--  test   -->
+    <string name="PCBAAutoMainMicTestActiviy">test Mic Test</string>
+    <string name="PCBAAutoDeputyMicTestActiviy">test Deputy Mic Test</string>
+
+
 </resources>

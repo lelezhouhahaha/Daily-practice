@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.meigsmart.meigrs32.R;
 import com.meigsmart.meigrs32.application.MyApplication;
 import com.meigsmart.meigrs32.config.Const;
+import com.meigsmart.meigrs32.config.RuninConfig;
 import com.meigsmart.meigrs32.log.LogUtil;
 import com.meigsmart.meigrs32.util.DataUtil;
 import com.meigsmart.meigrs32.view.PromptDialog;
@@ -49,6 +50,12 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
     private boolean istest = false;
     private boolean TestTwice = false;
 
+    private final String TAG = I2CActivity.class.getSimpleName();
+    private Boolean mCurrentTestResult = false;
+    private Runnable mRun = null;
+    //rivate Handler mHandler = null;
+    private int mConfigTime = 0;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_i2c;
@@ -75,11 +82,37 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
         super.mName = getIntent().getStringExtra("name");
         addData(mFatherName, super.mName);
         mHandler.postDelayed(this,500);
+
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    updateFloatView(mContext, mConfigTime);
+                    if ((mConfigTime == 0) && (mFatherName.equals(MyApplication.PCBAAutoTestNAME))) {
+                        if (mCurrentTestResult) {
+                            deInit(mFatherName, SUCCESS);
+                        } else {
+                            LogUtil.d(TAG, " Test fail!");
+                            deInit(mFatherName, FAILURE, " Test fail!");
+                        }
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+            mHandler.removeCallbacks(mRun);
+        }
         mHandler.removeCallbacks(this);
         mHandler.removeMessages(1000);
         mHandler.removeMessages(1001);
@@ -149,8 +182,9 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
                     i2cView.setText(R.string.gpiocmplete);
                     mSuccess.setVisibility(View.VISIBLE);
                     if (mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PreNAME)
-                            || mFatherName.equals(MyApplication.MMI1_PreName) || mFatherName.equals(MyApplication.MMI2_PreName)) {
+                            || mFatherName.equals(MyApplication.MMI1_PreName) || mFatherName.equals(MyApplication.MMI2_PreName) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
                         mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
+                        mCurrentTestResult = true;
                         deInit(mFatherName, SUCCESS);//auto pass pcba
                     }
                     break;

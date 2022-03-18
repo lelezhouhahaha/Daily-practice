@@ -328,6 +328,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             LogUtil.d(TAG, "get Match Data idex is -1");
             return;
         }
+        LogUtil.d(TAG, "mMatchIdex:" +mMatchIdex);
         TypeModel model = mAdapter.getData().get(mMatchIdex);
         if (model.getCls() != null){
             Intent intent = new Intent(this,model.getCls());
@@ -377,6 +378,32 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 intent.putExtra("lcd", "5");
             }
 
+            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_HEADSETLEFTLOOP){
+                intent.putExtra("soundchannel", "left");
+            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_HEADSETRIGHTLOOP){
+                intent.putExtra("soundchannel", "right");
+            }
+            startActivityForResult(intent,mDiagCommandId);
+        }else{
+            LogUtil.d(TAG, "model.getCls() == null model.getClassName():" + model.getClassName());
+            LogUtil.d(TAG, "model.getCls() == null model.getPackageName():" + model.getPackageName());
+            LogUtil.d(TAG, "model.getCls() == null model.getStartType():" + model.getStartType());
+            ComponentName componentName = new ComponentName(model.getPackageName(), model.getClassName());
+            //ComponentName componentName = new ComponentName(mPackageName, mClassName);
+            Intent intent = new Intent();
+            intent.setComponent(componentName);
+            if(!(this.mName==null)){
+                intent.putExtra("fatherName",this.mName);
+                intent.putExtra("name", SAVE_EN_LOG ? model.getCls().getSimpleName() : model.getName());
+            }else{
+                intent.putExtra("fatherName",mFatherName);
+                intent.putExtra("name", SAVE_EN_LOG ? model.getCls().getSimpleName() : model.getName());
+            }
+            if(model.getStartType() == 1){
+                LogUtil.d("citapk 1");
+                intent.putExtra("packageName", model.getPackageName());
+                intent.putExtra("className", model.getClassName());
+            }
             startActivityForResult(intent,mDiagCommandId);
         }
     }

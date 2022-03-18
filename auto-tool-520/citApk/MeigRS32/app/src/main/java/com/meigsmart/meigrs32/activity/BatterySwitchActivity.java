@@ -84,7 +84,7 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
 
 
     private boolean switch_action = false;
-
+    private Boolean mCurrentTestResult = false;
     private Runnable mRun;
 
     @Override
@@ -111,6 +111,29 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
         Log.d(TAG,"mConfigResult:" + mConfigResult + " mConfigTime:" + mConfigTime);
 
         mHandler.sendEmptyMessage(1001);
+
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
+            mRun = new Runnable() {
+                @Override
+                public void run() {
+                    mConfigTime--;
+                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    updateFloatView(mContext, mConfigTime);
+                    if ((mConfigTime == 0) && (mFatherName.equals(MyApplication.PCBAAutoTestNAME))) {
+                        if (mCurrentTestResult) {
+                            deInit(mFatherName, SUCCESS);
+                        } else {
+                            LogUtil.d(TAG, " Test fail!");
+                            deInit(mFatherName, FAILURE, " Test fail!");
+                        }
+                        return;
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            };
+            mRun.run();
+        }
 
     }
 
@@ -163,7 +186,9 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeCallbacks(mRun);
+		if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+        	mHandler.removeCallbacks(mRun);
+		}
         mHandler.removeMessages(1001);
         mHandler.removeMessages(1002);
         mHandler.removeMessages(9999);
@@ -186,6 +211,7 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
                 mMessage_debug.setVisibility(View.INVISIBLE);
                 mMessage_debug2.setVisibility(View.INVISIBLE);
                 mMessage.setText(getBatteryStatus("/sys/class/power_supply/sub_bat/voltage_now"));
+                mCurrentTestResult = true;
                 mSuccess.setVisibility(View.VISIBLE);
                 mNext.setVisibility(View.INVISIBLE);
                 break;
