@@ -84,7 +84,7 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
         mHandler.postDelayed(this,500);
 
         if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*4;
             mRun = new Runnable() {
                 @Override
                 public void run() {

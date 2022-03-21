@@ -133,7 +133,7 @@ public class PogoPin8ChargeActivity extends BaseActivity implements View.OnClick
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*4;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -306,11 +306,13 @@ public class PogoPin8ChargeActivity extends BaseActivity implements View.OnClick
                     if ( isPogopinCharge() ){
 						if((charingStatus == BatteryManager.BATTERY_STATUS_CHARGING) && isOkCurrentNow(currentNow)) {
                             updateView(currentNow, true);
-                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME))) {
+                            if ((mFatherName.equals(MyApplication.PCBANAME)) || (mFatherName.equals(MyApplication.PreNAME)) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
                                 mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
+                                mCurrentTestResult = true;
                                 deInit(mFatherName, SUCCESS);//auto pass pcba & pre
                             }else {
                             mSuccess.setVisibility(View.VISIBLE);
+                            mCurrentTestResult = true;
                             mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                             }
                         } else {
