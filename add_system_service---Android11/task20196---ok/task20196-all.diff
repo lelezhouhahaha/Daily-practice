@@ -1,0 +1,326 @@
+diff --git a/frameworks/base/Android.bp b/frameworks/base/Android.bp
+old mode 100644
+new mode 100755
+index bf6c99d..c7618b4
+--- a/frameworks/base/Android.bp
++++ b/frameworks/base/Android.bp
+@@ -149,6 +149,23 @@ filegroup {
+     path: "mime/java",
+ }
+ 
++
++filegroup {
++    name: "framework-addservice-sources",
++    srcs: [
++        "addservice/java/**/*.java",
++	"addservice/java/**/*.aidl",
++    ],
++    path: "addservice/java",
++}
++
++java_library {
++    name: "mymodule",
++    installable: true,
++    srcs: [ ":framework-addservice-sources" ],
++    platform_apis: true,
++}
++
+ filegroup {
+     name: "framework-opengl-sources",
+     srcs: [
+@@ -305,6 +322,7 @@ java_library {
+     visibility: [":__pkg__"],
+ }
+ 
++
+ filegroup {
+     name: "framework-all-sources",
+     srcs: [
+@@ -477,7 +495,10 @@ filegroup {
+ java_library {
+     name: "framework-minus-apex",
+     defaults: ["framework-defaults"],
+-    srcs: [":framework-non-updatable-sources"],
++    srcs: [
++    ":framework-non-updatable-sources",
++    ":framework-addservice-sources",
++    ],
+     installable: true,
+     javac_shard_size: 150,
+     required: [
+@@ -1219,6 +1240,7 @@ metalava_framework_docs_args = "--manifest $(location core/res/AndroidManifest.x
+     "--api-lint-ignore-prefix android.icu. " +
+     "--api-lint-ignore-prefix java. " +
+     "--api-lint-ignore-prefix junit. " +
++    "--api-lint-ignore-prefix android.mymodule. " +
+     "--api-lint-ignore-prefix org. "
+ 
+ build = [
+diff --git a/frameworks/base/core/java/android/app/SystemServiceRegistry.java b/frameworks/base/core/java/android/app/SystemServiceRegistry.java
+old mode 100644
+new mode 100755
+index e599a5c..c51d9bb
+--- a/frameworks/base/core/java/android/app/SystemServiceRegistry.java
++++ b/frameworks/base/core/java/android/app/SystemServiceRegistry.java
+@@ -209,6 +209,8 @@ import com.android.internal.net.INetworkWatchlistManager;
+ import com.android.internal.os.IDropBoxManagerService;
+ import com.android.internal.policy.PhoneLayoutInflater;
+ import com.android.internal.util.Preconditions;
++import android.mymodule.test.TestManager;
++import android.mymodule.test.ITestManager;
+ 
+ import java.util.Map;
+ import java.util.Objects;
+@@ -242,6 +244,16 @@ public final class SystemServiceRegistry {
+     private SystemServiceRegistry() { }
+ 
+     static {
++	// register test service
++        registerService(Context.TEST_SERVICE,TestManager.class,  
++                new CachedServiceFetcher<TestManager>(){  
++            @Override   
++            public TestManager createService(ContextImpl ctx)  
++            {  
++                IBinder b = ServiceManager.getService(Context.TEST_SERVICE);  
++                Log.i("add_service_test","SystemServiceRegistry registerService method");  
++                return new TestManager(ITestManager.Stub.asInterface(b));  
++            }});
+         //CHECKSTYLE:OFF IndentationCheck
+         registerService(Context.ACCESSIBILITY_SERVICE, AccessibilityManager.class,
+                 new CachedServiceFetcher<AccessibilityManager>() {
+diff --git a/frameworks/base/core/java/android/content/Context.java b/frameworks/base/core/java/android/content/Context.java
+old mode 100644
+new mode 100755
+index 8472144..8c418ed
+--- a/frameworks/base/core/java/android/content/Context.java
++++ b/frameworks/base/core/java/android/content/Context.java
+@@ -3494,6 +3494,7 @@ public abstract class Context {
+             //@hide: TIME_ZONE_DETECTOR_SERVICE,
+             PERMISSION_SERVICE,
+             LIGHTS_SERVICE,
++	    TEST_SERVICE,
+     })
+     @Retention(RetentionPolicy.SOURCE)
+     public @interface ServiceName {}
+@@ -4068,6 +4069,9 @@ public abstract class Context {
+     /** {@hide} */
+     public static final String NETWORK_WATCHLIST_SERVICE = "network_watchlist";
+ 
++    /** {@hide} */
++    public static final String TEST_SERVICE= "test";
++	
+     /**
+      * Use with {@link #getSystemService(String)} to retrieve a {@link
+      * android.net.wifi.WifiManager} for handling management of
+diff --git a/frameworks/base/pathmap.mk b/frameworks/base/pathmap.mk
+old mode 100644
+new mode 100755
+index 8b77e62..b6308a1
+--- a/frameworks/base/pathmap.mk
++++ b/frameworks/base/pathmap.mk
+@@ -33,7 +33,9 @@ FRAMEWORKS_MULTIDEX_SUBDIRS := \
+ #
+ FRAMEWORKS_SUPPORT_JAVA_SRC_DIRS += \
+     $(addprefix frameworks/,$(FRAMEWORKS_MULTIDEX_SUBDIRS)) \
+-    frameworks/rs/support
++    frameworks/rs/support \
++	frameworks/base/addservice
++	
+ 
+ #
+ # A list of support library modules.
+diff --git a/frameworks/base/services/java/com/android/server/SystemServer.java b/frameworks/base/services/java/com/android/server/SystemServer.java
+old mode 100644
+new mode 100755
+index 3d8328b..72bed28
+--- a/frameworks/base/services/java/com/android/server/SystemServer.java
++++ b/frameworks/base/services/java/com/android/server/SystemServer.java
+@@ -195,6 +195,7 @@ import java.util.Locale;
+ import java.util.Timer;
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.Future;
++import com.android.server.TestService;
+ 
+ public final class SystemServer {
+ 
+@@ -1246,6 +1247,11 @@ public final class SystemServer {
+             mSystemServiceManager.startService(AppIntegrityManagerService.class);
+             t.traceEnd();
+ 
++            t.traceBegin("TestService start");
++             TestService test = new TestService(context);    
++             ServiceManager.addService(Context.TEST_SERVICE, test); 
++             Slog.i("add_service_test", "SystemServer add service");
++            t.traceEnd();
+         } catch (Throwable e) {
+             Slog.e("System", "******************************************");
+             Slog.e("System", "************ Failure starting core service");
+diff --git a/system/sepolicy/prebuilts/api/26.0/private/service_contexts b/system/sepolicy/prebuilts/api/26.0/private/service_contexts
+old mode 100644
+new mode 100755
+index ff97d66..4aa726b
+--- a/system/sepolicy/prebuilts/api/26.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/26.0/private/service_contexts
+@@ -5,6 +5,7 @@ alarm                                     u:object_r:alarm_service:s0
+ android.os.UpdateEngineService            u:object_r:update_engine_service:s0
+ android.security.keystore                 u:object_r:keystore_service:s0
+ android.service.gatekeeper.IGateKeeperService    u:object_r:gatekeeper_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/prebuilts/api/26.0/public/service.te b/system/sepolicy/prebuilts/api/26.0/public/service.te
+old mode 100644
+new mode 100755
+index da540db..f628344
+--- a/system/sepolicy/prebuilts/api/26.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/26.0/public/service.te
+@@ -145,3 +145,5 @@ type wifi_service, app_api_service, system_server_service, service_manager_type;
+ type wificond_service, service_manager_type;
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/27.0/private/service_contexts b/system/sepolicy/prebuilts/api/27.0/private/service_contexts
+old mode 100644
+new mode 100755
+index a82243f..593f7b0
+--- a/system/sepolicy/prebuilts/api/27.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/27.0/private/service_contexts
+@@ -5,6 +5,7 @@ alarm                                     u:object_r:alarm_service:s0
+ android.os.UpdateEngineService            u:object_r:update_engine_service:s0
+ android.security.keystore                 u:object_r:keystore_service:s0
+ android.service.gatekeeper.IGateKeeperService    u:object_r:gatekeeper_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/prebuilts/api/27.0/public/service.te b/system/sepolicy/prebuilts/api/27.0/public/service.te
+old mode 100644
+new mode 100755
+index e97b864..e596b20
+--- a/system/sepolicy/prebuilts/api/27.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/27.0/public/service.te
+@@ -148,3 +148,5 @@ type wifi_service, app_api_service, system_server_service, service_manager_type;
+ type wificond_service, service_manager_type;
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/28.0/private/service_contexts b/system/sepolicy/prebuilts/api/28.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 5ec45a2..0898cea
+--- a/system/sepolicy/prebuilts/api/28.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/28.0/private/service_contexts
+@@ -5,6 +5,7 @@ alarm                                     u:object_r:alarm_service:s0
+ android.os.UpdateEngineService            u:object_r:update_engine_service:s0
+ android.security.keystore                 u:object_r:keystore_service:s0
+ android.service.gatekeeper.IGateKeeperService    u:object_r:gatekeeper_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/prebuilts/api/28.0/public/service.te b/system/sepolicy/prebuilts/api/28.0/public/service.te
+old mode 100644
+new mode 100755
+index 3526049..132139b
+--- a/system/sepolicy/prebuilts/api/28.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/28.0/public/service.te
+@@ -159,3 +159,5 @@ type wificond_service, service_manager_type;
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
+ type wpantund_service, system_api_service, service_manager_type;
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/29.0/private/service_contexts b/system/sepolicy/prebuilts/api/29.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 96d553b..3bcaee9
+--- a/system/sepolicy/prebuilts/api/29.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/29.0/private/service_contexts
+@@ -12,6 +12,7 @@ app_prediction                            u:object_r:app_prediction_service:s0
+ apexservice                               u:object_r:apex_service:s0
+ ashmem_device_service                     u:object_r:ashmem_device_service:s0
+ gsiservice                                u:object_r:gsi_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/prebuilts/api/29.0/public/service.te b/system/sepolicy/prebuilts/api/29.0/public/service.te
+old mode 100644
+new mode 100755
+index a2193d0..0b49045
+--- a/system/sepolicy/prebuilts/api/29.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/29.0/public/service.te
+@@ -192,6 +192,10 @@ type wpantund_service, system_api_service, service_manager_type;
+ ### Neverallow rules
+ ###
+ 
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
++
++
+ # servicemanager handles registering or looking up named services.
+ # It does not make sense to register or lookup something which is not a service.
+ # Trigger a compile error if this occurs.
+diff --git a/system/sepolicy/prebuilts/api/30.0/private/service_contexts b/system/sepolicy/prebuilts/api/30.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 5c6f1a4..91104b2
+--- a/system/sepolicy/prebuilts/api/30.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/30.0/private/service_contexts
+@@ -23,6 +23,7 @@ app_search                                u:object_r:app_search_service:s0
+ apexservice                               u:object_r:apex_service:s0
+ blob_store                                u:object_r:blob_store_service:s0
+ gsiservice                                u:object_r:gsi_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/prebuilts/api/30.0/public/service.te b/system/sepolicy/prebuilts/api/30.0/public/service.te
+old mode 100644
+new mode 100755
+index f27772e..2c5b605
+--- a/system/sepolicy/prebuilts/api/30.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/30.0/public/service.te
+@@ -216,6 +216,9 @@ type hal_power_service, vendor_service, service_manager_type;
+ type hal_rebootescrow_service, vendor_service, service_manager_type;
+ type hal_vibrator_service, vendor_service, service_manager_type;
+ 
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
++
+ ###
+ ### Neverallow rules
+ ###
+diff --git a/system/sepolicy/private/service_contexts b/system/sepolicy/private/service_contexts
+old mode 100644
+new mode 100755
+index 5c6f1a4..91104b2
+--- a/system/sepolicy/private/service_contexts
++++ b/system/sepolicy/private/service_contexts
+@@ -23,6 +23,7 @@ app_search                                u:object_r:app_search_service:s0
+ apexservice                               u:object_r:apex_service:s0
+ blob_store                                u:object_r:blob_store_service:s0
+ gsiservice                                u:object_r:gsi_service:s0
++test				  	  u:object_r:test_service:s0
+ appops                                    u:object_r:appops_service:s0
+ appwidget                                 u:object_r:appwidget_service:s0
+ assetatlas                                u:object_r:assetatlas_service:s0
+diff --git a/system/sepolicy/public/service.te b/system/sepolicy/public/service.te
+old mode 100644
+new mode 100755
+index f27772e..2c5b605
+--- a/system/sepolicy/public/service.te
++++ b/system/sepolicy/public/service.te
+@@ -216,6 +216,9 @@ type hal_power_service, vendor_service, service_manager_type;
+ type hal_rebootescrow_service, vendor_service, service_manager_type;
+ type hal_vibrator_service, vendor_service, service_manager_type;
+ 
++### test service
++type test_service, system_api_service, system_server_service, service_manager_type;
++
+ ###
+ ### Neverallow rules
+ ###

@@ -1,0 +1,1 @@
+在framework中添加系统服务，manager和service以及测试用的apk验证是ok的。
