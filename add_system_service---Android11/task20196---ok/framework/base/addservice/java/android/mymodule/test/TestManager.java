@@ -13,12 +13,12 @@ public class TestManager {
 	}
 
 	/** @hide */
-    /*public void testMethod() {
+    public void testMethod() {
         try {
             mService.testMethod();
             Slog.i("add_service_test", "TestManager testMethod");
         } catch (RemoteException ex) {
             ex.printStackTrace();
         }        
-    }*/
+    }
 }
