@@ -11,8 +11,8 @@ java_library {
     name: "eloTouchManager",
     installable: true,
     srcs: [ 
-    	"eloTouchManager/aidl/com/elotouch/library/IEloGpioManager.aidl",
-		"eloTouchManager/java/com/elotouch/library/EloGpioManager.java",
+    	"eloTouchManager/aidl/com/elotouch/library/IEloManager.aidl",
+		"eloTouchManager/java/com/elotouch/library/EloManager.java",
 	 ],
     sdk_version: "current",
 }
@@ -21,8 +21,8 @@ java_library {
     name: "eloTouchService",
     installable: true,
     srcs: [
-		"eloTouchService/java/com/android/elotouchservice/EloGpioService.java",
-		"eloTouchManager/aidl/com/elotouch/library/IEloGpioManager.aidl",
+		"eloTouchService/java/com/android/services/EloService.java",
+		"eloTouchManager/aidl/com/elotouch/library/IEloManager.aidl",
 	],
     sdk_version: "current",
 }
