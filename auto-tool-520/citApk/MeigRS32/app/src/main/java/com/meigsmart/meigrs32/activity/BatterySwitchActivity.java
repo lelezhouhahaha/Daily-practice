@@ -113,7 +113,7 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
         mHandler.sendEmptyMessage(1001);
 
         if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*6;
             mRun = new Runnable() {
                 @Override
                 public void run() {
@@ -176,6 +176,19 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
                     }
                     mHandler.sendEmptyMessageDelayed(1002,500);
                     break;
+                case 1003:
+                    mMessage_debug.setVisibility(View.INVISIBLE);
+                    mMessage_debug2.setVisibility(View.INVISIBLE);
+                    mMessage.setText(getBatteryStatus("/sys/class/power_supply/sub_bat/voltage_now"));
+                    mCurrentTestResult = true;
+                    mSuccess.setVisibility(View.VISIBLE);
+                    mNext.setVisibility(View.INVISIBLE);
+                    if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                        if(mCurrentTestResult){
+                            deInit(mFatherName, SUCCESS);
+                        }else deInit(mFatherName, FAILURE, "Battery switch test fail!");
+                    }
+                    break;
                 case 9999:
                     deInit(mFatherName, FAILURE, msg.obj.toString());
                     break;
@@ -191,6 +204,7 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
 		}
         mHandler.removeMessages(1001);
         mHandler.removeMessages(1002);
+        mHandler.removeMessages(1003);
         mHandler.removeMessages(9999);
         /*if(isNoChargeSubBattery && mBroadcastReceiver!= null){
             unregisterReceiver(mBroadcastReceiver);
@@ -208,12 +222,13 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
                     checkUnplug();
                 else
                     checkInsert();*/
-                mMessage_debug.setVisibility(View.INVISIBLE);
+                /*mMessage_debug.setVisibility(View.INVISIBLE);
                 mMessage_debug2.setVisibility(View.INVISIBLE);
                 mMessage.setText(getBatteryStatus("/sys/class/power_supply/sub_bat/voltage_now"));
                 mCurrentTestResult = true;
                 mSuccess.setVisibility(View.VISIBLE);
-                mNext.setVisibility(View.INVISIBLE);
+                mNext.setVisibility(View.INVISIBLE);*/
+                mHandler.sendEmptyMessage(1003);
                 break;
             case R.id.success:
                 mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
@@ -248,6 +263,9 @@ public class BatterySwitchActivity extends BaseActivity implements View.OnClickL
             switch_action = true;
             mNext.setEnabled(true);
             mHandler.removeMessages(1002);
+            if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+                mHandler.sendEmptyMessage(1003);
+            }
         }
     }
 

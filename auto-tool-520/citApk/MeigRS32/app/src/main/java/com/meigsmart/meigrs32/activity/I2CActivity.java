@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -55,6 +56,8 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
     private Runnable mRun = null;
     //rivate Handler mHandler = null;
     private int mConfigTime = 0;
+    private Boolean mI2cTestFlag = false;
+    private Boolean mI2cResetTestFlag = false;
 
     @Override
     protected int getLayoutId() {
@@ -82,9 +85,11 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
         super.mName = getIntent().getStringExtra("name");
         addData(mFatherName, super.mName);
         mHandler.postDelayed(this,500);
+        i2cView.setText(R.string.i2c_test_start);
 
         if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*4;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*6;
+            startButton.setVisibility(View.GONE);
             mRun = new Runnable() {
                 @Override
                 public void run() {
@@ -95,8 +100,13 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
                         if (mCurrentTestResult) {
                             deInit(mFatherName, SUCCESS);
                         } else {
-                            LogUtil.d(TAG, " Test fail!");
-                            deInit(mFatherName, FAILURE, " Test fail!");
+                            String errstr = "";
+                            if(mI2cTestFlag) {
+                                errstr = getResources().getString(R.string.i2c_test_fail);
+                            }else if(mI2cResetTestFlag){
+                                errstr = getResources().getString(R.string.i2c_reset_fail);
+                            }
+                            deInit(mFatherName, FAILURE, errstr);
                         }
                         return;
                     }
@@ -104,6 +114,7 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
                 }
             };
             mRun.run();
+            istest = true;
         }
     }
 
@@ -114,7 +125,7 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
             mHandler.removeCallbacks(mRun);
         }
         mHandler.removeCallbacks(this);
-        mHandler.removeMessages(1000);
+        mHandler.removeMessages(9999);
         mHandler.removeMessages(1001);
         mHandler.removeMessages(1002);
     }
@@ -171,10 +182,12 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
             super.handleMessage(msg);
             switch (msg.what){
                 case 1001:
-                    istest = false;
-                    i2cView.setText(R.string.testtwice);
-                    startButton.setEnabled(true);
-                    startButton.setText(R.string.start_twice);
+                    if( !mFatherName.equals(MyApplication.PCBAAutoTestNAME) ) {
+                        istest = false;
+                        i2cView.setText(R.string.testtwice);
+                        startButton.setEnabled(true);
+                        startButton.setText(R.string.start_twice);
+                    }
                     TestTwice = true;
                     break;
                 case 1002:
@@ -202,10 +215,13 @@ public class I2CActivity extends BaseActivity implements View.OnClickListener, P
             int num = Integer.parseInt(i2cStr);
             Log.d("I2CActivity","num=="+num);
             if (num > 0) {
+                mI2cTestFlag = true;
+                i2cView.setTextColor(Color.RED);
                 mHandler.sendEmptyMessageDelayed(1001, 1000);
-            }
-            if(TestTwice){
-                if(num<0){
+            }else if(TestTwice){
+                if(num < 0){
+                    mI2cResetTestFlag = true;
+                    i2cView.setTextColor(Color.GREEN);
                     mHandler.sendEmptyMessageDelayed(1002, 1000);
                 }
             }

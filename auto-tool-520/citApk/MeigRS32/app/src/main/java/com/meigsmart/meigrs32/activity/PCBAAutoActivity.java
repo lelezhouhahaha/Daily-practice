@@ -100,7 +100,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void initData() {
         mContext = this;
-        super.startBlockKeys = true;
+        super.startBlockKeys = false/*true*/;
         moreClickTimes =0;
        // mBack.setVisibility(View.VISIBLE);
         mBack.setOnClickListener(this);

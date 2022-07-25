@@ -133,7 +133,7 @@ public class PogoPin8ChargeActivity extends BaseActivity implements View.OnClick
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*4;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*6;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -248,7 +248,7 @@ public class PogoPin8ChargeActivity extends BaseActivity implements View.OnClick
     }
 
     private boolean isOkCurrentNow(Float currentNow) {
-        if (!mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PCBANAME)) {
+        if (!mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PCBANAME) && !mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
             /*if(!"0".equals(mCurrentAbsoluteEnabled)) {
                 if (currentNow > 0)
                     currentNow = Float.valueOf("0");

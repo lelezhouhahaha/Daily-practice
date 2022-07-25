@@ -1116,6 +1116,12 @@
     <string name="psam_version">PSAM_Version: </string>
 
 
+    <string name="i2c_test_fail">I2C test failed.</string>
+    <string name="i2c_reset_fail">I2C reset failed.</string>
+    <string name="i2c_test_start">I2C test start.</string>
+    <string name="uart_test_fail">UART test failed.</string>
+    <string name="uart_reset_fail">UART reset failed.</string>
+    <string name="uart_test_start">UART test start.</string>
     <string name="PCBAAutoTouchTestActivity">Touch Test</string>
     <string name="PCBAAutoLCDRGBActivity">LCD RGB Test</string>
     <string name="PCBAAutoLEDActivity">LED Test</string>

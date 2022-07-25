@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
@@ -52,8 +53,9 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
     private final String TAG = UARTActivity.class.getSimpleName();
     private Boolean mCurrentTestResult = false;
     private Runnable mRun = null;
-    //rivate Handler mHandler = null;
     private int mConfigTime = 0;
+    private Boolean mUartTestFlag = false;
+    private Boolean mUartResetFlag = false;
 
     @Override
     protected int getLayoutId() {
@@ -91,7 +93,10 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
         mSerialPort =new SerialPort();
 
         if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time);
+            startButton.setVisibility(View.GONE);
+            mRs232Msg.setText(R.string.uart_test_start);
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*6;
+            mHandler.sendEmptyMessageDelayed(1005, 1000);
             mRun = new Runnable() {
                 @Override
                 public void run() {
@@ -102,8 +107,15 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
                         if (mCurrentTestResult) {
                             deInit(mFatherName, SUCCESS);
                         } else {
-                            LogUtil.d(TAG, " Test fail!");
-                            deInit(mFatherName, FAILURE, " Test fail!");
+                            //LogUtil.d(TAG, " Test fail!");
+                            //deInit(mFatherName, FAILURE, " Test fail!");
+                            String errstr = "";
+                            if(mUartTestFlag) {
+                                errstr = getResources().getString(R.string.uart_test_fail);
+                            }else if(mUartResetFlag){
+                                errstr = getResources().getString(R.string.uart_reset_fail);
+                            }
+                            deInit(mFatherName, FAILURE, errstr);
                         }
                         return;
                     }
@@ -143,9 +155,13 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
                     break;
                 case 1001:
                     uartvalue = false;
-                    startButton.setEnabled(true);
-                    startButton.setText(R.string.start_twice);
-                    mRs232Msg.setText(R.string.testtwice);
+                    if(!mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                        startButton.setEnabled(true);
+                        startButton.setText(R.string.start_twice);
+                        mRs232Msg.setText(R.string.testtwice);
+                    }else {
+                        mHandler.sendEmptyMessage(1005);
+                    }
                     break;
                 case 1002:
                     mRs232Msg.setText(R.string.gpiocmplete);
@@ -158,10 +174,18 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
                     }
                     break;
                 case 1003:
-                    startButton.setEnabled(true);
-                    mRs232Msg.setText(R.string.uart_button);
-                    startButton.setText(R.string.start_twice);
+                    if(!mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+                        startButton.setEnabled(true);
+                        mRs232Msg.setText(R.string.uart_button);
+                        startButton.setText(R.string.start_twice);
+                    }else mHandler.sendEmptyMessage(1005);
                     break;
+                case 1005:
+                    if(uartvalue) {
+                        new UARTTask(0).execute();
+                    }else {
+                        new UARTTask(1).execute();
+                    };
             }
         }
     };
@@ -176,6 +200,9 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
             mHandler.removeMessages(1000);
             mHandler.removeMessages(1001);
             mHandler.removeMessages(1002);
+            mHandler.removeMessages(1003);
+            mHandler.removeMessages(1005);
+
         }
     }
 
@@ -195,11 +222,7 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
         }
         if (v == startButton) {
             startButton.setEnabled(false);
-            if(uartvalue) {
-                new UARTTask(0).execute();
-            }else {
-                new UARTTask(1).execute();
-            }
+            mHandler.sendEmptyMessage(1005);
         }
     }
 
@@ -217,6 +240,7 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        LogUtil.d(TAG, "onActivityResult!");
         if (REQUEST_RJ11 == requestCode && resultCode == 0) {
             mSuccess.setVisibility(View.VISIBLE);
             if (mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PreNAME) || mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
@@ -254,6 +278,8 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
                             e.printStackTrace();
                         }
                         Log.d("UARTActivity","test one complete");
+                        mUartTestFlag = true;
+                        mRs232Msg.setTextColor(Color.RED);
                         mHandler.sendEmptyMessage(1001);
                     } else {
                         Log.d("UARTActivity","test one status false");
@@ -275,6 +301,8 @@ public class UARTActivity extends BaseActivity implements View.OnClickListener, 
                         mHandler.sendEmptyMessage(1003);
                     } else {
                         Log.d("UARTActivity","test complete");
+                        mUartTestFlag = true;
+                        mRs232Msg.setTextColor(Color.GREEN);
                         mHandler.sendEmptyMessage(1002);
                     }
                 }else{
