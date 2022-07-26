@@ -70,7 +70,7 @@ public class PCBAAutoLCDRGBActivity extends BaseActivity implements View.OnClick
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
+            mConfigTime  = 2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }

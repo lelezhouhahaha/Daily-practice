@@ -44,7 +44,7 @@
         </key_test>
     </test_line>
     <test_line>
-        <key_test  >
+        <!--key_test  >
             <keyName>back</keyName>
             <keyCode>4</keyCode>
         </key_test>
@@ -55,7 +55,7 @@
         <key_test  >
             <keyName>Switch</keyName>
             <keyCode>187</keyCode>
-        </key_test>
+        </key_test-->
         <key_test  >
             <keyName>search</keyName>
             <keyCode>84</keyCode>

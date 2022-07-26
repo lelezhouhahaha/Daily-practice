@@ -226,7 +226,11 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                     Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
                     int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
-                    activity.startActivityDependOnCommandId(mDiagCommandId);
+                    int ret = activity.startActivityDependOnCommandId(mDiagCommandId);
+                    if(ret == -1){
+                        String returnData = "there is no test item.";
+                        activity.mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, mDiagCommandId, 0, returnData, returnData.length());
+                    }
                     break;
                 case DiagCommand.SERVICEID_SET_RESULT: {
                     int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
@@ -322,11 +326,11 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         return -1;
     }
 
-    private void startActivityDependOnCommandId(int mDiagCommandId){
+    private int startActivityDependOnCommandId(int mDiagCommandId){
         int mMatchIdex = getMatchData(mDiagCommandId);
         if(mMatchIdex == -1){
             LogUtil.d(TAG, "get Match Data idex is -1");
-            return;
+            return -1;
         }
         LogUtil.d(TAG, "mMatchIdex:" +mMatchIdex);
         TypeModel model = mAdapter.getData().get(mMatchIdex);
@@ -348,40 +352,56 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             }
             LogUtil.d(TAG, "zll mDiagCommandId:" + mDiagCommandId);
             int mDiagCmdId = getAutoTestDiagCommandId(mDiagCommandId);
-            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT50){
-                intent.putExtra("backlight", "50");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT100){
-                intent.putExtra("backlight", "100");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_BACKLIGHT150){
-                intent.putExtra("backlight", "150");
-            }
+            LogUtil.d(TAG, "zll mDiagCmdId:" + mDiagCmdId);
 
-            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDRED){
-                intent.putExtra("ledname", "red");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDGREEN){
-                intent.putExtra("ledname", "green");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LEDBLUE){
-                intent.putExtra("ledname", "blue");
-            }
-
-            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDRED){
-                intent.putExtra("lcd", "0");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDGREEN){
-                intent.putExtra("lcd", "1");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDBLUE){
-                intent.putExtra("lcd", "2");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDGRAY){
-                intent.putExtra("lcd", "3");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDBLACK){
-                intent.putExtra("lcd", "4");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_LCDWHITE){
-                intent.putExtra("lcd", "5");
-            }
-
-            if(mDiagCmdId == DiagCommand.FTM_SUBCMD_HEADSETLEFTLOOP){
-                intent.putExtra("soundchannel", "left");
-            }else if(mDiagCmdId == DiagCommand.FTM_SUBCMD_HEADSETRIGHTLOOP){
-                intent.putExtra("soundchannel", "right");
+            switch (mDiagCmdId){
+                case DiagCommand.FTM_SUBCMD_BACKLIGHT50:
+                    intent.putExtra("backlight", "50");
+                    break;
+                case DiagCommand.FTM_SUBCMD_BACKLIGHT100:
+                    intent.putExtra("backlight", "100");
+                    break;
+                case DiagCommand.FTM_SUBCMD_BACKLIGHT150:
+                    intent.putExtra("backlight", "150");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LEDRED:
+                    Log.d(TAG, "zll DiagCommand.FTM_SUBCMD_LEDRED:" + DiagCommand.FTM_SUBCMD_LEDRED);
+                    intent.putExtra("ledname", "Red");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LEDGREEN:
+                    Log.d(TAG, "zll DiagCommand.FTM_SUBCMD_LEDGREEN:" + DiagCommand.FTM_SUBCMD_LEDGREEN);
+                    intent.putExtra("ledname", "Green");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LEDBLUE:
+                    Log.d(TAG, "zll DiagCommand.FTM_SUBCMD_LEDBLUE:" + DiagCommand.FTM_SUBCMD_LEDBLUE);
+                    intent.putExtra("ledname", "Blue");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDRED:
+                    intent.putExtra("lcd", "0");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDGREEN:
+                    intent.putExtra("lcd", "1");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDBLUE:
+                    intent.putExtra("lcd", "2");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDGRAY:
+                    intent.putExtra("lcd", "3");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDBLACK:
+                    intent.putExtra("lcd", "4");
+                    break;
+                case DiagCommand.FTM_SUBCMD_LCDWHITE:
+                    intent.putExtra("lcd", "5");
+                    break;
+                case DiagCommand.FTM_SUBCMD_HEADSETLEFTLOOP:
+                    intent.putExtra("soundchannel", "left");
+                    break;
+                case DiagCommand.FTM_SUBCMD_HEADSETRIGHTLOOP:
+                    intent.putExtra("soundchannel", "right");
+                    break;
+                default:
+                    break;
             }
             startActivityForResult(intent,mDiagCommandId);
         }else{
@@ -406,6 +426,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             }
             startActivityForResult(intent,mDiagCommandId);
         }
+        return 0;
     }
 
 

@@ -122,7 +122,7 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
+            mConfigTime  = 2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -201,11 +201,7 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
                             testLineLayout.setGravity(Gravity.CENTER);*/
                         }else if(TAG_LED_NAME.equals(startTagName)){
                             //add by zhaohairuo for bug 20746 @2018-11-15 start
-							String str = xmlPullParser.nextText();
-							int resId = mContext.getResources().getIdentifier(str, "string", getPackageName() );
-                                if(resId==0){
-                                    ledName=str;
-                                }else ledName = mContext.getResources().getString(resId);
+                            ledName = xmlPullParser.nextText();
 							//add by zhaohairuo for bug 20746 @2018-11-15 end
                         }else if(TAG_LED_PATH.equals(startTagName)){
                             ledPath = xmlPullParser.nextText();
@@ -258,7 +254,8 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
                                 }*/
                                 //if(testLineLayout!=null) {
                                     //testLineLayout.addView(testButton);
-                                    testOnButton = new TestButton(ledPath, ledOnValue, null);
+                                    //testOnButton = new TestButton(ledPath, ledOnValue, null);
+                                testOnButton = new TestButton(ledPath, ledOnValue);
                                 //}
                             }
 
@@ -281,7 +278,8 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
                                 }*/
                                 //if(testLineLayout!=null) {
                                 //    testLineLayout.addView(testButton);
-                                    testOffButton = new TestButton(ledPath, ledOffValue, null);
+                                   // testOffButton = new TestButton(ledPath, ledOffValue, null);
+                                testOffButton = new TestButton(ledPath, ledOffValue);
                                 //}
                             }
                             LogUtil.w("xcode","===>"+ledName+" group"+ledGroup);
@@ -454,21 +452,21 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
      * led button object
      */
     class  TestButton extends Object{
-        protected Button _button = null;
+        //protected Button _button = null;
         protected boolean _tested = false;
         protected String _path = null;
         protected String _value = null;
 
-        TestButton(String path,String val,Button button){
+        TestButton(String path,String val/*,Button button*/){
             _path = path;
             _value = val;
-            _button = button;
-            _button.setSoundEffectsEnabled(false);
+            //_button = button;
+            //_button.setSoundEffectsEnabled(false);
         }
 
-        public Button getTestButton() {
+        /*public Button getTestButton() {
             return _button;
-        }
+        }*/
 
         public String getTestLedPath() {
             return _path;

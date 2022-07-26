@@ -288,7 +288,7 @@ public class PCBAAutoDeputyTestMICActivity extends BaseActivity implements Promp
     private void startAudioService(){
         if(!isRunAudioService) {
             Intent intent = new Intent(this, AudioLoopbackService.class);
-            intent.putExtra("isEarPhone", true);
+            intent.putExtra("isEarPhone", false);
             intent.putExtra(AudioLoopbackService.OLD_VOLUME, mOldVolume);
             startService(intent);
             isRunAudioService=true;

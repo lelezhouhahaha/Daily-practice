@@ -194,12 +194,12 @@
 	
 	<test_line>
 		<item_cmd_id>500</item_cmd_id>
-		<item_class>PCBAAutoMainMicActiviy</item_class>
+		<item_class>PCBAAutoMainTestMICActivity</item_class>
 	</test_line>
 	
 	<test_line>
 		<item_cmd_id>501</item_cmd_id>
-		<item_class>PCBAAutoDeputyMicActiviy</item_class>
+		<item_class>PCBAAutoDeputyTestMICActivity</item_class>
 	</test_line>
 	
 	<test_line>
