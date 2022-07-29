@@ -247,7 +247,7 @@ public class PogoPin2ChargeActivity extends BaseActivity implements View.OnClick
     }
 
     private boolean isOkCurrentNow(Float currentNow) {
-        if (!mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PCBANAME)) {
+        if (!mFatherName.equals(MyApplication.PCBASignalNAME) && !mFatherName.equals(MyApplication.PCBANAME)&& !mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
             /*if(!"0".equals(mCurrentAbsoluteEnabled)) {
                 if (currentNow > 0)
                     currentNow = Float.valueOf("0");
