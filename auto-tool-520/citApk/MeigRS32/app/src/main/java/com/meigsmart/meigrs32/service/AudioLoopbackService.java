@@ -214,7 +214,7 @@ public class AudioLoopbackService extends Service {
                     mode = mAudioManager.getMode();
                     mAudioManager.setSpeakerphoneOn(!isEarPhone);//modified by Yar
                     boolean isheadseton = mAudioManager.isWiredHeadsetOn();
-                    if (isheadseton || isEarPhone) {//modified by Yar
+                    if (isheadseton || !isEarPhone) {//modified by Yar
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                         int maxVolume = mAudioManager.getStreamMaxVolume(STREAM_TYPE);
                         mAudioManager.setStreamVolume(STREAM_TYPE, 15, 0);
