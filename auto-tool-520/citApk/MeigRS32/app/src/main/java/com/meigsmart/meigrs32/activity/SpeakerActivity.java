@@ -93,6 +93,17 @@ public class SpeakerActivity extends BaseActivity implements View.OnClickListene
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            mContext.finish();
+        }
+    }
+
+    @Override
     protected void initData() {
         mContext = this;
         super.startBlockKeys = Const.isCanBackKey;

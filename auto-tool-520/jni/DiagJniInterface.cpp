@@ -224,6 +224,12 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 	if(ptr_ret != NULL){
 		LOGD_LOG("ftm_ap_dispatch called fail!");
 	}
+
+	LOGD_LOG("ftm_ap_dispatch iCmd:[%d]", iCmd);
+	if( ( iCmd >= ( FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE ) ) && ( iCmd <= ( FTM_SUBCMD_RECEIVER + FTM_SUBCMD_BASE ) ) ){
+		LOGD_LOG("ftm_ap_dispatch not handler sem_wait iCmd:[%d]", iCmd);
+		return CreatResponsePacket(iCmd, 0, NULL);
+	}
 	LOGD_LOG("ftm_ap_dispatch called! sem_wait start");
 	
 	sem_wait(&g_sem_diag_cmmd);

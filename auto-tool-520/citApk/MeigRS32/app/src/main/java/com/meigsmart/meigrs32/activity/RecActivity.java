@@ -73,10 +73,22 @@ public class RecActivity extends BaseActivity implements View.OnClickListener,
     private int mConfigTime = 0;
 
     private int mOldMode = AudioManager.MODE_NORMAL;
+    private final String TAG = this.getClass().getSimpleName();
 
     @Override
     protected int getLayoutId() {
         return R.layout.activity_rec;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            mContext.finish();
+        }
     }
 
     @Override

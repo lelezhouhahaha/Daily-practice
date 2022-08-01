@@ -334,6 +334,7 @@
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.EarPhoneActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <!--added by Yar for Speakloop begin-->
         <activity

@@ -75,6 +75,7 @@ public class MyDiagAutoTestService extends Service {
                                 intent_finish.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 intent_finish.putExtra("fatherName", "");
                                 intent_finish.putExtra("name", SAVE_EN_LOG ? PCBAAutoActivity.class.getSimpleName() : title_finish);
+                                intent_finish.putExtra("finish", true);
 
                                 LogUtil.d(TAG, "finish PCBAAutoActivity");
                                 getApplication().startActivity(intent_finish);

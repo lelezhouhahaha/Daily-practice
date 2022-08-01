@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
@@ -65,6 +66,17 @@ public class PCBAAutoLCDBrightnessActivity extends BaseActivity implements View.
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            mContext.finish();
+        }
+    }
+
+    @Override
     protected void initData() {
         mContext = this;
         super.startBlockKeys = Const.isCanBackKey;
@@ -90,7 +102,7 @@ public class PCBAAutoLCDBrightnessActivity extends BaseActivity implements View.
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = 2;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }

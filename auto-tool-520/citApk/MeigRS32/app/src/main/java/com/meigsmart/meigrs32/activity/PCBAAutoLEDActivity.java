@@ -1,6 +1,7 @@
 package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -88,6 +89,17 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            mContext.finish();
+        }
+    }
+
+    @Override
     protected void initData() {
         mContext = this;
         super.startBlockKeys = Const.isCanBackKey;
@@ -122,7 +134,7 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
         if(mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = 2;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*2;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
@@ -308,7 +320,7 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
    }
 
     TestButton getTestLedOnButton( String ledname ){
-        if( ( ledname == null ) || !ledname.isEmpty() ) {
+        if( ( ledname == null ) || ledname.isEmpty() ) {
             LogUtil.d(TAG, "getTestLedOnButton ledname is null or empty!");
             return null;
         }
@@ -330,7 +342,7 @@ public class PCBAAutoLEDActivity extends BaseActivity implements View.OnClickLis
     }
 
     TestButton getTestLedOffButton( String ledname ){
-        if( ( ledname == null ) || !ledname.isEmpty() ) {
+        if( ( ledname == null ) || ledname.isEmpty() ) {
             LogUtil.d(TAG, "getTestLedOffButton ledname is null or empty!");
             return null;
         }

@@ -84,6 +84,9 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     private static int moreClickTimes;
     public MyDiagAutoTestClient mDiagClient = null;
     public MyHandler mHandler = null;
+    private Intent mSaveStartItemIntent = null;
+    private int mSaveStartCmmdId = 0;
+   // private final String TAG = this.getClass().getSimpleName();
 
     @Override
     protected int getLayoutId() {
@@ -93,8 +96,11 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onNewIntent(Intent intent){
         super.onNewIntent(intent);
-        LogUtil.d(TAG, "onNewIntent finish current activity!");
-        mContext.finish();
+        boolean flag = intent.getBooleanExtra("finish", false);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            mContext.finish();
+        }
     }
 
     @Override
@@ -189,6 +195,10 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 LogUtil.d(TAG, "get fail reason is null");
             }
             LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
+            if(isToolAutoJudge(requestCode)){
+                LogUtil.d(TAG, "not return result");
+                return;
+            }
 
             if(results == SUCCESS){
                 mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, requestCode, results, null, 0);
@@ -226,6 +236,19 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                     Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
                     int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
                     Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
+                    if(activity.mSaveStartItemIntent != null){
+                        Log.d(activity.TAG, "activity.mSaveStartItemIntent.getClass():" + activity.mSaveStartItemIntent.getClass());
+                        Log.d(activity.TAG, "activity.mSaveStartItemIntent.getComponent().getClassName():" + activity.mSaveStartItemIntent.getComponent().getClassName());
+
+                        String mClassName = activity.mSaveStartItemIntent.getComponent().getClassName();
+                        String mClassName2 = activity.mSaveStartItemIntent.getStringExtra("className");  //start third party apk
+                        Log.d(activity.TAG, "mClassName:" + mClassName);
+                        Log.d(activity.TAG, "mClassName2:" + mClassName2);
+                        if(activity.isToolAutoJudgementTestRunning(activity.mContext, mClassName) || activity.isToolAutoJudgementTestRunning(activity.mContext, mClassName2)) {
+                            activity.mSaveStartItemIntent.putExtra("finish", true);
+                            activity.startActivityForResult(activity.mSaveStartItemIntent, mDiagCommandId);
+                        }
+                    }
                     int ret = activity.startActivityDependOnCommandId(mDiagCommandId);
                     if(ret == -1){
                         String returnData = "there is no test item.";
@@ -293,6 +316,28 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             //mClassName = "com.meigsmart.meigrs32.activity." + str_className;
         }
         return mTitle;
+    }
+
+    private boolean isToolAutoJudgementTestRunning(Context context, String mClassName) {
+        if( ( mClassName == null ) || ( mClassName.isEmpty() ) ){
+            Log.d(TAG, "isToolAutoJudgementTestRunning ( mClassName == null ) || ( mClassName.isEmpty() )");
+            return false;
+        }
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(1);
+        if(list == null){
+            Log.d(TAG, "isToolAutoJudgementTestRunning list == null");
+            return false;
+        }
+        ActivityManager.RunningTaskInfo info = list.get(0);
+        Log.d(TAG, "isToolAutoJudgementTestRunning mClassName:" + mClassName);
+        Log.d(TAG, "isToolAutoJudgementTestRunning info.topActivity.getClassName():" + info.topActivity.getClassName());
+        if ( mClassName.equals(info.topActivity.getClassName() ) ) {
+            //find it, break
+            Log.d(TAG, "isToolAutoJudgementTestRunning is true mClassName:" + mClassName);
+            return true;
+        }
+        return false;
     }
 
     private Class getClass(String className){
@@ -403,6 +448,13 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 default:
                     break;
             }
+            if(isToolAutoJudge(mDiagCommandId)){
+                mSaveStartItemIntent = intent;
+                mSaveStartCmmdId = mDiagCommandId;
+            }else {
+                mSaveStartItemIntent = null;
+                mSaveStartCmmdId = 0;
+            }
             startActivityForResult(intent,mDiagCommandId);
         }else{
             LogUtil.d(TAG, "model.getCls() == null model.getClassName():" + model.getClassName());
@@ -424,11 +476,23 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 intent.putExtra("packageName", model.getPackageName());
                 intent.putExtra("className", model.getClassName());
             }
+            if(isToolAutoJudge(mDiagCommandId)){
+                mSaveStartItemIntent = intent;
+                mSaveStartCmmdId = mDiagCommandId;
+            }else {
+                mSaveStartItemIntent = null;
+                mSaveStartCmmdId = 0;
+            }
             startActivityForResult(intent,mDiagCommandId);
         }
         return 0;
     }
 
+    private boolean isToolAutoJudge(int cmdId){
+        if( ( cmdId >= ( DiagCommand.FTM_SUBCMD_HEADSET + DiagCommand.FTM_SUBCMD_BASE ) ) && ( cmdId <= ( DiagCommand.FTM_SUBCMD_RECEIVER + DiagCommand.FTM_SUBCMD_BASE ) ) )
+            return true;
+        return false;
+    }
 
     private List<String> removeDuplicate(List<String> list)
     {
