@@ -221,6 +221,7 @@
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.LEDBatterySwitchActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.ScanActivityFarFocus"
@@ -331,6 +332,7 @@
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.VibratorActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.EarPhoneActivity"
@@ -421,13 +423,16 @@
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.PogopinOtgActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.PogoPin8ChargeActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
 
         <activity
             android:name=".activity.PogoPin2ChargeActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.PogopinChargeActivity"
@@ -440,15 +445,18 @@
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.FlashLightActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.FlashLight_NewActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.LightGoolgeActivity"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.BatterySwitchActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.RtcActivity"
@@ -876,9 +884,11 @@
             android:configChanges="orientation|screenSize|mcc|mnc"/>
         <activity
             android:name=".activity.I2CActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
         <activity
             android:name=".activity.UARTActivity"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|mcc|mnc" />
 
 

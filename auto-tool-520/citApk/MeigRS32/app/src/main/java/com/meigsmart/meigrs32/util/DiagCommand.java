@@ -26,8 +26,7 @@ public class DiagCommand {
     public static final int FTM_SUBCMD_SCANER_FAR = 19;
     public static final int FTM_SUBCMD_FINGERPRINT = 20;
     public static final int FTM_SUBCMD_BATTERYCHARGER = 21;
-    public static final int FTM_SUBCMD_STROBE = 22;
-    public static final int FTM_SUBCMD_VIBRATOR = 23;
+    public static final int FTM_SUBCMD_CTYPECOTG = 23;
     public static final int FTM_SUBCMD_FRONTCAMERA = 24;
     public static final int FTM_SUBCMD_BACKCAMERA = 25;
     public static final int FTM_SUBCMD_TOUCH = 26;
@@ -60,13 +59,14 @@ public class DiagCommand {
     public static final int FTM_SUBCMD_MICLOOP = 502;
     public static final int FTM_SUBCMD_SPEAKER = 503;
     public static final int FTM_SUBCMD_RECEIVER = 504;
-    public static final int FTM_SUBCMD_CTYPECOTG = 505;
     public static final int FTM_SUBCMD_POGOPINCHARGER2 = 506;
     public static final int FTM_SUBCMD_POGOPINCHARGER8 = 507;
     public static final int FTM_SUBCMD_POGOPINOTG = 508;
     public static final int FTM_SUBCMD_BATTERYSWITCHING = 509;
     public static final int FTM_SUBCMD_UART = 510;
     public static final int FTM_SUBCMD_I2C = 511;
+    public static final int FTM_SUBCMD_STROBE = 512;
+    public static final int FTM_SUBCMD_VIBRATOR = 513;
 
     public static final int FTM_SUBCMD_MAX = 2000;
 
@@ -88,4 +88,6 @@ public class DiagCommand {
     public final static int ACK_SAY_HELLO = 0X0006; //client only for handshark
     public final static int SERVICEID_SET_RESULT = 0X0007; //
     public final static int ACK_SERVICEID_SET_RESULT = 0X0008; //
+    public final static int SERVICEID_QUERY_RESULT = 0X0009; //
+    public final static int ACK_SERVICEID_QUERY_RESULT = 0X000A; //
 }

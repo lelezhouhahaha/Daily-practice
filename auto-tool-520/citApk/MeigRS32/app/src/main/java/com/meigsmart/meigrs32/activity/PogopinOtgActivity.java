@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.app.AppGlobals;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.input.InputManager;
 import android.hardware.usb.UsbManager;
@@ -101,6 +102,18 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
     @Override
     protected int getLayoutId() {
         return R.layout.activity_usb_otg;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            deInit(mFatherName, NOTEST);
+            //mContext.finish();
+        }
     }
 
     @Override

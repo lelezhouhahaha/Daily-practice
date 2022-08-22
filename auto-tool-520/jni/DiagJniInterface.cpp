@@ -117,6 +117,42 @@ PACKED void *cmmdHandlerAutoJudged(int mDiagCmmdId){
 	return NULL;
 }
 
+PACKED void *cmmdHandlerQueryResult(int mDiagCmmdId){
+	JNIEnv *env;
+	bool threadAttached = false;
+	if(jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK){
+		if(jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
+			LOGD_LOG("cmmdHandlerQueryResult: AttachCurrentThread error");
+			return CreatResponsePacket(mDiagCmmdId, 1, "AttachCurrentThread error");
+		}
+		threadAttached = true;
+	}
+	LOGD_LOG("cmmdHandlerQueryResult: 1");
+	jclass java_class = env->GetObjectClass(gDiagJNIInterfaceObject);
+	if(!java_class){
+		if(threadAttached)
+            jvm->DetachCurrentThread();
+        LOGD_LOG("cmmdHandlerQueryResult: GetObjectClass error");
+		return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
+	}
+	LOGD_LOG("cmmdHandlerQueryResult: 2");
+	jmethodID method = env->GetStaticMethodID(java_class, "doNoticeApHandlerQueryResult", "(I)V");
+	if(!method) {
+      if(threadAttached)
+          jvm->DetachCurrentThread();
+      LOGD_LOG("cmmdHandlerQueryResult: GetStaticMethodID error");
+	  return CreatResponsePacket(mDiagCmmdId, 1, "GetObjectClass error");
+    }
+	LOGD_LOG("cmmdHandlerQueryResult: 3");
+	/* Finally call the callback */
+    jint ret = env->CallStaticIntMethod(java_class, method, mDiagCmmdId);
+	LOGD_LOG("cmmdHandlerQueryResult ret:%d", ret);
+    if(threadAttached)
+        jvm->DetachCurrentThread();
+	LOGD_LOG("cmmdHandlerQueryResult end");
+	return NULL;
+}
+
 PACKED void *cmmdHandlerSetResult(int mCmdId, int mResult, uint8_t *data, int mDataSize){
 	JNIEnv *env;
 	LOGD_LOG("cmmdHandlerSetResult: mCmdId:%d", mCmdId);
@@ -215,9 +251,14 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 	
 	/*if( ( (iCmd >= (FTM_SUBCMD_START + FTM_SUBCMD_BASE) ) && ( iCmd < (FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE)) ) ||
 	( (iCmd >= FTM_SUBCMD_QUERY_BASE ) && ( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE)) )){*/
-	if( iCmd < (FTM_SUBCMD_MAX + FTM_SUBCMD_QUERY_BASE) ){
+	if( iCmd < FTM_SUBCMD_QUERY_BASE ){
+		LOGD_LOG("ftm_ap_dispatch start cmmdHandlerAutoJudged");
 		ptr_ret = cmmdHandlerAutoJudged(iCmd);
-	}else{
+	}else if( iCmd < FTM_SUBCMD_SET_RESULT_BASE ){
+		LOGD_LOG("ftm_ap_dispatch start cmmdHandlerQueryResult");
+		ptr_ret = cmmdHandlerQueryResult(iCmd);
+	}else {
+		LOGD_LOG("ftm_ap_dispatch start else");
 		ptr_ret = (PACKED void *)cmmdHandlerSetResult(iCmd, ((ftm_cmd_response *)req_pkt)->ftm_cmd_resp_result, ((ftm_cmd_response *)req_pkt)->Data, ((ftm_cmd_response *)req_pkt)->size);
 	}
 	
@@ -226,7 +267,9 @@ void * ftm_ap_dispatch(void *req_pkt, uint16 pkt_len) {
 	}
 
 	LOGD_LOG("ftm_ap_dispatch iCmd:[%d]", iCmd);
-	if( ( iCmd >= ( FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE ) ) && ( iCmd <= ( FTM_SUBCMD_RECEIVER + FTM_SUBCMD_BASE ) ) ){
+	LOGD_LOG("ftm_ap_dispatch ( FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE ):[%d]", ( FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE ));
+	LOGD_LOG("ftm_ap_dispatch ( FTM_SUBCMD_MAX + FTM_SUBCMD_BASE ):[%d]", ( FTM_SUBCMD_MAX + FTM_SUBCMD_BASE ));
+	if( ( iCmd >= ( FTM_SUBCMD_HEADSET + FTM_SUBCMD_BASE ) ) && ( iCmd <= ( FTM_SUBCMD_MAX + FTM_SUBCMD_BASE ) ) ){
 		LOGD_LOG("ftm_ap_dispatch not handler sem_wait iCmd:[%d]", iCmd);
 		return CreatResponsePacket(iCmd, 0, NULL);
 	}

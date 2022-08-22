@@ -85,14 +85,6 @@
 		<item_class>BatteryChargePCBAActivity</item_class>
 	</test_line>
     <test_line>
-		<item_cmd_id>22</item_cmd_id>
-		<item_class>FlashLight_NewActivity</item_class>
-	</test_line>
-    <test_line>
-		<item_cmd_id>23</item_cmd_id>
-		<item_class>VibratorActivity</item_class>
-	</test_line>
-    <test_line>
 		<item_cmd_id>24</item_cmd_id>
 		<item_class>FrontCameraAutoActivity</item_class>
 	</test_line>
@@ -218,7 +210,7 @@
 	</test_line>
 	
 	<test_line>
-		<item_cmd_id>505</item_cmd_id>
+		<item_cmd_id>23</item_cmd_id>
 		<item_class>UsbTypeCOtgActivity</item_class>
 	</test_line>
 	
@@ -251,7 +243,14 @@
 		<item_cmd_id>511</item_cmd_id>
 		<item_class>I2CActivity</item_class>
 	</test_line>
-	
+	<test_line>
+		<item_cmd_id>512</item_cmd_id>
+		<item_class>FlashLight_NewActivity</item_class>
+	</test_line>
+	<test_line>
+		<item_cmd_id>513</item_cmd_id>
+		<item_class>VibratorActivity</item_class>
+	</test_line>
 	<test_line>
 		<item_cmd_id>800</item_cmd_id>
 		<item_class>PCBAAutoMainTestMICActivity</item_class>

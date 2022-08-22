@@ -86,6 +86,8 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     public MyHandler mHandler = null;
     private Intent mSaveStartItemIntent = null;
     private int mSaveStartCmmdId = 0;
+    private int mCurrentStartCmmdId = 0;
+    private boolean mToolAutoJudgementResultFlag = false;
    // private final String TAG = this.getClass().getSimpleName();
 
     @Override
@@ -99,7 +101,8 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
         boolean flag = intent.getBooleanExtra("finish", false);
         if(flag) {
             LogUtil.d(TAG, "onNewIntent finish current activity!");
-            mContext.finish();
+			deInit(mFatherName, NOTEST);
+            //mContext.finish();
         }
     }
 
@@ -196,9 +199,15 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             }
             LogUtil.d(TAG, "test results:" + results + " requestCode:" + requestCode + " reason:" + reason);
             if(isToolAutoJudge(requestCode)){
+                int mCmmdId = mSaveStartItemIntent.getIntExtra("requestCode", 0);
+                LogUtil.d(TAG, "mCmmdId:" + mCmmdId + " mToolAutoJudgementResultFlag:" + mToolAutoJudgementResultFlag);
+                if(mCmmdId == requestCode){
+                    mToolAutoJudgementResultFlag = true;
+                }else mToolAutoJudgementResultFlag = false;
+                LogUtil.d(TAG, "2 mCmmdId:" + mCmmdId + " mToolAutoJudgementResultFlag:" + mToolAutoJudgementResultFlag);
                 LogUtil.d(TAG, "not return result");
                 return;
-            }
+            }else mToolAutoJudgementResultFlag = false;
 
             if(results == SUCCESS){
                 mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, requestCode, results, null, 0);
@@ -235,11 +244,12 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                 case DiagCommand.SERVICEID:
                     Log.d(activity.TAG, "ACTIVITYID 服务端传来了消息=====>>>>>>>");
                     int mDiagCommandId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    activity.mCurrentStartCmmdId = mDiagCommandId;
                     Log.d(activity.TAG, "zll mCmmdContent:" + mDiagCommandId);
                     if(activity.mSaveStartItemIntent != null){
                         Log.d(activity.TAG, "activity.mSaveStartItemIntent.getClass():" + activity.mSaveStartItemIntent.getClass());
                         Log.d(activity.TAG, "activity.mSaveStartItemIntent.getComponent().getClassName():" + activity.mSaveStartItemIntent.getComponent().getClassName());
-
+                        activity.mToolAutoJudgementResultFlag = false;
                         String mClassName = activity.mSaveStartItemIntent.getComponent().getClassName();
                         String mClassName2 = activity.mSaveStartItemIntent.getStringExtra("className");  //start third party apk
                         Log.d(activity.TAG, "mClassName:" + mClassName);
@@ -247,6 +257,33 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                         if(activity.isToolAutoJudgementTestRunning(activity.mContext, mClassName) || activity.isToolAutoJudgementTestRunning(activity.mContext, mClassName2)) {
                             activity.mSaveStartItemIntent.putExtra("finish", true);
                             activity.startActivityForResult(activity.mSaveStartItemIntent, mDiagCommandId);
+                            Log.d(activity.TAG, "send HANDLER_START_ACTIVITY activity.mToolAutoJudgementResultFlag:" + activity.mToolAutoJudgementResultFlag);
+                            if(!activity.mToolAutoJudgementResultFlag){
+                                Log.d(activity.TAG, "send HANDLER_START_ACTIVITY");
+                                Runnable run = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if(activity.mToolAutoJudgementResultFlag) {
+                                            Log.d(activity.TAG, "activity.mToolAutoJudgementResultFlag true");
+                                            int ret = activity.startActivityDependOnCommandId(activity.mCurrentStartCmmdId);
+                                            if(ret == -1){
+                                                String returnData = "there is no test item.";
+                                                activity.mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID, activity.mCurrentStartCmmdId, 0, returnData, returnData.length());
+                                            }
+                                            activity.mToolAutoJudgementResultFlag = false;
+                                            try{
+                                                Thread.sleep(500);
+                                            }catch (Exception e){
+                                                Log.d(activity.TAG, "sleep exception");
+                                            }
+                                            return;
+                                        }else Log.d(activity.TAG, "activity.mToolAutoJudgementResultFlag false");
+                                        activity.mHandler.postDelayed(this, 500);
+                                    }
+                                };
+                                run.run();
+                                break;
+                            }
                         }
                     }
                     int ret = activity.startActivityDependOnCommandId(mDiagCommandId);
@@ -278,6 +315,14 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
                         //send ack
                         activity.mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID_SET_RESULT, mDiagCmmdId, activity.SUCCESS, null, 0);
                     }
+                }
+                    break;
+                case DiagCommand.SERVICEID_QUERY_RESULT: {
+                    int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    int mMatchIdx = activity.getMatchData(mDiagCmmdId);
+                    TypeModel model = activity.mAdapter.getData().get(mMatchIdx);
+                    int result = model.getType();
+                    activity.mDiagClient.doSendResultMessage(DiagCommand.ACK_SERVICEID_SET_RESULT, mDiagCmmdId, result, null, 0);
                 }
                     break;
                 case DiagCommand.ACK_SAY_HELLO:
@@ -451,6 +496,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             if(isToolAutoJudge(mDiagCommandId)){
                 mSaveStartItemIntent = intent;
                 mSaveStartCmmdId = mDiagCommandId;
+                mSaveStartItemIntent.putExtra("requestCode", mDiagCommandId);
             }else {
                 mSaveStartItemIntent = null;
                 mSaveStartCmmdId = 0;
@@ -479,6 +525,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
             if(isToolAutoJudge(mDiagCommandId)){
                 mSaveStartItemIntent = intent;
                 mSaveStartCmmdId = mDiagCommandId;
+                mSaveStartItemIntent.putExtra("requestCode", mDiagCommandId);
             }else {
                 mSaveStartItemIntent = null;
                 mSaveStartCmmdId = 0;
@@ -489,7 +536,7 @@ public class PCBAAutoActivity extends BaseActivity implements View.OnClickListen
     }
 
     private boolean isToolAutoJudge(int cmdId){
-        if( ( cmdId >= ( DiagCommand.FTM_SUBCMD_HEADSET + DiagCommand.FTM_SUBCMD_BASE ) ) && ( cmdId <= ( DiagCommand.FTM_SUBCMD_RECEIVER + DiagCommand.FTM_SUBCMD_BASE ) ) )
+        if( ( cmdId >= ( DiagCommand.FTM_SUBCMD_HEADSET + DiagCommand.FTM_SUBCMD_BASE ) ) && ( cmdId <= ( DiagCommand.FTM_SUBCMD_MAX + DiagCommand.FTM_SUBCMD_BASE ) ) )
             return true;
         return false;
     }

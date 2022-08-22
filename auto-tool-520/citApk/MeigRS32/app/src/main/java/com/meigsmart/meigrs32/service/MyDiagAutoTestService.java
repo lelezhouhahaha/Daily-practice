@@ -28,6 +28,7 @@ public class MyDiagAutoTestService extends Service {
     private DiagJniInterface mDiag = null;
     public final static int HANDLER_DIAG_COMMAND = 10000;
     public final static int HANDLER_DIAG_COMMAND_SET_RESULT = 10010;
+    public final static int HANDLER_DIAG_COMMAND_QUERY_RESULT = 10020;
     public boolean SAVE_EN_LOG = false;
 
     private MyHandler mServerHandler = new MyHandler();
@@ -100,6 +101,13 @@ public class MyDiagAutoTestService extends Service {
                     int mSize = msg.getData().getInt(DiagCommand.FTM_SUBCMD_DATA_SIZE_KEY);
                     Log.d(TAG, "zll HANDLER_DIAG_COMMAND_SET_RESULT mCmmdResultContent:" + mDiagCmmdId + " mResult:[" +  mResult + "] mData:[" + mData + "] mSize:[" + mSize + "].");
                     doSendResultMessage(DiagCommand.SERVICEID_SET_RESULT, mDiagCmmdId, mResult, mData, mSize);
+                }
+                    break;
+                case HANDLER_DIAG_COMMAND_QUERY_RESULT:
+                    Log.d(TAG, "diag command handler query result");
+                {
+                    int mDiagCmmdId = msg.getData().getInt(DiagCommand.FTM_SUBCMD_CMD_KEY);
+                    doSendMessage(DiagCommand.SERVICEID_QUERY_RESULT, mDiagCmmdId, null, 0);
                 }
                     break;
                 case DiagCommand.ACK_SERVICEID: {

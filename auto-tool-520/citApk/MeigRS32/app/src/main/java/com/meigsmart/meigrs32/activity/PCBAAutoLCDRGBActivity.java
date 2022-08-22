@@ -56,7 +56,8 @@ public class PCBAAutoLCDRGBActivity extends BaseActivity implements View.OnClick
         LogUtil.d(TAG, "onNewIntent flag:" + flag);
         if(flag) {
             LogUtil.d(TAG, "onNewIntent finish current activity!");
-            mContext.finish();
+			deInit(mFatherName, NOTEST);
+            //mContext.finish();
         }
     }
 

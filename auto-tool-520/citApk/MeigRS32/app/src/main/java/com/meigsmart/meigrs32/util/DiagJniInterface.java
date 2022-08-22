@@ -11,6 +11,9 @@ public class DiagJniInterface {
     private boolean status = false;
     private static boolean mToolStartStatus = false;
     public static Handler mHandler = null;
+    public static final int HANDLER_AUTO_JUDGEMENT_TEST = 10000;
+    public static final int HANDLER_SET_RESULT_TEST = 10010;
+    public static final int HANDLER_QUERY_RESULT_TEST = 10020;
 
     public boolean isStatus() {
         return status;
@@ -62,6 +65,23 @@ public class DiagJniInterface {
         Message msg = Message.obtain();
         msg.setData(bundle);
         msg.arg1 = 10010;
+        msg.setTarget(mHandler);
+        msg.sendToTarget();
+    }
+
+    public static void doNoticeApHandlerQueryResult(int cmdid){
+        Log.d(TAG, "cmdid:" + cmdid);
+        if(mHandler == null){
+            //Log.d("DiagJniInterfaceJava", "mHandler is null");
+            Log.d(TAG, "mHandler is null");
+            return;
+        }
+        Bundle bundle = new Bundle();
+        String mCmmdId = String.valueOf(cmdid);
+        bundle.putInt(DiagCommand.FTM_SUBCMD_CMD_KEY, cmdid);
+        Message msg = Message.obtain();
+        msg.setData(bundle);
+        msg.arg1 = HANDLER_QUERY_RESULT_TEST;
         msg.setTarget(mHandler);
         msg.sendToTarget();
     }

@@ -99,7 +99,8 @@ public class SpeakerActivity extends BaseActivity implements View.OnClickListene
         LogUtil.d(TAG, "onNewIntent flag:" + flag);
         if(flag) {
             LogUtil.d(TAG, "onNewIntent finish current activity!");
-            mContext.finish();
+			deInit(mFatherName, NOTEST);
+            //mContext.finish();
         }
     }
 

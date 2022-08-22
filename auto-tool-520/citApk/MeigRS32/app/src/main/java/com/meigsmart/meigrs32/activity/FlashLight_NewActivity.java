@@ -2,6 +2,7 @@ package com.meigsmart.meigrs32.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -56,10 +57,23 @@ public class FlashLight_NewActivity extends BaseActivity implements View.OnClick
 
     private boolean isCanOpen = false;
     private  CameraManager mCameraManager;
+    private final String TAG = this.getClass().getSimpleName();
 
     @Override
     protected int getLayoutId() {
         return R.layout.activity_flash_light;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        boolean flag = intent.getBooleanExtra("finish", false);
+        LogUtil.d(TAG, "onNewIntent flag:" + flag);
+        if(flag) {
+            LogUtil.d(TAG, "onNewIntent finish current activity!");
+            deInit(mFatherName, NOTEST);
+            //mContext.finish();
+        }
     }
 
     @Override
