@@ -1,12 +1,15 @@
 package com.meigsmart.meigrs32.activity;
 
+import android.app.Activity;
 import android.app.AppGlobals;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.input.InputManager;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
+import android.os.Message;
 import android.os.storage.DiskInfo;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
@@ -31,6 +34,8 @@ import com.meigsmart.meigrs32.view.PromptDialog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -72,8 +77,9 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
     private static final String POGOPIN_OTG_UHF = "/sys/class/sunmi_uhf/uhf/chargeUhf";
     private Boolean mCurrentTestResult = false;
     private Runnable mRun = null;
-    private Handler mHandler = null;
+    //private Handler mHandler = null;
     private int mConfigTime = 0;
+    private MyHandler mHandler;
 
     private boolean isPogopinOtg(){
             /*pogopinStatus = readNodeValue(POGOPIN_OTG_STATUS_NODE);
@@ -130,28 +136,34 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
             writeToFile(POGOPIN_OTG_UHF,"1");
         }
 
+        mHandler = new MyHandler(mContext);
+
         if (mFatherName.equals(MyApplication.RuninTestNAME)) {
             mConfigTime = RuninConfig.getRunTime(mContext, this.getLocalClassName());
         }else if (mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)/2;
+            mConfigTime  = getResources().getInteger(R.integer.pcba_auto_test_default_time)*4;
         } else {
             mConfigTime = getResources().getInteger(R.integer.pcba_test_default_time);
         }
-        mMouseArea.setOnHoverListener(new View.OnHoverListener() {
-            @Override
-            public boolean onHover(View v, MotionEvent event) {
-                int what = event.getAction();
-                //if it is not usb ota , return it
-                if(!"MT537".equals(projectName)) {
-                    if (!isPogopinOtg()) {
-                        return false;
+        if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
+            Log.d(TAG, "current test is pcbaautotest 1");
+            mMouseArea.setVisibility(View.GONE);
+        }else {
+            mMouseArea.setOnHoverListener(new View.OnHoverListener() {
+                @Override
+                public boolean onHover(View v, MotionEvent event) {
+                    int what = event.getAction();
+                    //if it is not usb ota , return it
+                    if (!"MT537".equals(projectName)) {
+                        if (!isPogopinOtg()) {
+                            return false;
+                        }
+                    } else {
+                        Log.d("Meig_pogopinotg", " Pogopin_Otg:" + isPogopin_Otg());
+                        if (!isPogopin_Otg()) {
+                            return false;
+                        }
                     }
-                }else{
-                    Log.d("Meig_pogopinotg"," Pogopin_Otg:"+isPogopin_Otg());
-                    if (!isPogopin_Otg()) {
-                        return false;
-                    }
-                }
 
                 switch(what){
                     case MotionEvent.ACTION_HOVER_ENTER:
@@ -179,6 +191,7 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
                 return false;
             }
         });
+        }
 
         mDialog.setCallBack(this);
         mFatherName = getIntent().getStringExtra("fatherName");
@@ -195,26 +208,53 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
         usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)) {
-            mHandler = new Handler();
+            Log.d(TAG, "current test is pcbaautotest 2");
+            mMouseArea.setVisibility(View.INVISIBLE);
+            mShow.setText(getResources().getString(R.string.uDiskUsedSpaceSize) + mUdiskUsedSpace + "\n\n" + getResources().getString(R.string.uDiskTotalSpaceSize) +mUdiskTotalSpace);
+            mHandler = new MyHandler(mContext);
             mRun = new Runnable() {
                 @Override
                 public void run() {
                     mConfigTime--;
-                    LogUtil.d(TAG, "initData mConfigTime:" + mConfigTime);
+                    LogUtil.d(TAG, "pcba auto test initData mConfigTime:" + mConfigTime);
                     updateFloatView(mContext, mConfigTime);
                     if ((mConfigTime == 0) && (mFatherName.equals(MyApplication.PCBAAutoTestNAME))) {
                         if (mCurrentTestResult) {
                             deInit(mFatherName, SUCCESS);
                         } else {
-                            LogUtil.d(TAG, "Pogopin 2 Test fail!");
-                            deInit(mFatherName, FAILURE, "Pogopin 2 Test fail!");
+                            LogUtil.d(TAG, "Pogopin otg Test fail!");
+                            deInit(mFatherName, FAILURE, "Pogopin otg Test fail!");
                         }
                         return;
+                    }
+                    if(isPogopinOtg()){
+                        LogUtil.d(TAG, "Pogopin otg Test fail!");
+                        mHandler.sendEmptyMessageDelayed(HANDLER_POGOPIN_OTG, 1000);
+                        //getDiskInfo();
                     }
                     mHandler.postDelayed(this, 1000);
                 }
             };
             mRun.run();
+        }
+    }
+
+    private static final int HANDLER_POGOPIN_OTG = 1000;
+    private static class MyHandler extends Handler {
+        WeakReference<Activity> reference;
+        public MyHandler(Activity activity) {
+            reference = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            PogopinOtgActivity activity = (PogopinOtgActivity) reference.get();
+            switch (msg.what) {
+                case HANDLER_POGOPIN_OTG:
+                    activity.getDiskInfo();
+                    break;
+            }
         }
     }
 
@@ -256,13 +296,11 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
     public void onResume() {
         super.onResume();
         if(!"MT537".equals(projectName)) {
-            if (!isPogopinOtg()) {
-            }else{
+            if (isPogopinOtg()) {
                 getDiskInfo();
             }
         }else{
-            if (!isPogopin_Otg()) {
-            }else{
+            if (isPogopin_Otg()) {
                 getDiskInfo();
             }
         }
@@ -295,11 +333,18 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
                     mShow.setText(getResources().getString(R.string.uDiskUsedSpaceSize) + mUdiskUsedSpace + "\n\n" + getResources().getString(R.string.uDiskTotalSpaceSize) +mUdiskTotalSpace);
 					if(mUdiskTotalSpace.length() != 0 || mUdiskUsedSpace.length() != 0){
                         mSuccess.setVisibility(View.VISIBLE);
+						mCurrentTestResult = true;
                         if (mFatherName.equals(MyApplication.PCBANAME) || mFatherName.equals(MyApplication.PreNAME)
                                 || mFatherName.equals(MyApplication.MMI1_PreName) || mFatherName.equals(MyApplication.MMI2_PreName)) {
                             mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                             deInit(mFatherName, SUCCESS);//auto pass pcba
-                        }
+                        }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
+							try {
+                            	Thread.sleep(3000);
+                        	} catch (InterruptedException e) {
+                            	e.printStackTrace();
+                        	}
+						}
 					}
 
                     break;
