@@ -1,0 +1,32 @@
+cc_binary {
+    name: "vendor.meig.hardware.scanservice@1.0-service",
+    init_rc: ["vendor.meig.hardware.scanservice@1.0-service.rc"],
+    relative_install_path: "hw",
+    vendor: true,
+    srcs: [
+        "ScanService.cpp",
+        "service.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+
+
+    shared_libs: [
+        "vendor.meig.hardware.scanservice@1.0",
+        "libbase",
+        "libcutils",
+        "libhidlbase",
+        "libhidltransport",
+        "liblog",
+        "libutils",
+        "libhardware",
+	"libMeigNativeCamera",
+    ],
+    
+    export_shared_lib_headers: [
+    	"libMeigNativeCamera",
+    ],
+
+}

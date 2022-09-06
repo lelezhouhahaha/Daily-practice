@@ -1,0 +1,5694 @@
+From f11fb42ed82f64cac874ce8837af731bd372dd85 Mon Sep 17 00:00:00 2001
+From: lelezhouhahaha@163.com <zhoulele@meigsmart.com>
+Date: Mon, 05 Sep 2022 22:40:39 -0400
+Subject: [PATCH] [MC559] [TASKID] 25394 [Description]Simulate scan service demo development [Solution] add scanservice api.
+
+Change-Id: I2500c7c88396fe22418d9913f5b9184577c77b17
+---
+
+diff --git a/build/soong/scripts/check_boot_jars/package_allowed_list.txt b/build/soong/scripts/check_boot_jars/package_allowed_list.txt
+index 3dc9847..080ee98 100644
+--- a/build/soong/scripts/check_boot_jars/package_allowed_list.txt
++++ b/build/soong/scripts/check_boot_jars/package_allowed_list.txt
+@@ -246,7 +246,8 @@
+ # Packages used for Android in Chrome OS
+ org\.chromium\.arc
+ org\.chromium\.arc\..*
+-
++com\.android
++com\.anroid\..*
+ # QC adds
+ com.qualcomm.qti
+ com.quicinc.tcmiface
+diff --git a/device/qcom/qssi/qssi.mk b/device/qcom/qssi/qssi.mk
+index d49e6ec..b3d6326 100755
+--- a/device/qcom/qssi/qssi.mk
++++ b/device/qcom/qssi/qssi.mk
+@@ -165,6 +165,8 @@
+ #endif
+ 
+ PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
++$(call inherit-product, vendor/vendorcode/meig.mk)
++PRODUCT_PACKAGES += libMeigNativeCamera
+ 
+ # Audio configuration file
+ -include $(TOPDIR)vendor/qcom/opensource/audio-hal/primary-hal/configs/qssi/qssi.mk
+diff --git a/frameworks/base/Android.bp b/frameworks/base/Android.bp
+index 2f34f8c..162be21 100755
+--- a/frameworks/base/Android.bp
++++ b/frameworks/base/Android.bp
+@@ -214,6 +214,7 @@
+             "apex/media/aidl/stable",
+             // TODO(b/147699819): remove this
+             "telephony/java",
++			"scanmanager/java",
+         ],
+     },
+ }
+@@ -304,11 +305,21 @@
+    }
+ }
+ 
++filegroup {
++    name: "framework-scan-sources",
++    srcs: [
++        "scanmanager/java/**/*.java",
++        "scanmanager/java/**/*.aidl",
++    ],
++	path: "scanmanager/java",
++}
++
+ java_defaults {
+     name: "framework-minus-apex-defaults",
+     defaults: ["framework-aidl-export-defaults", "btadva_fwk_java_defaults"],
+     srcs: [
+         ":framework-non-updatable-sources",
++		":framework-scan-sources",
+         "core/java/**/*.logtags",
+     ],
+     aidl: {
+diff --git a/frameworks/base/core/java/android/app/SystemServiceRegistry.java b/frameworks/base/core/java/android/app/SystemServiceRegistry.java
+old mode 100644
+new mode 100755
+index 32ea41b..0674f99
+--- a/frameworks/base/core/java/android/app/SystemServiceRegistry.java
++++ b/frameworks/base/core/java/android/app/SystemServiceRegistry.java
+@@ -236,6 +236,8 @@
+ 
+ import java.util.Map;
+ import java.util.Objects;
++import com.android.manager.ScanManager;
++import com.android.manager.IScanManager;
+ 
+ /**
+  * Manages all of the system services that can be returned by {@link Context#getSystemService}.
+@@ -320,6 +322,14 @@
+                 IAlarmManager service = IAlarmManager.Stub.asInterface(b);
+                 return new AlarmManager(service, ctx);
+             }});
++	registerService(Context.SCAN_SERVICE, ScanManager.class,
++                new CachedServiceFetcher<ScanManager>() {
++            @Override
++            public ScanManager createService(ContextImpl ctx) throws ServiceNotFoundException {
++                IBinder b = ServiceManager.getServiceOrThrow(Context.SCAN_SERVICE);
++                IScanManager service = IScanManager.Stub.asInterface(b);
++                return new ScanManager(service);
++            }});
+ 
+         registerService(Context.AUDIO_SERVICE, AudioManager.class,
+                 new CachedServiceFetcher<AudioManager>() {
+diff --git a/frameworks/base/core/java/android/content/Context.java b/frameworks/base/core/java/android/content/Context.java
+old mode 100644
+new mode 100755
+index 3dc3d78..fa643fd
+--- a/frameworks/base/core/java/android/content/Context.java
++++ b/frameworks/base/core/java/android/content/Context.java
+@@ -3635,6 +3635,7 @@
+             NETWORK_STATS_SERVICE,
+             //@hide: NETWORK_POLICY_SERVICE,
+             WIFI_SERVICE,
++	    SCAN_SERVICE,
+             WIFI_AWARE_SERVICE,
+             WIFI_P2P_SERVICE,
+             WIFI_SCANNING_SERVICE,
+@@ -4366,6 +4367,17 @@
+      */
+     public static final String WIFI_SERVICE = "wifi";
+ 
++ /**
++     * Use with {@link #getSystemService(String)} to retrieve a 
++     *  for handling management of
++     * scan access.
++     *
++     * @see #getSystemService(String)
++     */
++    public static final String SCAN_SERVICE = "scan";
++    //public static final String HELLO_SERVICE = "hello";
++
++
+     /**
+      * Use with {@link #getSystemService(String)} to retrieve a
+      * {@link android.net.wifi.wificond.WifiNl80211Manager} for handling management of the
+diff --git a/frameworks/base/scanmanager/java/com/android/manager/IMeigScanServiceListener.aidl b/frameworks/base/scanmanager/java/com/android/manager/IMeigScanServiceListener.aidl
+new file mode 100755
+index 0000000..f6f76eb
+--- /dev/null
++++ b/frameworks/base/scanmanager/java/com/android/manager/IMeigScanServiceListener.aidl
+@@ -0,0 +1,9 @@
++package com.android.manager;
++
++oneway interface IMeigScanServiceListener {
++	void onScanDataNotify(int deviceId);
++	void onScanDataNotifyCamera0(int deviceId);
++	void onScanDataNotifyCamera1(int deviceId);
++	void onScanDataNotifyCamera2(int deviceId);
++	void onScanDataNotifyExposure(long exposuretime,int iso);
++}
+diff --git a/frameworks/base/scanmanager/java/com/android/manager/IScanManager.aidl b/frameworks/base/scanmanager/java/com/android/manager/IScanManager.aidl
+new file mode 100755
+index 0000000..59fc9f5
+--- /dev/null
++++ b/frameworks/base/scanmanager/java/com/android/manager/IScanManager.aidl
+@@ -0,0 +1,18 @@
++package com.android.manager;
++import com.android.manager.IMeigScanServiceListener;
++/**
++ * System private API for test.
++ *
++ * {@hide}
++ */
++interface IScanManager {
++	void Open(int cameraId, int width, int height, int format);
++	void Close(int CameraId);
++	void Resume(int CameraId);
++	void Suspend(int CameraId);
++	void Capture(int CameraId);
++	void SetParameters(int CameraId,int type,int value);
++	void MoveFocus(int CameraId,float value);
++    void registerListener(IMeigScanServiceListener listener);
++    void unregisterListener(IMeigScanServiceListener listener);
++}
+diff --git a/frameworks/base/scanmanager/java/com/android/manager/ScanManager.java b/frameworks/base/scanmanager/java/com/android/manager/ScanManager.java
+new file mode 100755
+index 0000000..992fbbb
+--- /dev/null
++++ b/frameworks/base/scanmanager/java/com/android/manager/ScanManager.java
+@@ -0,0 +1,205 @@
++package com.android.manager;
++import android.util.Log;
++import java.util.List;
++import java.util.ArrayList;
++import android.os.RemoteException;
++import com.android.manager.IScanManager;
++import com.android.manager.ScanServiceListener;
++import android.os.IBinder;
++
++/** @hide */
++public class ScanManager {
++    private final IScanManager mService;
++	/**@hide*/
++	public final String TAG = "ScanManager";
++
++	/**@hide*/
++    public ScanManager(IScanManager mService) {
++        this.mService = mService;
++	}
++	
++	/**@hide*/
++	public void Open(int cameraId, int width, int height, int format){
++		Log.d(TAG, "Open start cameraId" + cameraId + " width:" + width + " height:" + height + " format:" + format);		
++		try {
++            mService.Open(cameraId, width, height, format);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++	}
++	
++	/**@hide*/
++	public void Close(int CameraId){
++		Log.d(TAG, "Close start CameraId" + CameraId);		
++		try {
++            mService.Close(CameraId);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++
++	}
++	/**@hide*/
++	public void Resume(int CameraId){
++		Log.d(TAG, "Resume start CameraId" + CameraId);		
++		try {
++            mService.Resume(CameraId);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++
++	}
++	/**@hide*/
++	public void Suspend(int CameraId){
++		Log.d(TAG, "Suspend start CameraId" + CameraId);		
++		try {
++            mService.Suspend(CameraId);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++	}
++	/**@hide*/
++	public void Capture(int CameraId){
++		Log.d(TAG, "Capture start CameraId" + CameraId);		
++		try {
++            mService.Capture(CameraId);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++	}
++	/**@hide*/
++	public void SetParameters(int CameraId,int type,int value){
++		Log.d(TAG, "SetParameters start CameraId" + CameraId + " type:" + type + " value:" + value);		
++		try {
++            mService.SetParameters(CameraId, type, value);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++	}
++	/**@hide*/
++	public void MoveFocus(int CameraId,float value){
++		Log.d(TAG, "MoveFocus start CameraId" + CameraId + " value:" + value);		
++		try {
++            mService.MoveFocus(CameraId, value);
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++	}
++	
++	public void registerListener(ScanServiceListener listener){
++		Log.d(TAG, "registerListener start ");		
++		try {
++			Log.d(TAG, "registerListener 1 ");
++			if(mScanBinderListener == null){
++				Log.d(TAG, "registerListener 2 ");
++				mScanBinderListener = new ScanBinderListener();
++				mService.registerListener(mScanBinderListener);
++			}
++        } catch (RemoteException ex) {
++            ex.printStackTrace();
++        }
++		
++		final int size = mListeners.size();
++		Log.d(TAG, "registerListener 2 size:" + size);
++		for (int i = 0; i < size; i++) {
++			ScanServiceListener l = mListeners.get(i);
++			if (l == listener) {
++				Log.d(TAG, "registerListener 2 i:" + i);
++				Log.d(TAG, "listener: " + listener + ", been registered!!");
++				return;
++			}
++		}
++		mListeners.add(listener);
++	}
++	
++	public void unregisterListener(ScanServiceListener listener){
++		Log.d(TAG, "unregisterListener start ");
++		if (listener == null) {
++            Log.e(TAG, "listener == null");
++            return;
++        }
++		synchronized (mListeners) {
++            final int size = mListeners.size();
++            Log.e(TAG, "unregisterListener, size = " + size + ", listener = " + listener);
++            for (int i = 0; i < size; i++) {
++                ScanServiceListener l = mListeners.get(i);
++                Log.e(TAG, "l = " + l);
++                if (l == listener) {
++                    Log.i(TAG, "mListeners.remove(i); i = " + i);
++                    mListeners.remove(i);
++                    break;
++                }
++            }
++			if (mListeners.size() == 0 && mScanBinderListener != null) {
++                try {
++                    Log.i(TAG, "mService.unregisterListener(mScanBinderListener);");
++                    mService.unregisterListener(mScanBinderListener);
++					mScanBinderListener = null;
++                } catch (RemoteException rex) {
++                    Log.e(TAG, "Unregister mBinderListener failed");
++                    return;
++                }
++            }
++		}
++	}
++	
++	private ArrayList<ScanServiceListener> mListeners = new ArrayList<ScanServiceListener>();
++	
++    private ScanBinderListener mScanBinderListener;
++	
++    private class ScanBinderListener extends IMeigScanServiceListener.Stub {
++        public void onScanDataNotify(int deviceId) {
++            Log.i(TAG, "onScanDataNotify deviceId: " + deviceId);
++	
++            final int size = mListeners.size();
++            Log.i(TAG, "onScanDataNotify, size: " + size);
++            for (int i = 0; i < size; i++) {
++                    Log.i(TAG, "mListeners.get(" + i + ").onScanDataNotify(deviceId);");
++                mListeners.get(i).onScanDataNotify(deviceId);
++            }
++        }
++		
++		public void onScanDataNotifyCamera0(int deviceId) {
++            Log.i(TAG, "onScanDataNotify deviceId: " + deviceId);
++	
++            final int size = mListeners.size();
++            Log.i(TAG, "onScanDataNotifyCamera0, size: " + size);
++            for (int i = 0; i < size; i++) {
++                    Log.i(TAG, "mListeners.get(" + i + ").onScanDataNotifyCamera0(deviceId);");
++                mListeners.get(i).onScanDataNotifyCamera0(deviceId);
++            }
++        }
++		
++        public void onScanDataNotifyCamera1(int deviceId) {
++            Log.i(TAG, "onScanDataNotifyCamera1 deviceId: " + deviceId);
++	
++            final int size = mListeners.size();
++            Log.i(TAG, "onScanDataNotifyCamera1, size: " + size);
++            for (int i = 0; i < size; i++) {
++                    Log.i(TAG, "mListeners.get(" + i + ").onScanDataNotifyCamera1(deviceId);");
++                mListeners.get(i).onScanDataNotifyCamera1(deviceId);
++            }
++        }
++		
++        public void onScanDataNotifyCamera2(int deviceId) {
++            Log.i(TAG, "onScanDataNotifyCamera2 deviceId: " + deviceId);
++	
++            final int size = mListeners.size();
++            Log.i(TAG, "onScanDataNotifyCamera2, size: " + size);
++            for (int i = 0; i < size; i++) {
++                    Log.i(TAG, "mListeners.get(" + i + ").onScanDataNotifyCamera2(deviceId);");
++                mListeners.get(i).onScanDataNotifyCamera2(deviceId);
++            }
++        }
++
++        public void onScanDataNotifyExposure(long exposuretime,int iso) {
++            Log.i(TAG, "onScanDataNotifyExposure exposuretime: " + exposuretime + " iso:" + iso);
++	
++            final int size = mListeners.size();
++            Log.i(TAG, "onScanDataNotifyExposure, size: " + size);
++            for (int i = 0; i < size; i++) {
++                    Log.i(TAG, "mListeners.get(" + i + ").onScanDataNotifyExposure(deviceId);");
++                mListeners.get(i).onScanDataNotifyExposure(exposuretime, iso);
++            }
++        }
++    }
++}
+diff --git a/frameworks/base/scanmanager/java/com/android/manager/ScanServiceListener.java b/frameworks/base/scanmanager/java/com/android/manager/ScanServiceListener.java
+new file mode 100755
+index 0000000..199cfcd
+--- /dev/null
++++ b/frameworks/base/scanmanager/java/com/android/manager/ScanServiceListener.java
+@@ -0,0 +1,14 @@
++package com.android.manager;
++
++public abstract class ScanServiceListener {
++	public void onScanDataNotify(int deviceId){
++	}
++	public void onScanDataNotifyCamera0(int deviceId){
++	}
++	public void onScanDataNotifyCamera1(int deviceId){
++	}
++	public void onScanDataNotifyCamera2(int deviceId){
++	}
++	public void onScanDataNotifyExposure(long exposuretime,int iso){
++	}
++}
+diff --git a/frameworks/base/services/core/Android.bp b/frameworks/base/services/core/Android.bp
+old mode 100644
+new mode 100755
+index dab95a3..cb97e35
+--- a/frameworks/base/services/core/Android.bp
++++ b/frameworks/base/services/core/Android.bp
+@@ -166,6 +166,7 @@
+         "com.android.sysprop.watchdog",
+         "vendor.qti.hardware.servicetracker-V1.0-java",
+         "vendor.qti.hardware.servicetracker-V1.2-java",
++		"vendor.scan.hardware.scanservice-V1.0-java",
+     ],
+     javac_shard_size: 50,
+ }
+diff --git a/frameworks/base/services/core/java/com/android/server/ScanService.java b/frameworks/base/services/core/java/com/android/server/ScanService.java
+new file mode 100755
+index 0000000..6befec0
+--- /dev/null
++++ b/frameworks/base/services/core/java/com/android/server/ScanService.java
+@@ -0,0 +1,249 @@
++package com.android.server;
++
++import android.content.Context;
++import android.util.Log;
++import com.android.manager.IScanManager;
++import com.android.manager.IMeigScanServiceListener;
++import android.os.RemoteException;
++import java.util.List;
++import java.util.ArrayList;
++import android.os.IBinder;
++import vendor.scan.hardware.scanservice.V1_0.IScanService;
++import vendor.scan.hardware.scanservice.V1_0.IScanServiceCallback;
++
++public class ScanService extends IScanManager.Stub {
++    private final Context mContext;
++	public final String TAG = "ScanService";
++	private IScanService mIScanService;
++	
++	final private ArrayList<ScanServiceBinderListener> mListeners =
++            new ArrayList<ScanServiceBinderListener>();
++	
++    private final class ScanServiceBinderListener implements IBinder.DeathRecipient {
++        final IMeigScanServiceListener mListener;
++	
++        ScanServiceBinderListener(IMeigScanServiceListener listener) {
++            mListener = listener;
++        }
++	
++        public void binderDied() {
++            Log.d(TAG, "An IMeigScanServiceListener has died!");
++            synchronized (mListeners) {
++                mListeners.remove(this);
++                mListener.asBinder().unlinkToDeath(this, 0);
++            }
++        }
++    }
++	
++	private IScanServiceCallback.Stub mScanServiceCallback = new IScanServiceCallback.Stub() {
++		@Override
++		public void onNotify(int deviceId)throws RemoteException{
++			Log.d(TAG, "IScanServiceCallback.Stub onNotify deviceId:" + deviceId);
++			synchronized (mListeners) {
++				for (int i = mListeners.size() - 1; i >= 0; i--) {
++				   ScanServiceBinderListener bl = mListeners.get(i);
++				   try {
++					   bl.mListener.onScanDataNotify(deviceId);
++				   } catch (RemoteException rex) {
++					   Log.e(TAG, "Listener dead");
++					   mListeners.remove(i);
++				   } catch (Exception ex) {
++					   Log.e(TAG, "Listener failed", ex);
++				   }
++			   }
++			}
++		}
++		
++		@Override
++		public void onNotifyCamera0Data(int deviceId){
++			Log.d(TAG, "IScanServiceCallback.Stub onNotifyCamera0Data deviceId:" + deviceId);
++			synchronized (mListeners) {
++				for (int i = mListeners.size() - 1; i >= 0; i--) {
++				   ScanServiceBinderListener bl = mListeners.get(i);
++				   try {
++					   bl.mListener.onScanDataNotifyCamera0(deviceId);
++				   } catch (RemoteException rex) {
++					   Log.e(TAG, "Listener dead");
++					   mListeners.remove(i);
++				   } catch (Exception ex) {
++					   Log.e(TAG, "Listener failed", ex);
++				   }
++			   }
++			}
++		}
++		
++		@Override
++		public void onNotifyCamera1Data(int deviceId){
++			Log.d(TAG, "IScanServiceCallback.Stub onNotifyCamera1Data deviceId:" + deviceId);
++			synchronized (mListeners) {
++				for (int i = mListeners.size() - 1; i >= 0; i--) {
++				   ScanServiceBinderListener bl = mListeners.get(i);
++				   try {
++					   bl.mListener.onScanDataNotifyCamera1(deviceId);
++				   } catch (RemoteException rex) {
++					   Log.e(TAG, "Listener dead");
++					   mListeners.remove(i);
++				   } catch (Exception ex) {
++					   Log.e(TAG, "Listener failed", ex);
++				   }
++			   }
++			}
++		}
++		
++		@Override
++		public void onNotifyCamera2Data(int deviceId){
++			Log.d(TAG, "IScanServiceCallback.Stub onNotifyCamera2Data deviceId:" + deviceId);
++			synchronized (mListeners) {
++				for (int i = mListeners.size() - 1; i >= 0; i--) {
++				   ScanServiceBinderListener bl = mListeners.get(i);
++				   try {
++					   bl.mListener.onScanDataNotifyCamera2(deviceId);
++				   } catch (RemoteException rex) {
++					   Log.e(TAG, "Listener dead");
++					   mListeners.remove(i);
++				   } catch (Exception ex) {
++					   Log.e(TAG, "Listener failed", ex);
++				   }
++			   }
++			}
++		}
++		
++		@Override
++		public void onNotifyExposure(long exposuretime,int iso){
++			Log.d(TAG, "IScanServiceCallback.Stub onNotifyExposure exposuretime:" + exposuretime + " iso:" + iso);
++			synchronized (mListeners) {
++				for (int i = mListeners.size() - 1; i >= 0; i--) {
++				   ScanServiceBinderListener bl = mListeners.get(i);
++				   try {
++					   bl.mListener.onScanDataNotifyExposure(exposuretime, iso);
++				   } catch (RemoteException rex) {
++					   Log.e(TAG, "Listener dead");
++					   mListeners.remove(i);
++				   } catch (Exception ex) {
++					   Log.e(TAG, "Listener failed", ex);
++				   }
++			   }
++			}
++		}
++	};
++
++    public ScanService(Context context) {
++        mContext = context;
++		try {
++			Log.d(TAG, "zll ScanService");
++            mIScanService = IScanService.getService();
++			mIScanService.setScanServiceCallback(mScanServiceCallback);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++            mIScanService = null;
++        }
++    }
++	
++	@Override
++	public void Open(int cameraId, int width, int height, int format){
++		Log.d(TAG, "Open");
++		try {
++			Log.d(TAG, "zll Open");
++            mIScanService.open(cameraId, width, height, format);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void Close(int cameraId){
++		Log.d(TAG, "Close");
++		try {
++			Log.d(TAG, "zll Close");
++            mIScanService.close(cameraId);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void Resume(int cameraId){
++		Log.d(TAG, "Resume");
++		try {
++			Log.d(TAG, "zll Resume");
++            mIScanService.resume(cameraId);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void Suspend(int cameraId){
++		Log.d(TAG, "Suspend");
++		try {
++			Log.d(TAG, "zll Suspend");
++            mIScanService.suspend(cameraId);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void Capture(int cameraId){
++		Log.d(TAG, "Capture");
++		try {
++			Log.d(TAG, "zll Capture");
++            mIScanService.capture(cameraId);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void SetParameters(int cameraId,int type,int value){
++		Log.d(TAG, "SetParameters");
++		try {
++			Log.d(TAG, "zll SetParameters");
++            mIScanService.setParameters(cameraId, type, value);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void MoveFocus(int cameraId,float value){
++		Log.d(TAG, "MoveFocus");
++		try {
++			Log.d(TAG, "zll MoveFocus");
++            mIScanService.move_focus(cameraId, value);
++        } catch (RemoteException e) {
++            Log.e(TAG, "Exception getting IScanService service: " + e);
++        }
++	}
++	
++	@Override
++	public void registerListener(IMeigScanServiceListener listener){
++		Log.d(TAG, "registerListener");
++		synchronized (mListeners) {
++            ScanServiceBinderListener bl = new ScanServiceBinderListener(listener);
++            try {
++				Log.d(TAG, "registerListener 1");
++                listener.asBinder().linkToDeath(bl, 0);
++                mListeners.add(bl);
++            } catch (RemoteException rex) {
++                Log.e(TAG, "Failed to link to listener death");
++            }
++        }
++	}
++	
++	@Override
++	public void unregisterListener(IMeigScanServiceListener listener){
++		Log.d(TAG, "unregisterListener");
++		synchronized (mListeners) {
++			Log.d(TAG, "unregisterListener 1");
++            for (ScanServiceBinderListener bl : mListeners) {
++                if (bl.mListener == listener) {
++					Log.d(TAG, "unregisterListener 2");
++                    mListeners.remove(mListeners.indexOf(bl));
++                    listener.asBinder().unlinkToDeath(bl, 0);
++                    return;
++                }
++            }
++        }
++	}
++ }
+diff --git a/frameworks/base/services/java/com/android/server/SystemServer.java b/frameworks/base/services/java/com/android/server/SystemServer.java
+old mode 100644
+new mode 100755
+index db6323c..321fbd3
+--- a/frameworks/base/services/java/com/android/server/SystemServer.java
++++ b/frameworks/base/services/java/com/android/server/SystemServer.java
+@@ -225,6 +225,7 @@
+ import java.util.TreeSet;
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.Future;
++import com.android.server.ScanService;
+ 
+ /**
+  * Entry point to {@code system_server}.
+@@ -1017,6 +1018,7 @@
+         AppCompatCallbacks.install(new long[0]);
+         t.traceEnd();
+ 
++
+         // FileIntegrityService responds to requests from apps and the system. It needs to run after
+         // the source (i.e. keystore) is ready, and before the apps (or the first customer in the
+         // system) run.
+@@ -1405,6 +1407,10 @@
+             mSystemServiceManager.startService(KeyChainSystemService.class);
+             t.traceEnd();
+ 
++			t.traceBegin("StartKeyScanService");
++            ServiceManager.addService(Context.SCAN_SERVICE, new ScanService(context));
++            t.traceEnd();
++
+             t.traceBegin("StartSchedulingPolicyService");
+             ServiceManager.addService("scheduling_policy", new SchedulingPolicyService());
+             t.traceEnd();
+diff --git a/system/sepolicy/prebuilts/api/26.0/private/service_contexts b/system/sepolicy/prebuilts/api/26.0/private/service_contexts
+old mode 100644
+new mode 100755
+index ff97d66..9227f9c
+--- a/system/sepolicy/prebuilts/api/26.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/26.0/private/service_contexts
+@@ -170,4 +170,5 @@
+ wificond                                  u:object_r:wificond_service:s0
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/26.0/public/service.te b/system/sepolicy/prebuilts/api/26.0/public/service.te
+old mode 100644
+new mode 100755
+index da540db..e2367e9
+--- a/system/sepolicy/prebuilts/api/26.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/26.0/public/service.te
+@@ -145,3 +145,4 @@
+ type wificond_service, service_manager_type;
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/27.0/private/service_contexts b/system/sepolicy/prebuilts/api/27.0/private/service_contexts
+old mode 100644
+new mode 100755
+index a82243f..d6c7cb9
+--- a/system/sepolicy/prebuilts/api/27.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/27.0/private/service_contexts
+@@ -171,4 +171,5 @@
+ wificond                                  u:object_r:wificond_service:s0
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/27.0/public/service.te b/system/sepolicy/prebuilts/api/27.0/public/service.te
+old mode 100644
+new mode 100755
+index e97b864..3d754d4
+--- a/system/sepolicy/prebuilts/api/27.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/27.0/public/service.te
+@@ -148,3 +148,4 @@
+ type wificond_service, service_manager_type;
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/28.0/private/service_contexts b/system/sepolicy/prebuilts/api/28.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 5ec45a2..83997d2
+--- a/system/sepolicy/prebuilts/api/28.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/28.0/private/service_contexts
+@@ -185,4 +185,5 @@
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ wifirtt                                   u:object_r:rttmanager_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/28.0/public/service.te b/system/sepolicy/prebuilts/api/28.0/public/service.te
+old mode 100644
+new mode 100755
+index 3526049..e18f3c5
+--- a/system/sepolicy/prebuilts/api/28.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/28.0/public/service.te
+@@ -159,3 +159,4 @@
+ type wifiaware_service, app_api_service, system_server_service, service_manager_type;
+ type window_service, system_api_service, system_server_service, service_manager_type;
+ type wpantund_service, system_api_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+diff --git a/system/sepolicy/prebuilts/api/29.0/private/service_contexts b/system/sepolicy/prebuilts/api/29.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 96d553b..81184d8
+--- a/system/sepolicy/prebuilts/api/29.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/29.0/private/service_contexts
+@@ -219,4 +219,5 @@
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ wifirtt                                   u:object_r:rttmanager_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/29.0/public/service.te b/system/sepolicy/prebuilts/api/29.0/public/service.te
+old mode 100644
+new mode 100755
+index a2193d0..76a488f
+--- a/system/sepolicy/prebuilts/api/29.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/29.0/public/service.te
+@@ -187,6 +187,7 @@
+ type window_service, system_api_service, system_server_service, service_manager_type;
+ type inputflinger_service, system_api_service, system_server_service, service_manager_type;
+ type wpantund_service, system_api_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+ 
+ ###
+ ### Neverallow rules
+diff --git a/system/sepolicy/prebuilts/api/30.0/private/service_contexts b/system/sepolicy/prebuilts/api/30.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 5c6f1a4..7634da2
+--- a/system/sepolicy/prebuilts/api/30.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/30.0/private/service_contexts
+@@ -247,4 +247,5 @@
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ wifirtt                                   u:object_r:rttmanager_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/30.0/public/service.te b/system/sepolicy/prebuilts/api/30.0/public/service.te
+old mode 100644
+new mode 100755
+index f27772e..9494e76
+--- a/system/sepolicy/prebuilts/api/30.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/30.0/public/service.te
+@@ -205,6 +205,7 @@
+ type wpantund_service, system_api_service, service_manager_type;
+ type tethering_service, app_api_service, ephemeral_app_api_service, system_server_service, service_manager_type;
+ type emergency_affordance_service, system_server_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+ 
+ ###
+ ### HAL Services
+diff --git a/system/sepolicy/prebuilts/api/31.0/private/service_contexts b/system/sepolicy/prebuilts/api/31.0/private/service_contexts
+old mode 100644
+new mode 100755
+index 3fd342b..ceb72a5
+--- a/system/sepolicy/prebuilts/api/31.0/private/service_contexts
++++ b/system/sepolicy/prebuilts/api/31.0/private/service_contexts
+@@ -307,4 +307,5 @@
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ wifirtt                                   u:object_r:rttmanager_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/prebuilts/api/31.0/public/service.te b/system/sepolicy/prebuilts/api/31.0/public/service.te
+old mode 100644
+new mode 100755
+index ba7837d..03fd748
+--- a/system/sepolicy/prebuilts/api/31.0/public/service.te
++++ b/system/sepolicy/prebuilts/api/31.0/public/service.te
+@@ -242,6 +242,7 @@
+ type wpantund_service, system_api_service, service_manager_type;
+ type tethering_service, app_api_service, ephemeral_app_api_service, system_server_service, service_manager_type;
+ type emergency_affordance_service, system_server_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+ 
+ ###
+ ### HAL Services
+diff --git a/system/sepolicy/private/service_contexts b/system/sepolicy/private/service_contexts
+index 3fd342b..ceb72a5 100644
+--- a/system/sepolicy/private/service_contexts
++++ b/system/sepolicy/private/service_contexts
+@@ -307,4 +307,5 @@
+ wifiaware                                 u:object_r:wifiaware_service:s0
+ wifirtt                                   u:object_r:rttmanager_service:s0
+ window                                    u:object_r:window_service:s0
++scan                                     u:object_r:sys_api_service:s0
+ *                                         u:object_r:default_android_service:s0
+diff --git a/system/sepolicy/public/service.te b/system/sepolicy/public/service.te
+index ba7837d..03fd748 100644
+--- a/system/sepolicy/public/service.te
++++ b/system/sepolicy/public/service.te
+@@ -242,6 +242,7 @@
+ type wpantund_service, system_api_service, service_manager_type;
+ type tethering_service, app_api_service, ephemeral_app_api_service, system_server_service, service_manager_type;
+ type emergency_affordance_service, system_server_service, service_manager_type;
++type sys_api_service, system_api_service, system_server_service, service_manager_type;
+ 
+ ###
+ ### HAL Services
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Android.mk b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Android.mk
+new file mode 100755
+index 0000000..aa01cbf
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Android.mk
+@@ -0,0 +1,179 @@
++# Copyright (C) 2015 The Android Open Source Project
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++#
++LOCAL_PATH := $(call my-dir)
++
++include $(CLEAR_VARS)
++
++LOCAL_COPY_HEADERS_TO := libMeigNativeCamera
++LOCAL_COPY_HEADERS    := Camera.h
++
++LOCAL_MODULE    := libMeigNativeCamera
++
++LOCAL_MODULE_TAGS := optional
++
++LOCAL_SRC_FILES := \
++	CameraServiceListener.cpp \
++        CameraManger.cpp \
++        CameraNativeManager.cpp \
++        CameraInter.cpp \
++        linkedQueue.cpp \
++        CameraControlInter.cpp \
++        CameraI2cControl.cpp \
++		CameraLedControl.cpp \
++		CameraSofQueue.cpp
++
++LOCAL_C_INCLUDES := \
++	system/core/include \
++
++LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter
++LOCAL_CFLAGS += -Wno-unused-value -Wno-unused-variable -Wno-macro-redefined -Wno-format
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_STATIC_LIBRARIES := android.hardware.camera.common@1.0-helper
++
++LOCAL_SHARED_LIBRARIES := liblog \
++    libcamera2ndk_vendor \
++    libcamera_metadata \
++    libmediandk \
++    libnativewindow \
++    libutils \
++    libui \
++    libcutils
++
++# NDK build, shared C++ runtime
++#LOCAL_SDK_VERSION := current
++#LOCAL_NDK_STL_VARIANT := c++_shared
++LOCAL_PROPRIETARY_MODULE := true
++
++include $(BUILD_SHARED_LIBRARY)
++
++
++include $(CLEAR_VARS)
++
++LOCAL_MODULE    := MeigNativeCameraTest
++
++LOCAL_MODULE_TAGS := optional
++
++LOCAL_SRC_FILES := \
++	test/main.cpp
++
++LOCAL_C_INCLUDES := \
++	system/core/include \
++
++LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter
++LOCAL_CFLAGS += -Wno-unused-value -Wno-unused-variable -Wno-format
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_SHARED_LIBRARIES := liblog \
++    libMeigNativeCamera \
++    libcamera_metadata \
++    libmediandk \
++    libutils \
++    libui \
++    libcutils
++
++LOCAL_PROPRIETARY_MODULE := true
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++include $(BUILD_EXECUTABLE)
++
++
++include $(CLEAR_VARS)
++
++LOCAL_MODULE    := MeigCameraInterFaceTest
++
++LOCAL_MODULE_TAGS := optional
++
++LOCAL_SRC_FILES := \
++	InterfaceTest/main.cpp
++
++LOCAL_C_INCLUDES := \
++	system/core/include \
++
++LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter 
++LOCAL_CFLAGS += -Wno-unused-value -Wno-unused-variable -Wno-format
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_SHARED_LIBRARIES := liblog \
++    libMeigNativeCamera \
++    libcamera_metadata \
++    libmediandk \
++    libutils \
++    libui \
++    libcutils
++
++LOCAL_PROPRIETARY_MODULE := true
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++include $(BUILD_EXECUTABLE)
++
++
++include $(CLEAR_VARS)
++
++LOCAL_MODULE    := CameraI2cTest
++
++LOCAL_MODULE_TAGS := optional
++
++LOCAL_SRC_FILES := \
++	CameraI2cTest.cpp
++
++LOCAL_C_INCLUDES := \
++	system/core/include \
++
++LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter 
++LOCAL_CFLAGS += -Wno-unused-value -Wno-unused-variable -Wno-format
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_SHARED_LIBRARIES := liblog \
++    libMeigNativeCamera \
++    libcamera_metadata \
++    libmediandk \
++    libutils \
++    libui \
++    libcutils
++
++LOCAL_PROPRIETARY_MODULE := true
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++include $(BUILD_EXECUTABLE)
++
++include $(CLEAR_VARS)
++
++LOCAL_MODULE    := CameraSOFTest
++
++LOCAL_MODULE_TAGS := optional
++
++LOCAL_SRC_FILES := \
++	CameraSofTest.cpp
++
++LOCAL_C_INCLUDES := \
++	system/core/include \
++
++LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter 
++LOCAL_CFLAGS += -Wno-unused-value -Wno-unused-variable -Wno-format
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_SHARED_LIBRARIES := liblog \
++    libMeigNativeCamera \
++    libcamera_metadata \
++    libmediandk \
++    libutils \
++    libui \
++    libcutils
++
++LOCAL_PROPRIETARY_MODULE := true
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++include $(BUILD_EXECUTABLE)
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Camera.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Camera.h
+new file mode 100755
+index 0000000..44c2ee4
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/Camera.h
+@@ -0,0 +1,55 @@
++
++
++#include <stdatomic.h>
++#include <pthread.h>
++#include "media/NdkImage.h"
++#include "media/NdkImageReader.h"
++
++typedef void(*Datacallback)(AImageReader *reader);
++typedef void(*Exposurecallback)(int64_t exposuretime,int32_t iso);
++
++typedef enum {
++	CAMERA_INVAILABLE = -1,
++    CAMERA_POWER_OFF = 0,
++    CAMERA_LOW_POWER,
++    CAMERA_READY,
++}camera_state_t;
++
++typedef enum {
++    SET_BRIGHTNESS = 100,
++    SET_FALSHLIGHT,
++	SET_SCM_EXPOSURETIME,
++}camera_parameters_type;
++
++typedef enum {
++	FLASHLIGHT_ON,
++	FLASHLIGHT_OFF,
++}camera_flashlight_level_t;
++
++typedef enum {
++	BRIGHTNESS_LEVEL_0,
++	BRIGHTNESS_LEVEL_1,
++	BRIGHTNESS_LEVEL_2,
++	BRIGHTNESS_LEVEL_3,
++	BRIGHTNESS_LEVEL_default,
++	BRIGHTNESS_LEVEL_5,
++	BRIGHTNESS_LEVEL_6,
++	BRIGHTNESS_LEVEL_7,
++	BRIGHTNESS_LEVEL_MAX,
++}camera_brigntness_level_t;
++
++typedef struct {
++	void (*Open)(int32_t CameraId,int32_t width,int32_t height,int32_t format);
++	void (*Close)(int32_t CameraId);
++	void (*Resume)(int32_t CameraId);
++	void (*Suspend)(int32_t CameraId);
++	void (*Capture)(int32_t CameraId,Datacallback cb);
++	void (*SetParameters)(int32_t CameraId,camera_parameters_type type,int32_t value);
++	void (*MoveFocus)(int32_t CameraId,float value);
++	void (*CaptureByCustomer)(Datacallback scm1_cb,Datacallback scm2_cb,Exposurecallback CCM_ExposureCb,Datacallback ccm_cb);
++	void (*WaitScm1Scm2FristFrameReady)();
++	void (*WaitCCMFristFrameReady)();
++}CameraContrlNode;
++
++bool CreateCameraInterfaceNode(CameraContrlNode **pNode);
++void DestoryCameraInterfaceNode(CameraContrlNode *pNode);
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraControlInter.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraControlInter.cpp
+new file mode 100755
+index 0000000..1e118f8
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraControlInter.cpp
+@@ -0,0 +1,543 @@
++#include "CameraNativeManager.h"
++#include "linkedQueue.h"
++#include "CameraQueue.h"
++#include "CameraI2cControl.h"
++
++typedef enum {
++    OPEN_CAMERA = 100,
++    CLOSE_CAMERA,
++    CAPTURE_CAMERA,
++    RESUME_CAMERA,
++    SUSPEND_CAMERA,
++    SET_PARAMETERS,
++    MOVEFOCUS_CAMERA,
++    EXIT_CAMERA,
++}camera_MSG_type;
++
++typedef struct {
++    nsecs_t OpenStartTime;
++    nsecs_t OpenEndTime;
++    nsecs_t CLoseStartTime;
++    nsecs_t CLoseEndTime;
++    nsecs_t CaptureStartTime;
++    nsecs_t CaptureEndTime;
++    nsecs_t SuspendStartTime;
++    nsecs_t SuspendEndTime;
++    nsecs_t ResumeStartTime;
++    nsecs_t ResumeEndTime;
++}CameraTimeInfo;
++
++typedef struct {
++    int32_t width;
++    int32_t height;
++    int32_t format;
++}StreamInfo;
++
++typedef struct {
++    camera_parameters_type type;
++    int32_t value;
++}ParametersInfo;
++
++typedef struct {
++    float value;
++}MoveFocusInfo;
++
++typedef struct {
++    camera_MSG_type msgtype;
++    StreamInfo data;
++    ParametersInfo parameters;
++    MoveFocusInfo  FocusInfo;
++}CameraMsgInfo;
++
++typedef struct {
++    pthread_t thread_id;
++    int thread_exit;
++    pthread_mutex_t m_mutex;
++    pthread_cond_t  m_cond;
++    pthread_cond_t  m_close_cond;
++    cam_queue_t cmd_queue;
++    int32_t CameraId;
++    camera_state_t state;
++    CameraTimeInfo m_timeinfo;
++    Datacallback cb;
++	Exposurecallback exposurecb;
++	pthread_mutex_t m_send_msg_mutex;
++}CameraThreadCtrl;
++
++typedef struct {
++	pthread_t thread_id;
++	pthread_mutex_t m_mutex;
++	pthread_cond_t  m_cond;
++	bool IsCreate;
++	bool thread_exit;
++}CameraCaptureThreadCtrl;
++
++static CameraHandle *pCameraHande = NULL;
++static CameraThreadCtrl g_CameraThreadHande[3];
++static CameraCaptureThreadCtrl g_CameraCaptureThreadHande;
++
++void DestoryCameraCaptureThread();
++void CreateCameraCaptureThread();
++
++static void SendCameraMsg(int32_t CameraId,CameraMsgInfo *msg,Datacallback cb) {
++    CameraThreadCtrl *hande = NULL;
++    if (CameraId == 0) {
++        hande = &g_CameraThreadHande[0];
++    } else if (CameraId == 1) {
++        hande = &g_CameraThreadHande[1];
++    } else {
++        hande = &g_CameraThreadHande[2];
++    }
++
++    if (!hande) {
++        return ;
++    }
++
++    switch (msg->msgtype) {
++        case OPEN_CAMERA: {
++            hande->m_timeinfo.OpenStartTime = systemTime();
++            break;
++        }
++        case CLOSE_CAMERA: {
++            hande->m_timeinfo.CLoseStartTime = systemTime();
++            break;
++        }
++        case RESUME_CAMERA: {
++            hande->m_timeinfo.ResumeStartTime = systemTime();
++            break;
++        }
++        case SUSPEND_CAMERA: {
++            hande->m_timeinfo.SuspendStartTime = systemTime();
++            break;
++        }
++        case CAPTURE_CAMERA: {
++            hande->m_timeinfo.CaptureStartTime = systemTime();
++            hande->cb = cb;
++            break;
++        }
++        case SET_PARAMETERS:
++        case MOVEFOCUS_CAMERA:
++        case EXIT_CAMERA: {
++            break;
++        }
++    }
++    //pthread_mutex_lock(&hande->m_send_msg_mutex);
++    ALOGI("CameraId %d SendCameraMsg msg type:%d",CameraId,msg->msgtype);
++    cam_queue_enq(&hande->cmd_queue, msg);
++    ALOGI("CameraId %d SendCameraMsg msg done",CameraId);
++   // pthread_mutex_unlock(&hande->m_send_msg_mutex);
++
++    pthread_mutex_lock(&hande->m_mutex);
++    pthread_cond_signal(&hande->m_cond);
++    pthread_mutex_unlock(&hande->m_mutex);
++
++}
++
++static void* camera_listen_handle(void* pContext) {
++    CameraThreadCtrl *hande = (CameraThreadCtrl *)pContext;
++    while (1) {
++        CameraMsgInfo *msg = NULL;
++        bool ret;
++        if (hande->thread_exit) {
++            return NULL;
++        }
++		//pthread_mutex_lock(&hande->m_send_msg_mutex);
++
++        pthread_mutex_lock(&hande->m_mutex);
++        ALOGI("Camera %d wait msg",hande->CameraId);
++        pthread_cond_wait(&hande->m_cond,&hande->m_mutex);
++        pthread_mutex_unlock(&hande->m_mutex);
++
++        if (hande->thread_exit) {
++            ALOGI("Camera %d camera_listen_handle exit ",hande->CameraId);
++            return NULL;
++        }
++        ALOGI("Camera %d deQueue msg",hande->CameraId);
++        msg = (CameraMsgInfo*)cam_queue_deq(&hande->cmd_queue);
++        if (!msg) {
++            continue;
++        }
++
++        ALOGI("Camera %d get deQueue msg type:%d",hande->CameraId,msg->msgtype);
++
++        switch (msg->msgtype) {
++            case OPEN_CAMERA: {
++                int32_t width = msg->data.width;
++                int32_t height = msg->data.height;
++                int32_t format = msg->data.format;
++                ret = pCameraHande->Open(hande->CameraId,width,height,format);
++                if (!ret) {
++                    free(msg);
++                    msg = (CameraMsgInfo*)cam_queue_deq(&hande->cmd_queue);
++                    return NULL;
++                }
++                CameraSensorI2CCfg(hande->CameraId,CAMERA_STREAMOFF_CMD);
++                hande->m_timeinfo.OpenEndTime = systemTime();
++                ALOGI("[CameraPerformance] Camera %d Open Take time = %llums",hande->CameraId,(hande->m_timeinfo.OpenEndTime - hande->m_timeinfo.OpenStartTime) / 1000000);
++                hande->state = CAMERA_LOW_POWER;
++                break;
++            }
++            case CLOSE_CAMERA: {
++                if (hande->state > CAMERA_POWER_OFF) {
++                    //CameraSensorI2CCfg(hande->CameraId,CAMERA_STREAMON_CMD);
++                    ret = pCameraHande->Close(hande->CameraId);
++                    hande->state = CAMERA_POWER_OFF;
++                    hande->m_timeinfo.CLoseEndTime = systemTime();
++                    ALOGI("[CameraPerformance] Camera %d Close Take time = %llums",hande->CameraId,(hande->m_timeinfo.CLoseEndTime - hande->m_timeinfo.CLoseStartTime) / 1000000);
++                    pthread_mutex_lock(&hande->m_mutex);
++                    pthread_cond_signal(&hande->m_close_cond);
++                    pthread_mutex_unlock(&hande->m_mutex);
++                }
++                break;
++            }
++            case CAPTURE_CAMERA: {
++                if (hande->state == CAMERA_READY) {
++                    if (pCameraHande && hande->cb) {
++                        hande->m_timeinfo.CaptureEndTime = systemTime();
++                        pCameraHande->SnapShort(hande->CameraId,hande->cb,0);
++                        ALOGI("[CameraPerformance] Camera %d Capture Take time = %llums",hande->CameraId,(hande->m_timeinfo.CaptureEndTime - hande->m_timeinfo.CaptureStartTime) / 1000000);
++                    }
++                }
++                break;
++            }
++            case RESUME_CAMERA: {
++                if (hande->state == CAMERA_LOW_POWER) {
++                    CameraSensorI2CCfg(hande->CameraId,CAMERA_STREAMON_CMD);
++                    ret = pCameraHande->Capture(hande->CameraId);
++                    hande->m_timeinfo.ResumeEndTime = systemTime();
++                    ALOGI("[CameraPerformance] Camera %d Resume Take time = %llums",hande->CameraId,(hande->m_timeinfo.ResumeEndTime - hande->m_timeinfo.ResumeStartTime) / 1000000);
++                    hande->state = CAMERA_READY;
++                }
++                break;
++            }
++            case SUSPEND_CAMERA:{
++                if (hande->state == CAMERA_READY) {
++                    ret =  pCameraHande->stopCapture(hande->CameraId);
++                    CameraSensorI2CCfg(hande->CameraId,CAMERA_STREAMOFF_CMD);
++                    hande->m_timeinfo.SuspendEndTime = systemTime();
++                    ALOGI("[CameraPerformance] Camera %d Suspend Take time = %llums",hande->CameraId,(hande->m_timeinfo.SuspendEndTime - hande->m_timeinfo.SuspendStartTime) / 1000000);
++                    hande->state = CAMERA_LOW_POWER;
++                }
++                break;
++            }
++            case MOVEFOCUS_CAMERA : {
++                if (hande->state == CAMERA_READY) {
++                    float value = msg->FocusInfo.value;
++                    ret =  pCameraHande->SetCameraFocusDistance(hande->CameraId,value);
++                }
++            	break;
++            }
++            case SET_PARAMETERS: {
++                if (hande->state == CAMERA_READY) {
++                    camera_parameters_type type = msg->parameters.type;
++                    int32_t value = msg->parameters.value;
++                    ret =  pCameraHande->SetCameraParameters(hande->CameraId,type,value,hande->exposurecb);
++                }
++            	break;
++            }
++            case EXIT_CAMERA: {
++                ALOGI("camera_listen_handle exit Done");
++                hande->thread_exit = 1;
++                free(msg);
++                msg = (CameraMsgInfo*)cam_queue_deq(&hande->cmd_queue);
++                return NULL;
++            }
++        }
++        free(msg);
++        msg = (CameraMsgInfo*)cam_queue_deq(&hande->cmd_queue);
++        ALOGI("Camera %d camera_listen_handle Done",hande->CameraId);
++		//pthread_mutex_unlock(&hande->m_send_msg_mutex);
++    }
++    return NULL;
++}
++
++static void CreateCameraThread() {
++    int i = 0;
++    CameraThreadCtrl *hande = NULL;
++    for(i = 0; i < 3; i++) {
++        pthread_condattr_t cond_attr;
++        hande = &g_CameraThreadHande[i];
++        hande->CameraId = i;
++        hande->thread_exit = 0;
++        hande->state = CAMERA_INVAILABLE;
++
++        pthread_condattr_init(&cond_attr);
++        pthread_condattr_setclock(&cond_attr, CLOCK_MONOTONIC);
++        pthread_mutex_init(&hande->m_mutex, 0);
++		pthread_mutex_init(&hande->m_send_msg_mutex,0);
++        pthread_cond_init(&hande->m_cond, &cond_attr);
++        pthread_cond_init(&hande->m_close_cond, &cond_attr);
++        pthread_condattr_destroy(&cond_attr);
++
++        pthread_create(&hande->thread_id, NULL, camera_listen_handle, hande);
++        cam_queue_init(&hande->cmd_queue);
++    }
++}
++
++static void SendExitCameraThread(int32_t CameraId) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = EXIT_CAMERA;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void DestoryCameraThread () {
++     int i = 0;
++     CameraThreadCtrl *hande = NULL;
++
++     for(i = 0; i < 3; i++) {
++        hande = &g_CameraThreadHande[i];
++        if (hande->state >= CAMERA_LOW_POWER) {
++            ALOGI("wait camera %d close ",hande->CameraId);
++            pthread_mutex_lock(&hande->m_mutex);
++            pthread_cond_wait(&hande->m_close_cond,&hande->m_mutex);
++            ALOGI("wait camera %d close done",hande->CameraId);
++            pthread_mutex_unlock(&hande->m_mutex);
++        }
++        usleep(1000*100);
++        pthread_mutex_lock(&hande->m_mutex);
++        hande->thread_exit = 1;
++        pthread_cond_signal(&hande->m_cond);
++        pthread_mutex_unlock(&hande->m_mutex);
++
++        SendExitCameraThread(hande->CameraId);
++
++        ALOGI("wait camera %d thread exit",hande->CameraId);
++        pthread_join(hande->thread_id, NULL);
++        hande->thread_exit = 1;
++        ALOGI("wait camera %d thread exit done",hande->CameraId);
++        pthread_cond_destroy(&hande->m_cond);
++        pthread_cond_destroy(&hande->m_close_cond);
++        pthread_mutex_destroy(&hande->m_mutex);
++		pthread_mutex_destroy(&hande->m_send_msg_mutex);
++        hande->state = CAMERA_INVAILABLE;
++        ALOGI("destoryQueue camera %d ",hande->CameraId);
++        cam_queue_deinit(&hande->cmd_queue);
++        ALOGI("destoryQueue camera %d done",hande->CameraId);
++        ALOGI("DestoryCameraThread camera %d done",hande->CameraId);
++     }
++}
++
++static bool Initialize() {
++    bool ret = true;
++
++    if (!OpenSensorI2cDevice()) {
++        ALOGE("OpenSensorI2cDevice failed");
++        //return false;
++    }
++
++    CreateCameraThread();
++	CreateCameraCaptureThread();
++
++    if (!CreateCameraHandle(&pCameraHande)) {
++        DestoryCameraThread();
++        return false;
++    }
++    ret = pCameraHande->RegisterCameraServers();
++    if (!ret) {
++       goto exit; 
++    }
++
++    return ret;
++
++exit:
++    DestoryCameraThread();
++    DestoryCameraHandle(pCameraHande);
++    return false;
++}
++
++static void DeInitialize() {
++    CloseSensorI2cDevice();
++	
++	DestoryCameraCaptureThread();
++    DestoryCameraThread();
++
++    if (pCameraHande) {
++        pCameraHande->DestoryCameraServers();
++    }
++
++   DestoryCameraHandle(pCameraHande);
++}
++
++
++/****************************************/
++/*Camera API*/
++static void Open(int32_t CameraId,int32_t width,int32_t height,int32_t format) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = OPEN_CAMERA;
++    msg->data.width = width;
++    msg->data.height = height;
++    msg->data.format = format;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void Close(int32_t CameraId) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = CLOSE_CAMERA;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void Resume(int32_t CameraId) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = RESUME_CAMERA;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void WaitScm1Scm2FristFrameReady(){
++	pCameraHande->WaitSCM1SCM2FristFrame();
++}
++
++static void WaitCCMFristFrameReady(){
++	pCameraHande->WaitCCMFristFrame();
++}
++
++static void Suspend(int32_t CameraId) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = SUSPEND_CAMERA;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void Capture(int32_t CameraId,Datacallback cb) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = CAPTURE_CAMERA;
++    SendCameraMsg(CameraId,msg,cb);
++}
++
++static void SetParameters(int32_t CameraId,camera_parameters_type type,int32_t value) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = SET_PARAMETERS;
++    msg->parameters.type = type;
++    msg->parameters.value = value;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void MoveFocus(int32_t CameraId,float value) {
++    CameraMsgInfo *msg = (CameraMsgInfo *)malloc(sizeof(CameraMsgInfo));
++    msg->msgtype = MOVEFOCUS_CAMERA;
++    msg->FocusInfo.value = value;
++    SendCameraMsg(CameraId,msg,NULL);
++}
++
++static void* camera_capture_listen_handle(void* pContext) {
++	int value = BRIGHTNESS_LEVEL_0;
++	int scm1_frameNum = 0;
++	int scm2_frameNum = 0;
++	int ccm_frameNum = 0;
++
++	do {
++		if (g_CameraCaptureThreadHande.thread_exit) {
++			break;
++		}
++		pthread_mutex_lock(&g_CameraCaptureThreadHande.m_mutex);
++		ALOGI("camera_capture_listen_handle wait ......");
++		pthread_cond_wait(&g_CameraCaptureThreadHande.m_cond,&g_CameraCaptureThreadHande.m_mutex);
++		pthread_mutex_unlock(&g_CameraCaptureThreadHande.m_mutex);
++		
++		if (g_CameraCaptureThreadHande.thread_exit) {
++			break;
++		}
++#if 0
++		ccm_frameNum = GetSensorFrameNum(0);
++		ALOGI("[CameraPerformance] start camera 0 CCM set brightness frameNum=%d start by i2c.....",ccm_frameNum);
++		SetSensorExposureTime(0,100);
++		SetSensorGain(0,16);
++		//SetParameters(0,SET_BRIGHTNESS,BRIGHTNESS_LEVEL_0);
++		//SetSensorExposureTime(0,100);
++		if (value > BRIGHTNESS_LEVEL_MAX) {
++			value = BRIGHTNESS_LEVEL_0;
++		}
++		//pCameraHande->SetCameraParameters(0,SET_BRIGHTNESS,value,g_CameraThreadHande[0].exposurecb);
++		scm1_frameNum = GetSensorFrameNum(1);
++		ALOGI("[CameraPerformance] start camera 1 SCM1 set exposuretime frameNum:%d start by i2c.....",scm1_frameNum);
++		SetSensorExposureTime(1,100);
++		scm2_frameNum = GetSensorFrameNum(2);
++		ALOGI("[CameraPerformance] start camera 2 SCM2 set exposuretime frameNum:%d start by i2c.....",scm2_frameNum);
++		SetSensorExposureTime(2,100);
++#endif
++		ALOGI("[CameraPerformance] start Snapshort SCM1.....");
++		pCameraHande->SnapShort(1,g_CameraThreadHande[1].cb,scm1_frameNum);
++		ALOGI("[CameraPerformance] start Snapshort SCM2.....");
++		pCameraHande->SnapShort(2,g_CameraThreadHande[2].cb,scm2_frameNum);
++		//wait scm1 & scm2 all callback
++		ALOGI("[CameraPerformance] start Snapshort CCM.....");
++		pCameraHande->SnapShort(0,g_CameraThreadHande[0].cb,ccm_frameNum);
++		//value++;
++	} while(!g_CameraCaptureThreadHande.thread_exit);
++	ALOGI("xxxxxxxxxxxxxxxxx camera_capture_listen_handle exit done");
++	return NULL;
++}
++
++void CreateCameraCaptureThread() {
++	if (g_CameraCaptureThreadHande.IsCreate == false) {
++		pthread_condattr_t cond_attr;
++		pthread_condattr_init(&cond_attr);
++		pthread_condattr_setclock(&cond_attr, CLOCK_MONOTONIC);
++
++		g_CameraCaptureThreadHande.thread_exit = false;
++		pthread_mutex_init(&g_CameraCaptureThreadHande.m_mutex, 0);
++		pthread_cond_init(&g_CameraCaptureThreadHande.m_cond, &cond_attr);
++		pthread_condattr_destroy(&cond_attr);
++		pthread_create(&g_CameraCaptureThreadHande.thread_id, NULL, camera_capture_listen_handle, &g_CameraCaptureThreadHande);
++		g_CameraCaptureThreadHande.IsCreate = true;
++	}
++}
++
++void DestoryCameraCaptureThread() {
++	if (g_CameraCaptureThreadHande.IsCreate == true) {
++		g_CameraCaptureThreadHande.thread_exit = true;
++
++		pthread_mutex_lock(&g_CameraCaptureThreadHande.m_mutex);
++		pthread_cond_signal(&g_CameraCaptureThreadHande.m_cond);
++		pthread_mutex_unlock(&g_CameraCaptureThreadHande.m_mutex);
++	
++		pthread_join(g_CameraCaptureThreadHande.thread_id, NULL);
++        pthread_cond_destroy(&g_CameraCaptureThreadHande.m_cond);
++        pthread_mutex_destroy(&g_CameraCaptureThreadHande.m_mutex);
++		g_CameraCaptureThreadHande.IsCreate = false;
++	}
++}
++
++static void CaptureByCustomer(Datacallback scm1_cb,Datacallback scm2_cb,Exposurecallback CCM_ExposureCb,Datacallback ccm_cb) {
++	//CreateCameraCaptureThread();
++	g_CameraThreadHande[0].cb = ccm_cb;
++	g_CameraThreadHande[1].cb = scm1_cb;
++	g_CameraThreadHande[2].cb = scm2_cb;
++	g_CameraThreadHande[0].exposurecb = CCM_ExposureCb;
++	g_CameraThreadHande[1].exposurecb = NULL;
++	g_CameraThreadHande[2].exposurecb = NULL;
++	pthread_mutex_lock(&g_CameraCaptureThreadHande.m_mutex);
++	pthread_cond_signal(&g_CameraCaptureThreadHande.m_cond);
++	pthread_mutex_unlock(&g_CameraCaptureThreadHande.m_mutex);
++}
++
++bool CreateCameraInterfaceNode(CameraContrlNode **pNode) {
++	CameraContrlNode *pTempNode = NULL;
++	if (!Initialize()) {
++		return false;
++	}
++	pTempNode = (CameraContrlNode *)malloc(sizeof(CameraContrlNode));
++	if (!pTempNode) {
++	    ALOGE("CreateCameraInfaceNode failed");
++	    DeInitialize();
++	    return false;
++	}
++	pTempNode->Open = Open;
++	pTempNode->Close = Close;
++	pTempNode->Resume = Resume;
++	pTempNode->Suspend = Suspend;
++	pTempNode->Capture = Capture;
++    pTempNode->SetParameters = SetParameters;
++    pTempNode->MoveFocus = MoveFocus;
++	pTempNode->CaptureByCustomer = CaptureByCustomer;
++	pTempNode->WaitScm1Scm2FristFrameReady = WaitScm1Scm2FristFrameReady;
++	pTempNode->WaitCCMFristFrameReady = WaitCCMFristFrameReady;
++	*pNode = pTempNode;
++	return true;
++}
++
++void DestoryCameraInterfaceNode(CameraContrlNode *pNode) {
++	DeInitialize();
++	if (pNode) {
++		free(pNode);
++		pNode = NULL;
++	}
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.cpp
+new file mode 100755
+index 0000000..7e4df60
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.cpp
+@@ -0,0 +1,478 @@
++
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <time.h>
++#include <sched.h>
++#include <sys/resource.h>
++#include <utils/Thread.h>
++#include <sys/time.h>
++#include <time.h>
++#include <sys/mman.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <signal.h>
++#include <fcntl.h>
++#include <sched.h>
++#include <dlfcn.h>
++#include <cutils/properties.h>
++#include <algorithm>
++#include <chrono>
++#include <inttypes.h>
++#include <functional>
++#include <android/log.h>
++#include <utils/Log.h>
++
++#include "CameraI2cControl.h"
++
++#define CAMERA_HARDWARE_DEVICE_NAME "/dev/camera_i2c_control"
++
++#define SENSOR_I2C_TYPE_BYTE   1
++#define SENSOR_I2C_TYPE_SHORT  2
++
++#define SENSOR_STREAM_ON_STATUS  0xaa
++#define SENSOR_STREAM_OFF_STATUS 0xbb
++
++typedef struct {
++	uint16_t RegAddr;
++	uint16_t RegData;
++	uint8_t  RegType;
++	uint8_t  DataType;
++	uint16_t Delay;
++}I2CRegInfo;
++
++typedef struct {
++	int32_t CameraId;
++	uint16_t sensor_id;
++	uint8_t index;
++	I2CRegInfo SteamOnReg;
++	I2CRegInfo SteamOffReg;
++}CameraSensorI2cInfo;
++
++//static SensorExposureTimeInfo_t SensorExposureTimeInfo[3];
++
++static CameraSensorI2cInfo CameraSensorI2CRegInfo[] = {
++	{
++	    .CameraId = 0,
++	    .sensor_id = 0x30c6,
++	    .index = 0,
++	    .SteamOnReg = {
++	    	.RegAddr = 0x0100,
++	    	.RegData = 0x01,
++	    	.RegType = SENSOR_I2C_TYPE_SHORT,
++	    	.DataType = SENSOR_I2C_TYPE_BYTE,
++	    	.Delay = 0,
++	    },
++	    .SteamOffReg = {
++	    	.RegAddr = 0x0100,
++	    	.RegData = 0x0,
++	    	.RegType = SENSOR_I2C_TYPE_SHORT,
++	    	.DataType = SENSOR_I2C_TYPE_BYTE,
++	    	.Delay = 0,
++	    },
++    },
++	{
++	    .CameraId = 1,
++	    .index = 2,
++	    .sensor_id = 0x9281,
++	    .SteamOnReg = {
++	    	.RegAddr = 0x0100,
++	    	.RegData = 0x1,
++	    	.RegType = SENSOR_I2C_TYPE_SHORT,
++	    	.DataType = SENSOR_I2C_TYPE_BYTE,
++	    	.Delay = 0,
++	    },
++	    .SteamOffReg = {
++	    	.RegAddr = 0x0100,
++	    	.RegData = 0x0,
++	    	.RegType = SENSOR_I2C_TYPE_SHORT,
++	    	.DataType = SENSOR_I2C_TYPE_BYTE,
++	    	.Delay = 0,
++	    },
++    },
++	{
++		.CameraId = 2,
++		.index = 1,
++		.sensor_id = 0x9281,
++		.SteamOnReg = {
++			.RegAddr = 0x0100,
++			.RegData = 0x1,
++			.RegType = SENSOR_I2C_TYPE_SHORT,
++			.DataType = SENSOR_I2C_TYPE_BYTE,
++			.Delay = 0,
++		},
++		.SteamOffReg = {
++			.RegAddr = 0x0100,
++			.RegData = 0x0,
++			.RegType = SENSOR_I2C_TYPE_SHORT,
++			.DataType = SENSOR_I2C_TYPE_BYTE,
++			.Delay = 0,
++		},
++    },
++};
++
++static int mSensorI2CFd = -1;
++
++static CameraSensorI2cInfo *GetCameraSensorI2CInfo(int32_t CameraId) {
++	int i = 0;
++	int size = sizeof(CameraSensorI2CRegInfo)/sizeof(CameraSensorI2CRegInfo[0]);
++
++	for (i = 0; i < size; i++) {
++		if (CameraSensorI2CRegInfo[i].CameraId == CameraId) {
++			return &CameraSensorI2CRegInfo[i];
++		}
++	}
++	return NULL;
++}
++
++bool OpenSensorI2cDevice(void){
++	int fd = -1;
++	//int i = 0;
++	char value[PROPERTY_VALUE_MAX] = {0};
++
++	if (mSensorI2CFd > 0) {
++		return true;
++	}
++	//for (i = 0; i < 3; i++) {
++	//	memset(&SensorExposureTimeInfo[i],0,sizeof(SensorExposureTimeInfo_t))l;
++	//}
++
++    property_get("persist.vendor.camera.stream.onoff.enable", value, "0");
++    if (atoi(value) == 0) {
++    	mSensorI2CFd = -1;
++    	ALOGI("I2C send sendor stream on/off disalble ");
++    	return true;
++    }
++
++	fd = open(CAMERA_HARDWARE_DEVICE_NAME,O_RDWR | O_NONBLOCK);
++	if (fd < 0) {
++		ALOGI("open devide %s failed",CAMERA_HARDWARE_DEVICE_NAME);
++		return false;
++	}
++	mSensorI2CFd = fd;
++	return true;
++}
++
++void CloseSensorI2cDevice(void) {
++	if (mSensorI2CFd > 0 ) {
++		close(mSensorI2CFd);
++		mSensorI2CFd = -1;
++	}
++}
++/*
++write buffer:
++buf[0]:sensor_id_h
++buf[1]:sensor_id_l
++buf[2]:reg_addr_h
++buf[3]:reg_addr_l
++buf[4]:addr_type
++buf[5]:reg_data_h
++buf[6]:reg_data_l
++buf[7]:data_type
++buf[8]:stream on/off status
++buf[9]:index
++
++read buffer:
++buf[0]:sensor_id_h
++buf[1]:sensor_id_l
++buf[2]:reg_addr_h
++buf[3]:reg_addr_l
++buf[4]:addr_type
++buf[5]:data_type
++buf[6]:index
++buf[7]:reg_data_h
++buf[8]:reg_data_l
++*/
++int CameraSensorI2CCfg(int32_t CameraId,int cmd) {
++	int ret;
++	CameraSensorI2cInfo *I2cInfo = NULL;
++	char value[PROPERTY_VALUE_MAX] = {0};
++	char buffer[20] = {0};
++
++	if (mSensorI2CFd < 0) {
++		return -1;
++	}
++	I2cInfo = GetCameraSensorI2CInfo(CameraId);
++
++    if (!I2cInfo) {
++    	ALOGE("not foud cameraid %d i2c info",CameraId);
++    	return -1;
++    }
++
++    property_get("persist.vendor.camera.stream.onoff.enable", value, "0");
++    if (atoi(value) == 0) {
++    	ALOGI("cameraid %d I2C send sendor stream on/off disalble ",CameraId);
++    	return 0;
++    }
++
++    //if (CameraId == 1) {
++    //	return -1;
++   // }
++
++	switch (cmd) {
++		case CAMERA_STREAMON_CMD:{
++			ALOGI("cameraid %d I2C send sendor stream on ",CameraId);
++		    /*sensor id*/
++			buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++			buffer[1] = I2cInfo->sensor_id & 0xFF;
++
++			/*reg addr*/
++			buffer[2] = (I2cInfo->SteamOnReg.RegAddr >> 8) & 0xFF;
++			buffer[3] = (I2cInfo->SteamOnReg.RegAddr) & 0xFF;
++			buffer[4] = (I2cInfo->SteamOnReg.RegType) & 0xFF;
++
++			/*data*/
++			buffer[5] = (I2cInfo->SteamOnReg.RegData >> 8) & 0xFF;
++			buffer[6] = (I2cInfo->SteamOnReg.RegData) & 0xFF;
++			buffer[7] = (I2cInfo->SteamOnReg.DataType) & 0xFF;
++			buffer[8] = SENSOR_STREAM_ON_STATUS;
++			buffer[9] = I2cInfo->index;
++			ret = write(mSensorI2CFd,buffer,10);
++			break;
++		}
++		case CAMERA_STREAMOFF_CMD:{
++			ALOGI("cameraid %d I2C send sendor stream off ",CameraId);
++		    /*sensor id*/
++			buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++			buffer[1] = I2cInfo->sensor_id & 0xFF;
++
++			/*reg addr*/
++			buffer[2] = (I2cInfo->SteamOffReg.RegAddr >> 8) & 0xFF;
++			buffer[3] = (I2cInfo->SteamOffReg.RegAddr) & 0xFF;
++			buffer[4] = (I2cInfo->SteamOffReg.RegType) & 0xFF;
++
++			/*data*/
++			buffer[5] = (I2cInfo->SteamOffReg.RegData >> 8) & 0xFF;
++			buffer[6] = (I2cInfo->SteamOffReg.RegData) & 0xFF;
++			buffer[7] = (I2cInfo->SteamOffReg.DataType) & 0xFF;
++			buffer[8] = SENSOR_STREAM_OFF_STATUS;
++			buffer[9] = I2cInfo->index;
++			ret = write(mSensorI2CFd,buffer,10);
++			break;
++		}
++	}
++	if (ret < 0) {
++		ALOGE("cameraid %d I2C send sendor cmd:%d failed",CameraId,cmd);
++	}
++	return ret;
++}
++/*
++1280x800 120fps
++SYS_CLK 80MHZ
++HTS = 0x02d0
++Tline = HTS/SYS_CLK = 0x02d0/80 = 9us
++LineCout = ExposureTime/Tline
++*/
++#define OV9281_HTS    0x02d0
++#define OV9281_SCLK   80
++#define OV9281_EXPOSURE_REG_BASE  0x3502
++#define OV9281_EXPOSURE_REG_CNT 2
++#define OV9281_GAIN_REG_BASE 0x3509
++#define OV9281_GAIN_REG_CNT   1
++
++/*
++1200 x 800 120fps
++Pclk = 480Mhz
++linelength  = 4896
++Tline = 4896/480 us = 10.2us
++LineCout = ExposureTime / Tline
++*/
++#define S5K3L6_PCLK 480
++#define S5K3L6_LINE_LENGTH 4896
++#define S5K3L6_EXPOSURE_REG_BASE 0x0203
++#define S5K3L6_EXPOSURE_REG_CNT 2
++#define S5K3L6_GAIN_REG_BASE  0x0205
++#define S5K3L6_GAIN_REG_CNT   2
++
++#define OV9281_CHIPID_REG 0x300a
++#define S5K3L6_CHIPID_REG 0x0000
++#define OV9281_FRAME_CNT_REG 0x4244 //0x4244 0x303F
++#define S5K3L6_FRAME_CNT_REG 0x0005
++
++int SetSensorExposureTime(int cameraId,int32_t time) {
++	int ret;
++	CameraSensorI2cInfo *I2cInfo = NULL;
++	char buffer[20] = {0};
++	int32_t exposurelinecout = 0;
++	uint8_t value = 0;
++	uint16_t reg = 0;
++    int32_t count = 0;	
++	int32_t i = 0;
++
++	I2cInfo = GetCameraSensorI2CInfo(cameraId);
++
++    if (!I2cInfo) {
++    	ALOGE("not foud cameraid %d i2c info",cameraId);
++    	return -1;
++    }
++
++	if (mSensorI2CFd < 0) {
++		return -1;
++	}
++	//10896
++	if (cameraId > 0) {
++		int Tline = OV9281_HTS/OV9281_SCLK;
++		reg = OV9281_EXPOSURE_REG_BASE;
++		count = OV9281_EXPOSURE_REG_CNT;
++		exposurelinecout = (time/Tline) * 1000;
++		ALOGI("Set camera %d exposuretime=%dms, linecout=0x%x, Tline=%dus",cameraId,time,exposurelinecout,Tline);
++	} else {
++		int Tline = S5K3L6_LINE_LENGTH/S5K3L6_PCLK;
++		reg = S5K3L6_EXPOSURE_REG_BASE;
++		count = S5K3L6_EXPOSURE_REG_CNT;
++		exposurelinecout = (time/Tline) * 1000;
++		ALOGI("Set camera %d exposuretime=%dms, linecout=0x%x, Tline=%dus",cameraId,time,exposurelinecout,Tline);
++	}
++
++	for (i = 0; i < count; i++) {
++		value = (exposurelinecout >> (8*i)) & 0xFF;
++	
++		buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++		buffer[1] = I2cInfo->sensor_id & 0xFF;
++		buffer[2] = (reg >> 8) & 0xFF;
++		buffer[3] = (reg) & 0xFF;
++		buffer[4] = (SENSOR_I2C_TYPE_SHORT) & 0xFF;
++
++		buffer[5] = 0x00;
++		buffer[6] = (value) & 0xFF;
++		buffer[7] = (SENSOR_I2C_TYPE_BYTE) & 0xFF;
++		buffer[8] = 0;
++		buffer[9] = I2cInfo->index;
++		ret = write(mSensorI2CFd,buffer,10);
++		reg--;
++	}
++	
++	return ret;
++}
++
++int SetSensorGain(int cameraId,int32_t gain) {
++	int ret;
++	CameraSensorI2cInfo *I2cInfo = NULL;
++	char buffer[20] = {0};
++	int32_t value = 0;
++	uint16_t reg = 0;
++    int32_t count = 0;
++	int32_t i = 0;
++	I2cInfo = GetCameraSensorI2CInfo(cameraId);
++
++    if (!I2cInfo) {
++    	ALOGE("not foud cameraid %d i2c info",cameraId);
++    	return -1;
++    }
++
++	if (mSensorI2CFd < 0) {
++		return -1;
++	}
++
++	if (cameraId > 0) {
++		reg = OV9281_GAIN_REG_BASE;
++		count = OV9281_GAIN_REG_CNT;
++		if (gain < 1) {
++			gain = 1;
++		}
++		if (gain > 16) {
++			gain = 16;
++		}
++		value = gain * 16;
++		if (value > 0xff) {
++			value = 0xff;
++		}
++	} else {
++		reg = S5K3L6_GAIN_REG_BASE;
++		count = S5K3L6_GAIN_REG_CNT;
++		if (gain < 1) {
++			gain = 1;
++		}
++		if (gain > 16) {
++			gain = 16;
++		}
++		value = gain*32;
++	}
++
++	ALOGI("Set camera %d realgain=%dX, regGain=0x%x",cameraId,gain,value);
++
++	for (i = 0; i < count; i++) {
++		buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++		buffer[1] = I2cInfo->sensor_id & 0xFF;
++		buffer[2] = (reg >> 8) & 0xFF;
++		buffer[3] = (reg) & 0xFF;
++		buffer[4] = (SENSOR_I2C_TYPE_SHORT) & 0xFF;
++
++		buffer[5] = 0x00;
++		buffer[6] = (value >> (8*i)) & 0xFF;
++		buffer[7] = (SENSOR_I2C_TYPE_BYTE) & 0xFF;
++		buffer[8] = 0;
++		buffer[9] = I2cInfo->index;
++		ret = write(mSensorI2CFd,buffer,10);
++		reg--;
++	}
++	return ret;
++}
++
++int GetSensorFrameNum(int cameraId) {
++	int ret;
++	CameraSensorI2cInfo *I2cInfo = NULL;
++	uint16_t reg = 0;
++	int32_t framenumer = 0;
++	char buffer[20] = {0};
++	I2cInfo = GetCameraSensorI2CInfo(cameraId);
++
++    if (!I2cInfo) {
++    	ALOGE("not foud cameraid %d i2c info",cameraId);
++    	return -1;
++    }
++
++	if (mSensorI2CFd < 0) {
++		return -1;
++	}
++	if (cameraId == 0) {
++		reg = S5K3L6_FRAME_CNT_REG;
++	} else {
++		reg = OV9281_FRAME_CNT_REG;
++	}
++	buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++	buffer[1] = I2cInfo->sensor_id & 0xFF;
++	buffer[2] = (reg >> 8) & 0xFF;
++	buffer[3] = (reg) & 0xFF;
++	buffer[4] = (SENSOR_I2C_TYPE_SHORT) & 0xFF;
++	buffer[5] = (SENSOR_I2C_TYPE_BYTE) & 0xFF;
++	buffer[6] = I2cInfo->index;
++	ret = read(mSensorI2CFd,buffer,9);
++	framenumer = ((buffer[7] << 8 ) & 0xff ) | buffer[8];
++	//ALOGI("camera %d Read reg=0x%x, data[0]=0x%x data[1]=0x%x framenumer=%d",cameraId,reg,buffer[7],buffer[8],framenumer);
++	return framenumer;
++}
++
++int SensorI2cCheckTest(int cameraId) {
++	int ret;
++	CameraSensorI2cInfo *I2cInfo = NULL;
++	uint16_t reg = 0;
++	char buffer[20] = {0};
++	int32_t chipid = 0;
++	I2cInfo = GetCameraSensorI2CInfo(cameraId);
++
++    if (!I2cInfo) {
++    	ALOGE("not foud cameraid %d i2c info",cameraId);
++    	return -1;
++    }
++
++	if (mSensorI2CFd < 0) {
++		return -1;
++	}
++	if (cameraId == 0) {
++		reg = S5K3L6_CHIPID_REG;
++	} else {
++		reg = OV9281_CHIPID_REG;
++	}
++	buffer[0] = (I2cInfo->sensor_id >> 8) & 0xFF;
++	buffer[1] = I2cInfo->sensor_id & 0xFF;
++	buffer[2] = (reg >> 8) & 0xFF;
++	buffer[3] = (reg) & 0xFF;
++	buffer[4] = (SENSOR_I2C_TYPE_SHORT) & 0xFF;
++	buffer[5] = (SENSOR_I2C_TYPE_SHORT) & 0xFF;
++	buffer[6] = I2cInfo->index;
++	ret = read(mSensorI2CFd,buffer,9);
++	chipid = ((buffer[7] << 8 ) & 0xff ) | buffer[8];
++	ALOGI("camera %d Read reg=0x%x, data[0]=0x%x data[1]=0x%x chipid=0x%x",cameraId,reg,buffer[7],buffer[8],chipid);
++	return ret;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.h
+new file mode 100755
+index 0000000..2a82eac
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cControl.h
+@@ -0,0 +1,22 @@
++
++enum camera_sensor_i2c_cmd_info {
++	CAMERA_STREAMON_CMD,
++	CAMERA_STREAMOFF_CMD,
++	CAMERA_SENSOR_CMD_MAX,
++};
++
++typedef struct {
++	int32_t PreExposureTime;
++	int32_t CurExppsureTime;
++	int32_t PreGain;
++	int32_t CurGain;
++	int32_t FrameNum;
++} SensorExposureTimeInfo_t;
++
++bool OpenSensorI2cDevice(void);
++void CloseSensorI2cDevice(void);
++int CameraSensorI2CCfg(int32_t CameraId,int cmd);
++int SetSensorExposureTime(int cameraId,int32_t time);
++int SetSensorGain(int cameraId,int32_t gain);
++int GetSensorFrameNum(int cameraId);
++int SensorI2cCheckTest(int cameraId);
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cTest.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cTest.cpp
+new file mode 100755
+index 0000000..279b3cb
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraI2cTest.cpp
+@@ -0,0 +1,134 @@
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/time.h>
++#include <time.h>
++#include <errno.h>
++#include <utils/Timers.h>
++
++#include "CameraI2cControl.h"
++
++
++int main(int argc, char* argv[]) {
++	int exposuretime[3] = {-1};
++	int gain[3] = {-1};
++	int i = 0;
++
++	OpenSensorI2cDevice();
++
++	if (argv[1]) {
++		exposuretime[0] = atoi(argv[1]);
++	}
++	if (argv[2]) {
++		exposuretime[1] = atoi(argv[2]);
++	}
++	if (argv[3]) {
++		exposuretime[2] = atoi(argv[3]);
++	}
++
++	if (argv[4]) {
++		gain[0] = atoi(argv[4]);
++	}
++	if (argv[5]) {
++		gain[1] = atoi(argv[5]);
++	}
++	if (argv[6]) {
++		gain[2] = atoi(argv[6]);
++	}
++
++	for (i = 0;i < 3; i++) {
++		printf("Test camera %d exposuretime:%d gain=%d\n",i,exposuretime[i],gain[i]);
++	}
++
++	do {
++		char c;
++		printf("0:Set Camera0 stream on\n");
++		printf("1:Set Camera0 stream off\n");
++		printf("2:Set Camera0 exposure\n");
++		printf("3:Set Camera0 gain\n");
++		printf("4:Set Camera1 stream on\n");
++		printf("5:Set Camera1 stream off\n");
++		printf("6:Set Camera1 exposure\n");
++		printf("7:Set Camera1 gain\n");
++		printf("8:Set Camera2 stream on\n");
++		printf("9:Set Camera2 stream off\n");
++		printf("a:Set Camera2 exposure\n");
++		printf("b:Set Camera2 gain\n");
++		printf("c:Check Camera I2C(Read chipID)\n");
++		printf("d:Get camera0 frame number\n");
++		printf("f:Get camera1 frame number\n");
++		printf("g:Get camera2 frame number\n");
++		printf("e:exit\n");
++		c = getchar();
++		//usleep(1000*1000);
++		if (c == '0') {
++			CameraSensorI2CCfg(0,CAMERA_STREAMON_CMD);
++		} else if (c == '1') {
++			CameraSensorI2CCfg(0,CAMERA_STREAMOFF_CMD);
++		} else if (c == '2') {
++			if (exposuretime[0] != -1) {
++				SetSensorExposureTime(0,exposuretime[0]);
++			}
++		} else if (c == '3') {
++			if (gain[0] != -1) {
++				SetSensorGain(0,gain[0]);
++			}
++		} else if (c == '4') {
++			CameraSensorI2CCfg(1,CAMERA_STREAMON_CMD);
++		} else if (c == '5') {
++			CameraSensorI2CCfg(1,CAMERA_STREAMOFF_CMD);
++		} else if (c ==  '6') {
++			if (exposuretime[1] != -1) {
++				SetSensorExposureTime(1,exposuretime[1]);
++			}
++		} else if (c == '7') {
++			if (gain[1] != -1) {
++				SetSensorGain(1,gain[1]);
++			}
++		} else if (c == '8') {
++			CameraSensorI2CCfg(2,CAMERA_STREAMON_CMD);
++		} else if (c == '9') {
++			CameraSensorI2CCfg(2,CAMERA_STREAMOFF_CMD);
++		} else if (c == 'a') {
++			if (exposuretime[2] != -1) {
++				SetSensorExposureTime(2,exposuretime[2]);
++			}
++		} else if (c == 'b') {
++			if (gain[2] != -1) {
++				SetSensorGain(2,gain[2]);
++			}
++		} else if (c == 'c') {
++			SensorI2cCheckTest(0);
++			SensorI2cCheckTest(1);
++			SensorI2cCheckTest(2);
++		} else if (c == 'd') {
++			GetSensorFrameNum(0);
++		} else if (c == 'f') {
++			GetSensorFrameNum(1);
++		} else if (c == 'g') {
++			GetSensorFrameNum(2);
++		} else if (c == 'e') {
++			break;
++		}
++	}while(1);
++    printf("Exit\n");
++	CloseSensorI2cDevice();
++	printf("Exit done\n");
++	return 0;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.cpp
+new file mode 100755
+index 0000000..33df5fd
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.cpp
+@@ -0,0 +1,286 @@
++#include "CameraNativeManager.h"
++
++//static CameraNativeManager mCameraNativeManager[3];
++
++static bool RegisterCameraServers()
++{
++    ALOGI("RegisterCameraServers ++++++");
++    return CreateCameraManger();
++    
++}
++
++static void DestoryCameraServers()
++{
++    ALOGI("DestoryCameraManger ++++++");
++    DestoryCameraManger();
++}
++
++static bool Open(int32_t CameraId,int32_t width,int32_t height,int32_t format) {
++    camera_status_t ret;
++    char value[PROPERTY_VALUE_MAX] = {0};
++    nsecs_t strat_time = systemTime();
++
++    ALOGI("Camera %d Open ++++++",CameraId);
++
++    ret = openCamera(CameraId);
++
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d OpenCamera failed. ret %d",CameraId, ret);
++        return false;
++    }
++
++    ret = createImageReader(CameraId,width,height,format);
++
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createImageReader failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ret = createCaptureRequest(CameraId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createCaptureRequest failed. ret %d",CameraId, ret);
++        return false;
++    }
++
++    ret = createSession(CameraId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createSession failed. ret %d",CameraId, ret);
++        return false;
++    }
++
++    property_get("persist.vendor.camera.capture.repeating", value, "1");
++    if (atoi(value) == 1) {
++        ALOGI("Camera %d Capture repeating",CameraId);
++        ret = startCapture(CameraId,true);
++    } else {
++        ALOGI("Camera %d Capture no repeating",CameraId);
++        ret = startCapture(CameraId,false);
++    }
++
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d startCapture failed. ret %d",CameraId, ret);
++        return false;
++    }
++
++    WaitImage(CameraId,5);
++
++    ret = stopNativeCapture(CameraId);
++    ALOGI("Camera %d Open take time=%llums-----",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++
++static bool Close(int32_t CameraId)
++{
++    camera_status_t ret;
++    nsecs_t strat_time = systemTime();
++    ALOGI("Camera %d Close ++++++",CameraId);
++
++    stopNativeCapture(CameraId);
++    destorySession(CameraId);
++    destoryImageReader(CameraId);
++
++    ret = closeCamera(CameraId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d Close failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ALOGI("Camera %d Close take time=%llums-----",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++/*
++static bool ConfigureStreams(int32_t CameraId,int32_t width,int32_t height,int32_t format)
++{
++    camera_status_t ret;
++    CameraNativeManager *ndkCamera = nullptr;
++    nsecs_t strat_time = systemTime();
++    ALOGI("Camera %d ConfigureStreams size:[%dx%d] format:%d++++++",CameraId,width,height,format);
++    if (CameraId == 0) {
++        ndkCamera = &mCameraNativeManager[0];
++    } else if (CameraId == 1) {
++        ndkCamera = &mCameraNativeManager[1];
++    } else {
++        ndkCamera = &mCameraNativeManager[2];
++    }
++
++    ret = ndkCamera->createImageReader(width,height,format);
++
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createImageReader failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ret = ndkCamera->createCaptureRequest();
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createCaptureRequest failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ret = ndkCamera->createSession();
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d createSession failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ALOGI("Camera %d ConfigureStreams take time=%llums-----",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++
++static bool DeleteStreams(int32_t CameraId)
++{
++    camera_status_t ret;
++    CameraNativeManager *ndkCamera = nullptr;
++    nsecs_t strat_time = systemTime();
++    ALOGI("Camera %d DeleteStreams ++++++",CameraId);
++    if (CameraId == 0) {
++        ndkCamera = &mCameraNativeManager[0];
++    } else if (CameraId == 1) {
++        ndkCamera = &mCameraNativeManager[1];
++    } else {
++        ndkCamera = &mCameraNativeManager[2];
++    }
++    ndkCamera->destorySession();
++    ndkCamera->destoryImageReader();
++    ALOGI("Camera %d DeleteStreams take time=%llums-----",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++
++static bool setCallBack(int32_t CameraId,Datacallback cb){
++    CameraNativeManager *ndkCamera = nullptr;
++    nsecs_t strat_time = systemTime();
++
++    ALOGI("Camera %d setCallBack ++++++",CameraId);
++    if (CameraId == 0) {
++        ndkCamera = &mCameraNativeManager[0];
++    } else if (CameraId == 1) {
++        ndkCamera = &mCameraNativeManager[1];
++    } else {
++        ndkCamera = &mCameraNativeManager[2];
++    }
++    ndkCamera->SetCallback(cb);
++    ALOGI("Camera %d setCallBack take time=%llums------",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++*/
++
++static bool Capture(int32_t CameraId)
++{
++    camera_status_t ret;
++    char value[PROPERTY_VALUE_MAX] = {0};
++    nsecs_t strat_time = systemTime();
++
++    ALOGI("Camera %d Capture ++++++",CameraId);
++
++    property_get("persist.vendor.camera.capture.repeating", value, "1");
++    if (atoi(value) == 1) {
++        ALOGI("Camera %d Capture repeating",CameraId);
++        ret = startCapture(CameraId,true);
++    } else {
++        ALOGI("Camera %d Capture no repeating",CameraId);
++        ret = startCapture(CameraId,false);
++    }
++
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d startCapture failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ALOGI("Camera %d Capture take time=%llums------",CameraId,(systemTime() - strat_time)/1000000);
++	//if (CameraId == 0) {
++		//WaitImage(CameraId,5);
++	//
++    return true;
++}
++
++static bool stopCapture(int32_t CameraId)
++{
++    camera_status_t ret;
++    nsecs_t strat_time = systemTime();
++    ALOGI("Camera %d stopCapture ++++++",CameraId);
++
++    ret = stopNativeCapture(CameraId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d stopCapture failed. ret %d",CameraId, ret);
++        return false;
++    }
++    ALOGI("Camera %d stopCapture take time=%llums------",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++
++static bool SnapShort(int32_t CameraId,Datacallback cb,int32_t frameNum){
++    nsecs_t strat_time = systemTime();
++
++    ALOGI("Camera %d SnapShort ++++++",CameraId);
++
++    SnapShortStart(CameraId,cb,strat_time,frameNum);
++    ALOGI("Camera %d SnapShort take time=%llums------",CameraId,(systemTime() - strat_time)/1000000);
++    return true;
++}
++
++static bool SetCameraParameters(int32_t CameraId,camera_parameters_type type,int32_t value,Exposurecallback cb) {
++    camera_status_t ret;
++    if (type == SET_BRIGHTNESS) {
++        ret = SetCameraBrightness(CameraId,value,cb);
++        if (ret != ACAMERA_OK) {
++            return false;
++        }
++    } else if (type == SET_FALSHLIGHT) {
++        if (value == FLASHLIGHT_ON) {
++            SetCameraFlashLight(CameraId,true);
++        } else {
++            SetCameraFlashLight(CameraId,false);
++        }
++    }
++
++    return true;
++}
++
++static bool SetCameraFocusDistance(int32_t CameraId,float value) {
++    camera_status_t ret = CameraMoveFocus(CameraId,value);
++    if (ret != ACAMERA_OK) {
++        return false;
++    }
++    return true;
++}
++static void WaitSCM1SCM2FristFrame() {
++	WaitSCM1SCM2FristFrameDone();
++}
++
++static void WaitCCMFristFrame() {
++	WaitCCMFristFrameDone();
++}
++
++bool CreateCameraHandle(CameraHandle **pHande)
++{
++    CameraHandle *pTempCtrl = NULL;
++    ALOGI("CreateCameraHandle ++++++");
++    pTempCtrl = (CameraHandle *)malloc(sizeof(CameraHandle));
++    if (pTempCtrl == NULL) {
++        return false;
++    }
++
++    pTempCtrl->RegisterCameraServers = RegisterCameraServers;
++    pTempCtrl->DestoryCameraServers = DestoryCameraServers;
++    pTempCtrl->Open = Open;
++    pTempCtrl->Close = Close;
++   // pTempCtrl->ConfigureStreams = ConfigureStreams;
++  //  pTempCtrl->DeleteStreams = DeleteStreams;
++    pTempCtrl->Capture = Capture;
++    pTempCtrl->stopCapture = stopCapture;
++   // pTempCtrl->setCallBack = setCallBack;
++    pTempCtrl->SnapShort = SnapShort;
++    pTempCtrl->SetCameraParameters = SetCameraParameters;
++    pTempCtrl->SetCameraFocusDistance = SetCameraFocusDistance;
++	pTempCtrl->WaitSCM1SCM2FristFrame = WaitSCM1SCM2FristFrame;
++	pTempCtrl->WaitCCMFristFrame = WaitCCMFristFrame;
++
++    *pHande = pTempCtrl;
++
++    ALOGI("CreateCameraHandle ------");
++    return true;
++}
++
++bool DestoryCameraHandle(CameraHandle *pHande)
++{
++    ALOGI("DestoryCameraHandle ++++++");
++    if (pHande) {
++        free(pHande);
++        pHande = NULL;
++    }
++    ALOGI("DestoryCameraHandle ------");
++    return true;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.h
+new file mode 100755
+index 0000000..0a1bd6b
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraInter.h
+@@ -0,0 +1,27 @@
++
++#include <stdatomic.h>
++#include <pthread.h>
++#include "media/NdkImage.h"
++#include "media/NdkImageReader.h"
++#include "Camera.h"
++//typedef void(*Datacallback)(AImageReader *reader);
++
++typedef struct CameraHandle_t {
++    bool (*RegisterCameraServers)(void);
++    void (*DestoryCameraServers)(void);
++    bool (*Open)(int32_t CameraId,int32_t width,int32_t height,int32_t format);
++    bool (*Close)(int32_t CameraId);
++   // bool (*ConfigureStreams)(int32_t CameraId,int32_t width,int32_t height,int32_t format);
++    //bool (*DeleteStreams)(int32_t CameraId);
++    bool (*Capture)(int32_t CameraId);
++    bool (*stopCapture)(int32_t CameraId);
++    //bool (*setCallBack)(int32_t CameraId,Datacallback cb);
++    bool (*SnapShort)(int32_t CameraId,Datacallback cb,int32_t frameNum);
++    bool (*SetCameraParameters)(int32_t CameraId,camera_parameters_type type,int32_t value,Exposurecallback cb);
++    bool (*SetCameraFocusDistance)(int32_t CameraId,float value);
++	void (*WaitSCM1SCM2FristFrame)(void);
++	void (*WaitCCMFristFrame)(void);
++}CameraHandle;
++
++bool CreateCameraHandle(CameraHandle **pHande);
++bool DestoryCameraHandle(CameraHandle *pHande);
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.cpp
+new file mode 100755
+index 0000000..4e2aeee
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.cpp
+@@ -0,0 +1,102 @@
++
++#include <log/log.h>
++
++#include <chrono>
++#include <cinttypes>
++#include <condition_variable>
++#include <map>
++#include <mutex>
++#include <string>
++#include <vector>
++#include <unistd.h>
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include <set>
++#include <cutils/properties.h>
++#include <time.h>
++#include <pthread.h>
++#include <sys/time.h>
++#include <time.h>
++#include <errno.h>
++#include <utils/Timers.h>
++#include <android/log.h>
++
++#include "CameraLedControl.h"
++
++#define LASERAIMING_LED_FILE  "/sys/devices/platform/soc/soc:meig-scanlight/scanlight_fir"
++#define AIM_SUS_FILE          "/sys/devices/platform/soc/soc:meig-scanlight/scanlight_scd"
++#define LIM_OUT_FILE          "/sys/devices/platform/soc/soc:meig-scanlight/scanlight_trd"
++
++typedef struct {
++	int32_t LaserAiming_status;
++	int32_t AIM_SUS_status;
++	int32_t ILM_OUT_status;
++	std::mutex mMutex;
++}SanLightCtr_t;
++
++static SanLightCtr_t SanLightCtrlInfo;
++
++void SanLightInit(void){
++	SanLightCtrlInfo.LaserAiming_status = LASERAIMING_OFF;
++	SanLightCtrlInfo.AIM_SUS_status = AIM_SUS_LOW;
++	SanLightCtrlInfo.ILM_OUT_status = LIM_OUT_OFF;
++}
++
++void Set_LaserAiming(bool on) {
++	int fd = -1;
++	std::lock_guard<std::mutex> lock(SanLightCtrlInfo.mMutex);
++	ALOGI("Set_LaserAiming %s",(on == true)?"on":"off");
++	fd = open(LASERAIMING_LED_FILE,O_RDWR | O_NONBLOCK);
++	if (fd < 0) {
++		return ;
++	}
++
++	if (on) {
++		write(fd,"1",1);
++		SanLightCtrlInfo.LaserAiming_status = LASERAIMING_0N;
++	} else {
++		write(fd,"0",1);
++		SanLightCtrlInfo.LaserAiming_status = LASERAIMING_OFF;
++	}
++	close(fd);
++	ALOGI("Set_LaserAiming %s done",(on == true)?"on":"off");
++}
++
++void Set_AIM_SUS(bool high) {
++	int fd = -1;
++	std::lock_guard<std::mutex> lock(SanLightCtrlInfo.mMutex);
++	ALOGI("Set_AIM_SUS %s",(high == true)?"high":"low");
++	fd = open(AIM_SUS_FILE,O_RDWR | O_NONBLOCK);
++	if (fd < 0) {
++		return ;
++	}
++	if (high) {
++		write(fd,"1",1);
++		SanLightCtrlInfo.AIM_SUS_status = AIM_SUS_HIGH;
++	} else {
++		write(fd,"0",1);
++		SanLightCtrlInfo.AIM_SUS_status = AIM_SUS_LOW;
++	}
++	close(fd);
++	ALOGI("Set_AIM_SUS %s done",(high == true)?"high":"low");
++}
++
++void Set_ILM_OUT(bool on) {
++	int fd = -1;
++	std::lock_guard<std::mutex> lock(SanLightCtrlInfo.mMutex);
++	ALOGI("Set_ILM_OUT %s",(on == true)?"on":"off");
++	fd = open(LIM_OUT_FILE,O_RDWR | O_NONBLOCK);
++	if (fd < 0) {
++		return ;
++	}
++	if (on) {
++		write(fd,"1",1);
++		SanLightCtrlInfo.ILM_OUT_status = LIM_OUT_ON;
++	} else {
++		write(fd,"0",1);
++		SanLightCtrlInfo.ILM_OUT_status = LIM_OUT_OFF;
++	}
++	close(fd);
++	ALOGI("Set_ILM_OUT %s done",(on == true)?"on":"off");
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.h
+new file mode 100755
+index 0000000..df1478f
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraLedControl.h
+@@ -0,0 +1,14 @@
++typedef enum {
++	LASERAIMING_OFF = -1,
++	LASERAIMING_0N,
++	LIM_OUT_ON,
++	LIM_OUT_OFF,
++	AIM_SUS_LOW,
++	AIM_SUS_HIGH,
++}led_state_t;
++
++void SanLightInit(void);
++void Set_LaserAiming(bool on);
++void Set_AIM_SUS(bool high);
++void Set_ILM_OUT(bool on);
++
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraList.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraList.h
+new file mode 100755
+index 0000000..d8b2425
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraList.h
+@@ -0,0 +1,50 @@
++
++
++#include <stddef.h>
++// System dependency
++#include <stdlib.h>
++
++#define member_of(ptr, type, member) ({ \
++  const typeof(((type *)0)->member) *__mptr = (ptr); \
++  (type *)((char *)__mptr - offsetof(type,member));})
++
++struct cam_list {
++  struct cam_list *next, *prev;
++};
++
++static inline void cam_list_init(struct cam_list *ptr)
++{
++  ptr->next = ptr;
++  ptr->prev = ptr;
++}
++
++static inline void cam_list_add_tail_node(struct cam_list *item,
++  struct cam_list *head)
++{
++  struct cam_list *prev = head->prev;
++
++  head->prev = item;
++  item->next = head;
++  item->prev = prev;
++  prev->next = item;
++}
++
++static inline void cam_list_insert_before_node(struct cam_list *item,
++  struct cam_list *node)
++{
++  item->next = node;
++  item->prev = node->prev;
++  item->prev->next = item;
++  node->prev = item;
++}
++
++static inline void cam_list_del_node(struct cam_list *ptr)
++{
++  struct cam_list *prev = ptr->prev;
++  struct cam_list *next = ptr->next;
++
++  next->prev = ptr->prev;
++  prev->next = ptr->next;
++  ptr->next = ptr;
++  ptr->prev = ptr;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.cpp
+new file mode 100755
+index 0000000..ec05f73
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.cpp
+@@ -0,0 +1,46 @@
++
++#include "CameraManger.h"
++
++
++static ACameraManager* mCameraManager = nullptr;
++static ACameraManager_AvailabilityCallbacks mServiceCb;
++static CameraServiceListener mServiceListener;
++
++bool CreateCameraManger(){
++    camera_status_t ret;
++
++    if (!mCameraManager) {
++        mCameraManager = ACameraManager_create();
++    }
++    if (!mCameraManager)
++        return false;
++
++    mServiceListener.resetCount();
++
++    mServiceCb.context = &mServiceListener;
++    mServiceCb.onCameraAvailable = mServiceListener.onAvailable;
++    mServiceCb.onCameraUnavailable = mServiceListener.onUnavailable;
++
++    ret = ACameraManager_registerAvailabilityCallback(mCameraManager, &mServiceCb);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Register availability callback failed: ret %d", ret);
++        ACameraManager_delete(mCameraManager);
++        mCameraManager = nullptr;
++        return false;
++    }
++    return true;
++}
++
++void DestoryCameraManger(){
++    if (!mCameraManager) {
++        ACameraManager_unregisterAvailabilityCallback(mCameraManager, &mServiceCb);
++        ACameraManager_delete(mCameraManager);
++        mCameraManager = nullptr;
++    }
++    mServiceListener.resetCount();
++}
++
++ACameraManager* GetCameraManger(){
++    return mCameraManager;
++}
++
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.h
+new file mode 100755
+index 0000000..4a2cc82
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraManger.h
+@@ -0,0 +1,5 @@
++#include "CameraServiceListener.h"
++
++bool CreateCameraManger(void);
++void DestoryCameraManger(void);
++ACameraManager* GetCameraManger(void);
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.cpp
+new file mode 100755
+index 0000000..fdda01d
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.cpp
+@@ -0,0 +1,708 @@
++#include "CameraNativeManager.h"
++#include "CameraI2cControl.h"
++
++static CameraNativeManager mCameraNativeManager[3];
++#if 1
++static std::condition_variable mWaitScmCameraCallBackCondition;
++static std::mutex mWaitScmCameraCallBackMutex;
++//static std::queue<int> datat_queue;
++static int scmcallbackcount = 0;
++
++static int WaitScmCameraAllDataCallback() {
++	std::unique_lock<std::mutex> lk(mWaitScmCameraCallBackMutex);
++	mWaitScmCameraCallBackCondition.wait(lk,[]{return scmcallbackcount == 2;});
++	return 0;
++}
++
++static void SigngalScmCameraDatatCallbackCount(){
++	std::lock_guard<std::mutex> lk(mWaitScmCameraCallBackMutex);
++	scmcallbackcount++;
++	mWaitScmCameraCallBackCondition.notify_all();
++}
++#endif
++
++static void onDisconnected(void* obj, ACameraDevice* device) {
++        ALOGI("Camera %s is disconnected!", ACameraDevice_getId(device));
++        return;
++}
++
++static void onError(void* obj, ACameraDevice* device, int errorCode) {
++        ALOGE("Camera %s receive error %d!", ACameraDevice_getId(device), errorCode);
++        return;
++}
++
++static void onClosed(void* obj, ACameraCaptureSession *session) {
++        // TODO: might want an API to query cameraId even session is closed?
++        ALOGI("Session %p is closed!", session);
++}
++#define CCM_EXPOSURE_EFFECT_TIME 2
++#define SCM_EXPOSURE_EFFECT_TIME 1
++
++static void ImageCallback(AImageReader *reader,CameraNativeManager *Manager) {
++    media_status_t ret;
++    AImage* image = NULL;
++    int32_t format = -1;
++    int32_t width = -1, height = -1;
++    char dumpFilePath[512];
++    int32_t numPlanes;
++    int32_t i = 0;
++	int32_t frameNum = 0;
++
++    uint8_t *data[3];
++    int32_t datalen[3];
++    int32_t pixelStride[3];
++    int32_t rowStride[3];
++
++    if (!reader || !Manager) {
++      return;
++    }
++
++    std::lock_guard<std::mutex> lock(Manager->mMutex);
++	//frameNum = 0;//GetSensorFrameNum(atoi(Manager->mCameraId));
++    ret = AImageReader_acquireNextImage(reader, &image);
++    if (ret != AMEDIA_OK) {
++        ALOGE("CameraNativeManager::ImageCallback Failed to get image");
++        return;
++    }
++
++    ret = AImage_getFormat(image, &format);
++    if (ret != AMEDIA_OK || format == -1) {
++        AImage_delete(image);
++        ALOGE("CameraNativeManager:: get format for image %p failed! ret: %d, format %d",image, ret, format);
++        return;
++    }
++
++    ret = AImage_getWidth(image, &width);
++    if (ret != AMEDIA_OK || width <= 0) {
++        AImage_delete(image);
++        ALOGE("%s: get width for image %p failed! ret: %d, width %d",
++                     __FUNCTION__, image, ret, width);
++        return;
++    }
++
++    ret = AImage_getHeight(image, &height);
++    if (ret != AMEDIA_OK || height <= 0) {
++        AImage_delete(image);
++        ALOGE("%s: get height for image %p failed! ret: %d, width %d",
++                     __FUNCTION__, image, ret, height);
++        return;
++    }
++
++    ret  = AImage_getNumberOfPlanes(image,&numPlanes);
++
++    for (i = 0; i < numPlanes; i++) {
++      AImage_getPlaneData(image,i,&data[i],&datalen[i]);
++      AImage_getPlaneRowStride(image,i,&rowStride[i]);
++      AImage_getPlanePixelStride(image,i,&pixelStride[i]);
++#if 0
++      ALOGD("%s,+++++ 11111111 Camera %s Get Capture imge Plane[%d] [%dx%d] rowStride[%d] pixelStride[%d] length[%d]\n", __FUNCTION__,Manager->mCameraId,
++           i,width,height,
++           rowStride[i],
++           pixelStride[i],
++           datalen[i]);
++#endif
++    }
++	//ALOGI("Get camera %s  frameNum = %d",Manager->mCameraId,frameNum);
++	if (strcmp(Manager->mCameraId,"0") && Manager->mFrameNum == 0 ) {
++		SigngalScmCameraDatatCallbackCount();
++	}
++	Manager->mFrameNum++;
++    Manager->mBufferCondition.notify_one();
++    if (Manager->mIsCapture && Manager->mDataCallbackFun) {
++#if 0
++		int32_t effect_time;
++		bool skip = false;
++		bool CanCallBack = false;
++		if (atoi(Manager->mCameraId) > 0) {
++			effect_time = SCM_EXPOSURE_EFFECT_TIME - 1;
++			skip = true;
++		} else {
++			effect_time = CCM_EXPOSURE_EFFECT_TIME -1;
++		}
++		if (Manager->mFrameNum == 0xFF) {
++			int32_t newfreamNum = 0;
++			if (frameNum - newfreamNum > effect_time) {
++				CanCallBack = true;
++			}
++		} else if ((frameNum - Manager->mFrameNum) > effect_time){
++			CanCallBack = true;
++		}
++		skip= true;
++#endif
++		if (1) {
++			Manager->mDataCallbackFun(reader);
++			ALOGI("[CameraPerformance] end time of camera %s image data transport count=%d timediff=%ldms....",
++		                 Manager->mCameraId, Manager->mCallbackFrameCount++,(systemTime() - Manager->mStartSnapShortTime)/1000000);
++			//if (strcmp(Manager->mCameraId,"0")) {
++			//	SigngalScmCameraDatatCallbackCount();
++			//}
++			Manager->mIsCapture = false;		
++		}
++    }
++    AImage_delete(image);
++}
++
++static void OnCamera0ImageCallback(void* ctx, AImageReader* reader)
++{
++    media_status_t ret;
++    int32_t format = -1;
++    AImage* image = nullptr;
++    CameraNativeManager* thiz = reinterpret_cast<CameraNativeManager*>(ctx);
++
++    if (ctx == nullptr) {
++        return;
++    }
++
++    if (reader == nullptr) {
++        return;
++    }
++    ImageCallback(reader,thiz);
++}
++
++static void OnCamera1ImageCallback(void* ctx, AImageReader* reader)
++{
++    media_status_t ret;
++    int32_t format = -1;
++    AImage* image = nullptr;
++    CameraNativeManager* thiz = reinterpret_cast<CameraNativeManager*>(ctx);
++
++    if (ctx == nullptr) {
++        return;
++    }
++
++    if (reader == nullptr) {
++        return;
++    }
++    ImageCallback(reader,thiz);
++}
++
++static void OnCamera2ImageCallback(void* ctx, AImageReader* reader)
++{
++    media_status_t ret;
++    int32_t format = -1;
++    AImage* image = nullptr;
++    CameraNativeManager* thiz = reinterpret_cast<CameraNativeManager*>(ctx);
++
++    if (ctx == nullptr) {
++        return;
++    }
++
++    if (reader == nullptr) {
++        return;
++    }
++    ImageCallback(reader,thiz);
++}
++
++static CameraNativeManager *GetCameraNativeManager(int32_t CameraId)
++{
++    if (CameraId == 0) {
++        return &mCameraNativeManager[0];
++    } else if (CameraId == 1) {
++        return &mCameraNativeManager[1];
++    } else if (CameraId == 2) {
++        return &mCameraNativeManager[2];
++    }
++    return NULL;
++}
++
++camera_status_t openCamera(int32_t CameraId) {
++    camera_status_t ret;
++
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++	Manager->mCallbackFrameCount = 0;
++	Manager->mCameraWorking = false;
++
++    if (Manager->mDevice) {
++        ALOGE("Camera %d Cannot open camera before closing previously open one",CameraId);
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    Manager->mCameraManager = GetCameraManger();
++    if (!Manager->mCameraManager) {
++        ALOGE("Camera %d Cannot open camera GetCameraManger failed",CameraId);
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    ret = ACameraManager_getCameraIdList(Manager->mCameraManager, &Manager->mCameraIdList);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Get camera id list failed: ret %d", ret);
++        return ret;
++    }
++
++    Manager->mCameraId = Manager->mCameraIdList->cameraIds[CameraId];
++    if (Manager->mCameraId == nullptr) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    Manager->mDeviceCb.context = NULL;
++    Manager->mDeviceCb.onDisconnected = onDisconnected;
++    Manager->mDeviceCb.onError = onError;
++
++    ret = ACameraManager_openCamera(Manager->mCameraManager, Manager->mCameraId, &Manager->mDeviceCb, &Manager->mDevice);
++    if (ret != ACAMERA_OK || Manager->mDevice == nullptr) {
++        ALOGE("Failed to open camera %s, ret=%d, mDevice=%p.", Manager->mCameraId,ret, Manager->mDevice);
++        return ret;
++    }
++    Manager->mIsCapture = false;
++	Manager->mCameraWorking = true;
++    return ret;
++}
++
++camera_status_t createImageReader(int32_t CameraId,int32_t width,int32_t height,int32_t format) {
++    media_status_t ret;
++
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    ret = AImageReader_newWithUsage(width,height,format,AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN,8,&Manager->mImgReader);
++    if (ret != AMEDIA_OK || Manager->mImgReader == nullptr) {
++        ALOGE("Failed to create new AImageReader, ret=%d, mImgReader=%p", ret, Manager->mImgReader);
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    Manager->mReaderAvailableCb.context = (void *)Manager;
++
++    if (!strcmp(Manager->mCameraId,"0")){
++        Manager->mReaderAvailableCb.onImageAvailable = OnCamera0ImageCallback;
++    } else if(!strcmp(Manager->mCameraId,"1")) {
++        Manager->mReaderAvailableCb.onImageAvailable = OnCamera1ImageCallback;
++    } else {
++        Manager->mReaderAvailableCb.onImageAvailable = OnCamera2ImageCallback;
++    }
++
++    ret = AImageReader_setImageListener(Manager->mImgReader, &Manager->mReaderAvailableCb);
++    if (ret != AMEDIA_OK) {
++        ALOGE("Failed to set image listener");
++        goto failed;
++    }
++
++    ret = AImageReader_getWindowNativeHandle(Manager->mImgReader, &Manager->mImgReaderAnw);
++    if (ret != AMEDIA_OK) {
++        ALOGE("Failed to get image reader native window");
++        goto failed;
++    }
++    return ACAMERA_OK;
++
++failed:
++    if (Manager->mImgReader) {
++        AImageReader_delete(Manager->mImgReader);
++        Manager->mImgReader = nullptr;
++        Manager->mImgReaderAnw = nullptr;
++    }
++    return ACAMERA_ERROR_INVALID_PARAMETER;
++}
++
++camera_status_t createCaptureRequest(int32_t CameraId) {
++    camera_status_t ret;
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    ret = ACameraDevice_createCaptureRequest(Manager->mDevice, TEMPLATE_PREVIEW, &Manager->mCaptureRequest);
++    if (ret != ACAMERA_OK) {
++       ALOGE("Camera %s create preview request failed. ret %d",Manager->mCameraId, ret);
++    }
++    return ret;
++}
++
++
++camera_status_t createSession(int32_t CameraId) {
++    camera_status_t ret;
++
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    ret = ACaptureSessionOutputContainer_create(&Manager->mOutputs);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %s Create capture session output container failed. ret %d",Manager->mCameraId, ret);
++        return ret;
++    }
++
++    ret = ACaptureSessionOutput_create(Manager->mImgReaderAnw, &Manager->mImgReaderOutput);
++    if (ret != ACAMERA_OK || Manager->mImgReaderOutput == nullptr) {
++        ALOGE("Camera %s Session image reader output create fail! ret %d",Manager->mCameraId,ret);
++        if (ret == ACAMERA_OK) {
++            ret = ACAMERA_ERROR_UNKNOWN; // ret OK but output is null
++        }
++        return ret;
++    }
++
++    ret = ACaptureSessionOutputContainer_add(Manager->mOutputs, Manager->mImgReaderOutput);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %s Session image reader output add failed! ret %d",Manager->mCameraId,ret);
++        return ret;
++    }
++
++    Manager->mSessionCb.context = NULL;
++    Manager->mSessionCb.onClosed = onClosed;
++    //Manager->mSessionCb.onReady = onReady;
++    //Manager->mSessionCb.onActive = onActive; 
++
++    ret = ACameraDevice_createCaptureSession(Manager->mDevice, Manager->mOutputs, &Manager->mSessionCb, &Manager->mSession);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %s Session image reader create Session failed! ret %d", Manager->mCameraId,ret);
++        return ret;
++    }
++
++    ret = ACameraOutputTarget_create(Manager->mImgReaderAnw, &Manager->mReqImgReaderOutput);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %s create request reader output target failed. ret %d",
++              Manager->mCameraId, ret);
++        return ret;
++    }
++
++    ret = ACaptureRequest_addTarget(Manager->mCaptureRequest, Manager->mReqImgReaderOutput);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %s create request reader request output failefailed. ret %d",
++              Manager->mCameraId, ret);
++        return ret;
++    }
++    return ret;
++}
++
++ static void onCaptureCompleted(void* obj, ACameraCaptureSession* /*session*/,
++              ACaptureRequest* request, const ACameraMetadata* result) {
++	camera_status_t ret = ACAMERA_OK;
++	if ((obj == nullptr) || (result == nullptr)) {
++		return;
++	}
++	CameraNativeManager* thiz = reinterpret_cast<CameraNativeManager*>(obj);
++	//std::lock_guard<std::mutex> lock(thiz->mMutex);
++	ACameraMetadata_const_entry entry;
++	int32_t iso;
++	int64_t exposuretime;
++	int32_t aevalue;
++	ret = ACameraMetadata_getConstEntry(result, ACAMERA_CONTROL_AE_EXPOSURE_COMPENSATION, &entry);
++	if (entry.count > 0) {
++		aevalue = entry.data.i32[0];
++		//ALOGI("ACAMERA_CONTROL_AE_EXPOSURE_COMPENSATION=%d",entry.data.i32[0]);
++	}
++	ret = ACameraMetadata_getConstEntry(result, ACAMERA_SENSOR_EXPOSURE_TIME, &entry);
++	if (entry.count > 0) {
++		exposuretime = entry.data.i64[0];
++		//ALOGI("onCaptureCompleted ACAMERA_SENSOR_EXPOSURE_TIME=%ld",entry.data.i64[0]);
++	}
++	ret = ACameraMetadata_getConstEntry(result, ACAMERA_SENSOR_SENSITIVITY, &entry);
++	if (entry.count > 0) {
++		iso = entry.data.i32[0];
++		//ALOGI("onCaptureCompleted ACAMERA_SENSOR_SENSITIVITY=%d",entry.data.i32[0]);
++	}
++	if (thiz->mIsSetBrightness && thiz->mExposurecallbackFun && thiz->mBrightnessLevel == aevalue) {
++		ALOGI("[CameraPerformance] start time of ccm exposure callback iso=%d exposuretime=%ld timediff=%ldms.....",iso,exposuretime,(systemTime() - thiz->mSetBrightnessStartTime)/1000000);
++		thiz->mExposurecallbackFun(exposuretime,iso);
++		thiz->mIsSetBrightness = false;
++	}
++}
++
++camera_status_t startCapture(int32_t CameraId,bool repeating) {
++    int seqId;
++    camera_status_t ret = ACAMERA_OK;
++
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++
++    if (!Manager->mCaptureRequest || !Manager->mSession) {
++        ALOGE("cannot take picture: session %p, Capture request %p",
++                    Manager->mSession, Manager->mCaptureRequest);
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++	if (CameraId == 0) {
++	    Manager->mResultCb.context = (void *)Manager;
++	    //mResultCb.onCaptureProgressed = 
++	    Manager->mResultCb.onCaptureCompleted = onCaptureCompleted;
++    }
++	if (CameraId == 0) {
++		uint8_t value =  ACAMERA_CONTROL_AE_MODE_OFF ;
++		int64_t time = 5000000;
++		ACaptureRequest_setEntry_u8(Manager->mCaptureRequest,ACAMERA_CONTROL_AE_MODE,1,&value);
++		ACaptureRequest_setEntry_i64(Manager->mCaptureRequest,ACAMERA_SENSOR_EXPOSURE_TIME,1,&time);
++	}
++
++    if (repeating) {
++		if (CameraId == 0) {
++            ret = ACameraCaptureSession_setRepeatingRequest(
++                  Manager->mSession, &Manager->mResultCb, 1, &Manager->mCaptureRequest, &seqId);
++		} else {
++            ret = ACameraCaptureSession_setRepeatingRequest(
++                  Manager->mSession, nullptr, 1, &Manager->mCaptureRequest, &seqId);
++		}
++    } else {
++       ret = ACameraCaptureSession_capture(
++                  Manager->mSession, nullptr, 1, &Manager->mCaptureRequest, &seqId);
++    }
++
++    Manager->mIsRepeating = repeating;
++    //WaitImage(5);
++    return ret;
++}
++camera_status_t stopNativeCapture(int32_t CameraId) {
++    camera_status_t ret = ACAMERA_OK;
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++    if (Manager->mSession) {
++        //ACameraCaptureSession_abortCaptures(Manager->mSession);
++        ret = ACameraCaptureSession_stopRepeating(Manager->mSession);
++    }
++    return ret;
++}
++
++
++void destorySession(int32_t CameraId) {
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ;
++    }
++
++    if (Manager->mSession != nullptr) {
++        ACameraCaptureSession_close(Manager->mSession);
++        Manager->mSession = nullptr;
++    }
++
++    //if (Manager->mImgReaderOutput && Manager->mOutputs) {
++     //   ACaptureSessionOutputContainer_remove(Manager->mOutputs,Manager->mImgReaderOutput);
++    //}
++
++    if (Manager->mImgReaderOutput) {
++        ACaptureSessionOutput_free(Manager->mImgReaderOutput);
++        Manager->mImgReaderOutput = nullptr;
++    }
++
++    if (Manager->mOutputs) {
++        ACaptureSessionOutputContainer_free(Manager->mOutputs);
++        Manager->mOutputs = nullptr;
++    }
++
++    if (Manager->mReqImgReaderOutput) {
++        ACameraOutputTarget_free(Manager->mReqImgReaderOutput);
++        Manager->mReqImgReaderOutput = nullptr;  
++    }
++
++    if (Manager->mCaptureRequest) {
++        ACaptureRequest_free(Manager->mCaptureRequest);
++        Manager->mCaptureRequest = nullptr;
++    }
++}
++
++void destoryImageReader(int32_t CameraId) {
++    CameraNativeManager *Manager = NULL;
++
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ;
++    }
++
++    if (Manager->mImgReader) {
++        AImageReader_delete(Manager->mImgReader);
++        Manager->mImgReader = nullptr;
++        Manager->mImgReaderAnw = nullptr;
++    }
++}
++
++camera_status_t closeCamera(int32_t CameraId) {
++    camera_status_t ret;
++    CameraNativeManager *Manager = NULL;
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_INVALID_PARAMETER;
++    }
++    if (Manager->mCameraIdList) {
++        ACameraManager_deleteCameraIdList(Manager->mCameraIdList);
++        Manager->mCameraIdList = nullptr;
++    }
++    ret = ACameraDevice_close(Manager->mDevice);
++    Manager->mDevice = nullptr;
++	Manager->mCameraWorking = false;
++    return ret;
++}
++
++void WaitImage(int32_t CameraId,uint32_t timeoutSec)
++{
++    CameraNativeManager *Manager = NULL;
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ;
++    }
++
++    std::unique_lock<std::mutex> l(Manager->mMutex);
++    auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(timeoutSec);
++    if (std::cv_status::no_timeout == Manager->mBufferCondition.wait_until(l, timeout)) {
++        return;
++    } else {
++        ALOGE("Camera %s Wait camera frame timeout",Manager->mCameraId);
++    }
++}
++
++void WaitSCM1SCM2FristFrameDone() {
++	WaitScmCameraAllDataCallback();
++}
++
++void WaitCCMFristFrameDone() {
++	WaitImage(0,5);
++}
++
++void SnapShortStart(int32_t CameraId,Datacallback cb,nsecs_t starttime,int32_t frameNum) {
++    CameraNativeManager *Manager = NULL;
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ;
++    }
++	//if (CameraId == 0 && GetCameraNativeManager(1)->mCameraWorking && GetCameraNativeManager(2)->mCameraWorking) {
++		//ALOGI("[CameraPerformance] wait SCM1 && SCM2 data callback");
++		//WaitScmCameraAllDataCallback();
++		//scmcallbackcount = 0;
++		//starttime = systemTime();
++		//ALOGI("[CameraPerformance] SCM1 && SCM2 captute done,start capture CCM camera");
++	//}
++    std::lock_guard<std::mutex> lock(Manager->mMutex);
++	//Manager->mFrameNum = frameNum;
++	Manager->mStartSnapShortTime = starttime;//systemTime();
++    Manager->mIsCapture = true;
++    Manager->mDataCallbackFun = cb;
++}
++/*
++-12:  16666666  191
++-9:   20000000  197
++-6:   20000000  294
++0:    33333333  100
++6:    30000000  903
++9:    40000000  1088
++12:   40000000  1600
++*/
++camera_status_t SetCameraBrightness(int32_t CameraId,int32_t level,Exposurecallback cb) {
++    camera_status_t ret = ACAMERA_OK;
++    float brigntnessLevelarry[9] = {-2,-1.5,-1,-0.5,0,0.5,1,1.5,2};
++    int32_t levelvalue = 0;
++    int seqId;
++    CameraNativeManager *Manager = NULL;
++	char value[PROPERTY_VALUE_MAX] = {0};
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++	Manager->mSetBrightnessStartTime = systemTime();
++
++    if (level > BRIGHTNESS_LEVEL_MAX || level < BRIGHTNESS_LEVEL_0) {
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++
++    levelvalue = brigntnessLevelarry[level] * 6;
++	sprintf(value,"%d",levelvalue);
++	ALOGI("Camera %d SetCameraBrightness level=%d value=%s",CameraId,levelvalue,value);
++    Manager->mExposurecallbackFun = cb;
++	Manager->mIsSetBrightness = true;
++	Manager->mBrightnessLevel = levelvalue;
++/*
++	property_set("persist.vendor.camera.aecompenstion", value);
++*/
++    ret = ACaptureRequest_setEntry_i32(Manager->mCaptureRequest,ACAMERA_CONTROL_AE_EXPOSURE_COMPENSATION,1,&levelvalue);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d SetCameraBrightness failed",CameraId);
++    }
++    ret = ACameraCaptureSession_setRepeatingRequest(
++                  Manager->mSession, nullptr, 1, &Manager->mCaptureRequest, &seqId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d SetCameraBrightness setRepeatingRequest failed",CameraId);
++    }
++    return ret;
++}
++
++camera_status_t CameraMoveFocus(int32_t CameraId,float value) {
++    CameraNativeManager *Manager = NULL;
++    camera_status_t ret = ACAMERA_OK;
++    int seqId;
++    uint8_t mode = ACAMERA_CONTROL_AF_MODE_OFF;
++
++    if (CameraId != 0) {
++        ALOGI("Camera %d not support move focus",CameraId);
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++    if (value > 10.0) {
++        value = 10.0;
++    } else if (value < 0.0) {
++        value = 0.0;
++    }
++    ALOGI("Camera %d CameraMoveFocus value=%f",CameraId,value);
++
++    ret = ACaptureRequest_setEntry_u8(Manager->mCaptureRequest,ACAMERA_CONTROL_AF_MODE,1,&mode);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d CameraMoveFocus set af mode failed",CameraId);
++    }
++    ret = ACaptureRequest_setEntry_float(Manager->mCaptureRequest,ACAMERA_LENS_FOCUS_DISTANCE,1,&value);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d CameraMoveFocus set focus distance failed",CameraId);
++    }
++    ret = ACameraCaptureSession_setRepeatingRequest(
++                  Manager->mSession, nullptr, 1, &Manager->mCaptureRequest, &seqId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d SetCameraBrightness setRepeatingRequest failed",CameraId);
++    }
++    return ret;
++}
++
++camera_status_t SetCameraFlashLight(int32_t CameraId,bool on) {
++    CameraNativeManager *Manager = NULL;
++    camera_status_t ret = ACAMERA_OK;
++    int seqId;
++    uint8_t levelvalue = ACAMERA_FLASH_MODE_OFF;
++ 
++    if (CameraId != 0) {
++        ALOGI("Camera %d not support set falshlight",CameraId);
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++    Manager = GetCameraNativeManager(CameraId);
++    if (!Manager) {
++        return ACAMERA_ERROR_UNKNOWN;
++    }
++    if (on) {
++        levelvalue = ACAMERA_FLASH_MODE_TORCH;
++    } else {
++        levelvalue = ACAMERA_FLASH_MODE_OFF;
++    }
++
++
++    ALOGI("Camera %d SetCameraFlashLight %s",CameraId,on?"on":"off");
++
++    ret = ACaptureRequest_setEntry_u8(Manager->mCaptureRequest,ACAMERA_FLASH_MODE,1,&levelvalue);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d SetCameraFlashLight failed",CameraId);
++    }
++    ret = ACameraCaptureSession_setRepeatingRequest(
++                  Manager->mSession, nullptr, 1, &Manager->mCaptureRequest, &seqId);
++    if (ret != ACAMERA_OK) {
++        ALOGE("Camera %d SetCameraFlashLight setRepeatingRequest failed",CameraId);
++    }
++
++    return ret;
++}
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.h
+new file mode 100755
+index 0000000..1920607
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraNativeManager.h
+@@ -0,0 +1,49 @@
++#include "CameraManger.h"
++
++typedef struct {
++  const char* mCameraId;
++  ACameraManager* mCameraManager;
++  ACameraDevice *mDevice;
++  ACameraIdList* mCameraIdList;
++  ACaptureRequest *mCaptureRequest;
++  AImageReader* mImgReader;
++  native_handle_t* mImgReaderAnw;
++  ACameraOutputTarget* mReqImgReaderOutput;
++  ACaptureSessionOutputContainer* mOutputs;
++  ACaptureSessionOutput* mImgReaderOutput;
++  ACameraCaptureSession* mSession;
++  ACameraDevice_StateCallbacks mDeviceCb;
++  AImageReader_ImageListener mReaderAvailableCb;
++  ACameraCaptureSession_stateCallbacks mSessionCb;
++  ACameraCaptureSession_captureCallbacks mResultCb;
++  Datacallback mDataCallbackFun;
++  Exposurecallback mExposurecallbackFun;
++  std::condition_variable mBufferCondition;
++  std::mutex mMutex;
++  bool mIsCapture;
++  bool mIsRepeating;
++  bool mIsSetBrightness;
++  int32_t mBrightnessLevel;
++  nsecs_t mSetBrightnessStartTime;
++  nsecs_t mStartSnapShortTime;
++  int32_t mCallbackFrameCount;
++  bool mCameraWorking;
++  int32_t mFrameNum;
++}CameraNativeManager;
++
++camera_status_t openCamera(int32_t CameraId);
++camera_status_t createImageReader(int32_t CameraId,int32_t width,int32_t height,int32_t format);
++camera_status_t createCaptureRequest(int32_t CameraId);
++camera_status_t createSession(int32_t CameraId);
++camera_status_t startCapture(int32_t CameraId,bool repeating);
++camera_status_t stopNativeCapture(int32_t CameraId);
++void destorySession(int32_t CameraId);
++void destoryImageReader(int32_t CameraId);
++camera_status_t closeCamera(int32_t CameraId);
++void SnapShortStart(int32_t CameraId,Datacallback cb,nsecs_t starttime,int32_t frameNum);
++void WaitImage(int32_t CameraId,uint32_t timeoutSec);
++camera_status_t SetCameraBrightness(int32_t CameraId,int32_t level,Exposurecallback cb);
++camera_status_t CameraMoveFocus(int32_t CameraId,float value);
++camera_status_t SetCameraFlashLight(int32_t CameraId,bool on);
++void WaitSCM1SCM2FristFrameDone();
++void WaitCCMFristFrameDone();
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraQueue.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraQueue.h
+new file mode 100755
+index 0000000..698cc3d
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraQueue.h
+@@ -0,0 +1,110 @@
++
++#include <pthread.h>
++
++#include "CameraList.h"
++
++typedef struct {
++    struct cam_list list;
++    void *data;
++} cam_node_t;
++
++typedef struct {
++    cam_node_t head; /* dummy head */
++    uint32_t size;
++    pthread_mutex_t lock;
++} cam_queue_t;
++
++static inline int32_t cam_queue_init(cam_queue_t *queue)
++{
++    pthread_mutex_init(&queue->lock, NULL);
++    cam_list_init(&queue->head.list);
++    queue->size = 0;
++    return 0;
++}
++
++static inline int32_t cam_queue_enq(cam_queue_t *queue, void *data)
++{
++    cam_node_t *node =
++        (cam_node_t *)malloc(sizeof(cam_node_t));
++    if (NULL == node) {
++        return -1;
++    }
++
++    memset(node, 0, sizeof(cam_node_t));
++    node->data = data;
++
++    pthread_mutex_lock(&queue->lock);
++    cam_list_add_tail_node(&node->list, &queue->head.list);
++    queue->size++;
++    pthread_mutex_unlock(&queue->lock);
++
++    return 0;
++}
++
++static inline void *cam_queue_deq(cam_queue_t *queue)
++{
++    cam_node_t *node = NULL;
++    void *data = NULL;
++    struct cam_list *head = NULL;
++    struct cam_list *pos = NULL;
++
++    pthread_mutex_lock(&queue->lock);
++    head = &queue->head.list;
++    pos = head->next;
++    if (pos != head) {
++        node = member_of(pos, cam_node_t, list);
++        cam_list_del_node(&node->list);
++        queue->size--;
++    }
++    pthread_mutex_unlock(&queue->lock);
++
++    if (NULL != node) {
++        data = node->data;
++        free(node);
++    }
++
++    return data;
++}
++
++static inline int32_t cam_queue_flush(cam_queue_t *queue)
++{
++    cam_node_t *node = NULL;
++    struct cam_list *head = NULL;
++    struct cam_list *pos = NULL;
++
++    pthread_mutex_lock(&queue->lock);
++
++    if (queue->size == 0) {
++        pthread_mutex_unlock(&queue->lock);
++        return 0;
++    }
++
++    head = &queue->head.list;
++    pos = head->next;
++
++    while(pos != head) {
++        node = member_of(pos, cam_node_t, list);
++        pos = pos->next;
++        cam_list_del_node(&node->list);
++        queue->size--;
++
++        /* TODO later to consider ptr inside data */
++        /* for now we only assume there is no ptr inside data
++         * so we free data directly */
++        if (NULL != node->data) {
++            free(node->data);
++        }
++        free(node);
++
++    }
++    queue->size = 0;
++    pthread_mutex_unlock(&queue->lock);
++    return 0;
++}
++
++static inline int32_t cam_queue_deinit(cam_queue_t *queue)
++{
++    cam_queue_flush(queue);
++    pthread_mutex_destroy(&queue->lock);
++    return 0;
++}
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.cpp
+new file mode 100755
+index 0000000..eda59d8
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.cpp
+@@ -0,0 +1,53 @@
++
++#include "CameraServiceListener.h"
++
++void CameraServiceListener::onAvailable(void* obj, const char* cameraId)
++{
++    ALOGI("%s:: Camera %s onAvailable","CameraServiceListener",cameraId);
++    if (obj == nullptr) {
++        return;
++    }
++    CameraServiceListener* thiz = reinterpret_cast<CameraServiceListener*>(obj);
++    std::lock_guard<std::mutex> lock(thiz->mMutex);
++    thiz->mOnAvailableCount++;
++    thiz->mAvailableMap[cameraId] = true;
++    return;
++}
++
++void CameraServiceListener::onUnavailable(void* obj, const char* cameraId) {
++    ALOGI("%s:: Camera %s onUnavailable","CameraServiceListener",cameraId);
++    if (obj == nullptr) {
++        return;
++    }
++    CameraServiceListener* thiz = reinterpret_cast<CameraServiceListener*>(obj);
++    std::lock_guard<std::mutex> lock(thiz->mMutex);
++    thiz->mOnUnavailableCount++;
++    thiz->mAvailableMap[cameraId] = false;
++    return;
++}
++
++int CameraServiceListener::getAvailableCount() {
++    std::lock_guard<std::mutex> lock(mMutex);
++    return mOnAvailableCount;
++}
++
++int CameraServiceListener::getUnavailableCount() {
++    std::lock_guard<std::mutex> lock(mMutex);
++    return mOnUnavailableCount;
++}
++
++bool CameraServiceListener::isAvailable(const char* cameraId) {
++    std::lock_guard<std::mutex> lock(mMutex);
++    if (mAvailableMap.count(cameraId) == 0) {
++        return false;
++    }
++    return mAvailableMap[cameraId];
++}
++
++void CameraServiceListener::resetCount() {
++    std::lock_guard<std::mutex> lock(mMutex);
++    mOnAvailableCount = 0;
++    mOnUnavailableCount = 0;
++    return;
++}
++
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.h
+new file mode 100755
+index 0000000..b027286
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraServiceListener.h
+@@ -0,0 +1,24 @@
++#include "CameraUtils.h"
++
++class CameraServiceListener {
++  public:
++
++    static void onAvailable(void* obj, const char* cameraId);
++
++    static void onUnavailable(void* obj, const char* cameraId);
++
++    void resetCount();
++
++    int getAvailableCount();
++
++    int getUnavailableCount();
++
++    bool isAvailable(const char* cameraId);
++
++  private:
++    std::mutex mMutex;
++    int mOnAvailableCount = 0;
++    int mOnUnavailableCount = 0;
++    std::map<std::string, bool> mAvailableMap;
++};
++
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.cpp
+new file mode 100755
+index 0000000..069d93c
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.cpp
+@@ -0,0 +1,151 @@
++#include <cutils/properties.h>
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <time.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <time.h>
++#include <linux/videodev2.h>
++#define POLL_TIMEOUT 1000
++
++#define SOF_DEV_NAME "dev/video2"
++#define V4L_EVENT_CAM_REQ_MGR_EVENT       (0x08000000 + 0)
++#define V4L_EVENT_CAM_REQ_MGR_SOF            0
++
++struct cam_req_mgr_error_msg {
++  	uint32_t error_type;
++  	uint32_t request_id;
++  	int32_t device_hdl;
++ 	int32_t link_hdl;
++  	uint64_t resource_size;	
++};
++
++struct cam_req_mgr_frame_msg {
++ 	uint64_t request_id;
++  	uint64_t frame_id;
++  	uint64_t timestamp;
++  	int32_t  link_hdl;
++  	uint32_t sof_status;
++  	uint32_t frame_id_meta;
++  	uint32_t reserved;
++};
++
++struct cam_req_mgr_custom_msg {
++	uint32_t custom_type;
++	uint64_t request_id;
++	uint64_t frame_id;
++	uint64_t timestamp;
++	int32_t  link_hdl;
++	uint64_t custom_data;
++};
++
++struct cam_req_mgr_message {
++ 	int32_t session_hdl;
++  	int32_t reserved;
++ 	union {
++  		struct cam_req_mgr_error_msg err_msg;
++  		struct cam_req_mgr_frame_msg frame_msg;
++  		struct cam_req_mgr_custom_msg custom_msg;
++  	} u;
++};
++
++struct camera_sof_info_t{
++	int fd;
++	pthread_t thread_id;
++	int thread_exit;
++	pthread_mutex_t m_mutex;
++    pthread_cond_t  m_cond;
++};
++
++static struct camera_sof_info_t CameraSofInfo;
++
++static void* camera_sof_listen_thread(void* pContext) {
++	do {
++		int rc;
++		struct pollfd pfds[2];
++		if (CameraSofInfo.thread_exit) {
++			break;
++		}
++		pfds[0].events = POLLIN | POLLRDNORM | POLLPRI;
++		pfds[0].fd = CameraSofInfo.fd;
++		rc = poll(pfds, 1, POLL_TIMEOUT);
++		if (CameraSofInfo.thread_exit) {
++			break;
++		}
++		if (rc > 0) {
++			if ((pfds[0].revents & POLLPRI) || (pfds[0].revents & POLLRDNORM) || (pfds[0].revents & POLLIN)) {
++				struct v4l2_event event;
++				ioctl(CameraSofInfo.fd, VIDIOC_DQEVENT, &event);
++				if (V4L_EVENT_CAM_REQ_MGR_EVENT == event.type && event.id == V4L_EVENT_CAM_REQ_MGR_SOF) {
++					struct cam_req_mgr_message* pMessage = NULL;
++				    pMessage = reinterpret_cast<struct cam_req_mgr_message*>(event.u.data);
++					//ALOGI("ccm get sof......");
++					ALOGI("ccm get sof link_hdl 0x%x request id %lu frame count %lu......",pMessage->u.frame_msg.link_hdl,pMessage->u.frame_msg.request_id,pMessage->u.frame_msg.frame_id);
++					pthread_mutex_lock(&CameraSofInfo.m_mutex);
++					pthread_cond_signal(&CameraSofInfo.m_cond);
++					pthread_mutex_unlock(&CameraSofInfo.m_mutex);
++				}
++			}
++		}
++	}while(!CameraSofInfo.thread_exit);
++	return NULL;
++}
++
++int OpenCameraSofDevice() {
++	int rc;
++	struct v4l2_event_subscription sub;
++	int fd = open(SOF_DEV_NAME,O_RDWR | O_NONBLOCK);
++	if (fd < 0) {
++		ALOGI("OpenCameraSofDevice failed");
++		CameraSofInfo.fd = -1;
++		return -1;
++	}
++	memset(&sub, 0, sizeof(sub));
++	sub.id  = V4L_EVENT_CAM_REQ_MGR_SOF;
++	sub.type = V4L_EVENT_CAM_REQ_MGR_EVENT;
++	rc = ioctl(fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
++	//ALOGI("VIDIOC_SUBSCRIBE_EVENT rc=%d",rc);
++	pthread_mutex_init(&CameraSofInfo.m_mutex, 0);
++    pthread_cond_init(&CameraSofInfo.m_cond, NULL);
++	CameraSofInfo.fd = fd;
++	CameraSofInfo.thread_exit = 0;
++	pthread_create(&CameraSofInfo.thread_id, NULL, camera_sof_listen_thread, NULL);
++	return 0;
++}
++
++void CloseCameraSofDevice() {
++	if (CameraSofInfo.fd > 0) {
++		CameraSofInfo.thread_exit = 1;
++		pthread_join(CameraSofInfo.thread_id, NULL);
++		pthread_cond_destroy(&CameraSofInfo.m_cond);
++        pthread_mutex_destroy(&CameraSofInfo.m_mutex);
++		close(CameraSofInfo.fd);
++		CameraSofInfo.fd = -1;
++	}
++}
++
++int WaitCameraSOF() {
++	pthread_mutex_lock(&CameraSofInfo.m_mutex);
++	pthread_cond_wait(&CameraSofInfo.m_cond,&CameraSofInfo.m_mutex);
++	pthread_mutex_unlock(&CameraSofInfo.m_mutex);
++	return 0;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.h
+new file mode 100755
+index 0000000..3aaadca
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofQueue.h
+@@ -0,0 +1,3 @@
++int OpenCameraSofDevice();
++void CloseCameraSofDevice();
++int WaitCameraSOF();
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofTest.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofTest.cpp
+new file mode 100755
+index 0000000..58cdef9
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraSofTest.cpp
+@@ -0,0 +1,34 @@
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/time.h>
++#include <time.h>
++#include <errno.h>
++#include <utils/Timers.h>
++
++#include "CameraSofQueue.h"
++
++
++int main(int argc, char* argv[]) {
++	OpenCameraSofDevice();
++	getchar();
++	CloseCameraSofDevice();
++	printf("Exit done\n");
++	return 0;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraUtils.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraUtils.h
+new file mode 100755
+index 0000000..3b77955
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/CameraUtils.h
+@@ -0,0 +1,33 @@
++#include <log/log.h>
++
++#include <chrono>
++#include <cinttypes>
++#include <condition_variable>
++#include <map>
++#include <mutex>
++#include <string>
++#include <vector>
++#include <unistd.h>
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include <set>
++#include <cutils/properties.h>
++#include <time.h>
++#include <pthread.h>
++#include <sys/time.h>
++#include <time.h>
++#include <errno.h>
++#include <utils/Timers.h>
++#include <android/log.h>
++#include "camera/NdkCameraError.h"
++#include "camera/NdkCameraManager.h"
++#include "camera/NdkCameraMetadata.h"
++#include "camera/NdkCameraDevice.h"
++#include "camera/NdkCameraCaptureSession.h"
++#include "media/NdkImage.h"
++#include "media/NdkImageReader.h"
++
++#include "CameraInter.h"
++
++#define LOG_TAG "MeigNativeCamera"
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/InterfaceTest/main.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/InterfaceTest/main.cpp
+new file mode 100755
+index 0000000..9803fe9
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/InterfaceTest/main.cpp
+@@ -0,0 +1,529 @@
++
++
++
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/time.h>
++#include <time.h>
++#include <errno.h>
++#include <utils/Timers.h>
++#include <condition_variable>
++#include <map>
++#include <mutex>
++
++#include "../Camera.h"
++#include "../CameraLedControl.h"
++#include "../CameraSofQueue.h"
++
++static int32_t testCount = 100;
++
++static int32_t frameNumCamera0 = 0;
++static int32_t frameNumCamera1 = 0;
++static int32_t frameNumCamera2 = 0;
++
++static pthread_mutex_t m_camera_0_mutex;
++static pthread_cond_t  m_camera_0_cond;
++
++static pthread_mutex_t m_camera_1_mutex;
++static pthread_cond_t  m_camera_1_cond;
++
++static pthread_mutex_t m_camera_2_mutex;
++static pthread_cond_t  m_camera_2_cond;
++
++static CameraContrlNode *pNode = NULL;
++
++static pthread_t thread_id;
++static pthread_t thread2_id;
++
++static bool startCapture = false;
++
++static bool TestDualEnable = false;
++static bool isCanCapture = false;
++static bool IsCaptureAllCameraOnce = false;
++
++#define IMAGE_FORMAT_JPEG           0x100
++#define IMAGE_FORMAT_YUV_420_888    0x23
++#define IMAGE_FORMAT_RAW10          0x25
++
++
++static std::condition_variable mWaitAllCameraCallBackCondition;
++static std::mutex mWaiAllCameraCallBackMutex;
++//static std::queue<int> datat_queue;
++static int callbackcount = 0;
++
++static int WaitAllCameraAllDataCallback() {
++	std::unique_lock<std::mutex> lk(mWaiAllCameraCallBackMutex);
++	mWaitAllCameraCallBackCondition.wait(lk,[]{return callbackcount == 3;});
++	return 0;
++}
++
++static void SigngalAllCameraDatatCallbackCount(){
++	std::lock_guard<std::mutex> lk(mWaiAllCameraCallBackMutex);
++	callbackcount++;
++	mWaitAllCameraCallBackCondition.notify_all();
++}
++
++static void OnDataCallBackTestCamera0(AImageReader *reader) {
++	 ALOGI("CCM camera data callback frameNum=%d.....",frameNumCamera0++);
++	 SigngalAllCameraDatatCallbackCount();
++	 //pthread_mutex_lock(&m_camera_0_mutex);
++	 //pthread_cond_signal(&m_camera_0_cond);
++	 //pthread_mutex_unlock(&m_camera_0_mutex);
++}
++
++static void OnDataCallBackTestCamera1(AImageReader *reader) {
++	 ALOGI("SCM1 camera 1 data callback frameNum=%d.....",frameNumCamera1++);
++	 SigngalAllCameraDatatCallbackCount();
++	// pthread_mutex_lock(&m_camera_1_mutex);
++	// pthread_cond_signal(&m_camera_1_cond);
++	// pthread_mutex_unlock(&m_camera_1_mutex);
++}
++
++static void OnDataCallBackTestCamera2(AImageReader *reader) {
++	 ALOGI("SCM2 camera 2 data callback frameNum=%d.....",frameNumCamera2++);
++	 SigngalAllCameraDatatCallbackCount();
++	//pthread_mutex_lock(&m_camera_2_mutex);
++	 //pthread_cond_signal(&m_camera_2_cond);
++	 //pthread_mutex_unlock(&m_camera_2_mutex);
++}
++
++static void OnExposureCallback(int64_t exposuretime,int32_t iso) {
++	ALOGI("CCM camera exprosure callback exposuretime=%ld iso=%d .....",exposuretime,iso);
++}
++
++static void* camera_2_capture_thread(void* pContext) {
++	int i = 0;
++    if (!TestDualEnable || IsCaptureAllCameraOnce) {
++    	return NULL;
++    }
++	while (!startCapture) {
++		usleep(20*1000);
++	}
++	if (!isCanCapture) {
++		return NULL;
++	}
++
++    if (!TestDualEnable) {
++    	return NULL;
++    }
++
++	for (i = 0; i < testCount; i++) {
++		nsecs_t starttime = systemTime();
++		ALOGI("[CameraPerformance] CameraTest camera 2 start capture count:%d",i);
++		pNode->Capture(2,OnDataCallBackTestCamera2);
++		pthread_mutex_lock(&m_camera_2_mutex);
++		pthread_cond_wait(&m_camera_2_cond,&m_camera_2_mutex);
++		pthread_mutex_unlock(&m_camera_2_mutex);
++		ALOGI("[CameraPerformance] CameraTest camera 2 get capture count:%d frame,timediff=%llums",i,(systemTime() - starttime)/1000000);
++	}
++
++	return NULL;
++}
++
++
++static void* camera_1_capture_thread(void* pContext) {
++	int i = 0;
++    if (!TestDualEnable || IsCaptureAllCameraOnce) {
++    	return NULL;
++    }
++
++	while (!startCapture) {
++		usleep(20*1000);
++	}
++	if (!isCanCapture) {
++		return NULL;
++	}
++
++    if (!TestDualEnable) {
++    	return NULL;
++    }
++
++	for (i = 0; i < testCount; i++) {
++		nsecs_t starttime = systemTime();
++		ALOGI("[CameraPerformance] CameraTest camera 1 start capture count:%d",i);
++		pNode->Capture(1,OnDataCallBackTestCamera1);
++		pthread_mutex_lock(&m_camera_1_mutex);
++		pthread_cond_wait(&m_camera_1_cond,&m_camera_1_mutex);
++		pthread_mutex_unlock(&m_camera_1_mutex);
++		ALOGI("[CameraPerformance] CameraTest camera 1 get capture count:%d frame,timediff=%llums",i,(systemTime() - starttime)/1000000);
++	}
++
++	return NULL;
++}
++/*
++Test one camera: MeigCameraInterFaceTest cameraid [0,1] witdth height foramt
++Camera 0:
++MeigCameraInterFaceTest 0 1280 800 YUV
++MeigCameraInterFaceTest 0 4160 3120 YUV
++
++camera 1:
++MeigCameraInterFaceTest 1 1280 800 YUV
++
++
++Test two cameras:
++MeigCameraInterFaceTest 4 1280 800 YUV
++MeigCameraInterFaceTest 4 4160 3120 YUV
++*/
++/*[4208 3120 2104 1560 ]*/
++
++int main(int argc, char* argv[]) {
++	int i = 0;
++	startCapture = false;
++    int32_t CameraId = 0;
++    int32_t witdth = 1280;
++    int32_t height = 800;
++    int32_t witdth0 = 4160;
++    int32_t height0 = 3120;
++    int32_t format = IMAGE_FORMAT_YUV_420_888;	//CameraContrlNode *pNode = NULL;
++	int32_t cam1_format = IMAGE_FORMAT_RAW10;
++	int32_t cam2_format = IMAGE_FORMAT_RAW10;
++    TestDualEnable = false;
++    isCanCapture = false;
++    IsCaptureAllCameraOnce = false;
++	int count = 0;
++
++    if (argv[1]) {
++        if(!strcmp(argv[1],"0")) {
++          CameraId = 0;
++        } else if(!strcmp(argv[1],"1")) {
++          CameraId = 1;
++        } else if(!strcmp(argv[1],"2")) {
++          CameraId = 2;
++        } else if (!strcmp(argv[1],"3")) {
++        	CameraId = 3;
++        } else if (!strcmp(argv[1],"4")) {
++        	CameraId = 4;
++        } else if (!strcmp(argv[1],"5")){
++			CameraId = 5;
++		} else if (!strcmp(argv[1],"6")){
++			CameraId = 6;
++		}
++		else {
++        	printf("invalid cameraid\n");
++        	return 0;
++        }
++    }
++
++	if (CameraId == 5) {
++	    IsCaptureAllCameraOnce = true;
++	}
++
++    if (CameraId > 2) {
++		TestDualEnable = true;
++    	if (argv[2]) {
++    		witdth0 = atoi(argv[2]);
++    	}
++    	if (argv[3]) {
++    		height0 = atoi(argv[3]);
++    	}
++    } else {
++    	if (argv[2]) {
++    		witdth0 = atoi(argv[2]);
++    	}
++    	if (argv[3]) {
++    		height0 = atoi(argv[3]);
++    	}
++    }
++
++    if (argv[4]) {
++    	if(!strcmp(argv[4],"YUV")) {
++    		format = IMAGE_FORMAT_YUV_420_888;
++    	} else if (!strcmp(argv[4],"JPEG")){
++    		format = IMAGE_FORMAT_JPEG;
++    	} else if (!strcmp(argv[4],"RAW10")){
++    		format = IMAGE_FORMAT_RAW10;
++    	}
++    	else {
++    		printf("invalid foramt\n");
++    		//return  0;
++    	}
++    }
++
++    if (argv[5]) {
++    	if(!strcmp(argv[5],"YUV")) {
++    		cam1_format = IMAGE_FORMAT_YUV_420_888;
++    	} else if (!strcmp(argv[5],"JPEG")){
++    		cam1_format = IMAGE_FORMAT_JPEG;
++    	} else if (!strcmp(argv[5],"RAW10")){
++    		cam1_format = IMAGE_FORMAT_RAW10;
++    	}
++    	else {
++    		printf("invalid foramt\n");
++    		//return  0;
++    	}
++    }
++
++    if (argv[6]) {
++    	if(!strcmp(argv[6],"YUV")) {
++    		cam2_format = IMAGE_FORMAT_YUV_420_888;
++    	} else if (!strcmp(argv[6],"JPEG")){
++    		cam2_format = IMAGE_FORMAT_JPEG;
++    	} else if (!strcmp(argv[6],"RAW10")){
++    		cam2_format = IMAGE_FORMAT_RAW10;
++    	}
++    	else {
++    		printf("invalid foramt\n");
++    		//return  0;
++    	}
++    }
++/*
++    if (format == IMAGE_FORMAT_RAW10) {
++    	if (witdth0 > 2104 || height0 > 1560) {
++    		witdth0 = 4208;
++    		height0 = 3120;
++    	} else {
++    		witdth0 = 2104;
++    		height0 = 1560;
++    	}
++    }
++*/
++    printf("test: camera 0:[%dx%d %s]\n",witdth0,height0,(format == IMAGE_FORMAT_RAW10)?"RAW10":"YUV");
++    printf("test: camera 1:[%dx%d %s]\n",witdth,height,(cam1_format == IMAGE_FORMAT_RAW10)?"RAW10":"YUV");
++    printf("test: camera 2:[%dx%d %s]\n",witdth,height,(cam2_format == IMAGE_FORMAT_RAW10)?"RAW10":"YUV");
++
++	pthread_mutex_init(&m_camera_0_mutex, 0);
++    pthread_cond_init(&m_camera_0_cond, NULL);
++
++	pthread_mutex_init(&m_camera_1_mutex, 0);
++    pthread_cond_init(&m_camera_1_cond, NULL);
++
++    pthread_mutex_init(&m_camera_2_mutex, 0);
++    pthread_cond_init(&m_camera_2_cond, NULL);
++
++    pthread_create(&thread_id, NULL, camera_1_capture_thread, NULL);
++    pthread_create(&thread2_id, NULL, camera_2_capture_thread, NULL);
++
++	CreateCameraInterfaceNode(&pNode);
++	if (TestDualEnable) {
++		pNode->Open(0,witdth0,height0,format);
++		usleep(1000*3000);
++		pNode->Open(1,witdth,height,cam1_format);
++		if (CameraId > 3) {
++			pNode->Open(2,witdth,height,cam2_format);
++		}
++	} else {
++		if (CameraId == 0) {
++			pNode->Open(CameraId,witdth0,height0,format);
++		} else {
++			pNode->Open(CameraId,witdth,height,format);
++		}
++	}
++	if (CameraId == 6) {
++		usleep(1000*1000);
++		OpenCameraSofDevice();
++		pNode->Resume(1);
++		pNode->Resume(2);
++		ALOGI("[CameraPerformance] start time of WaitScm1Scm2FristFrameReady.....");
++		pNode->WaitScm1Scm2FristFrameReady();
++		ALOGI("[CameraPerformance] end time of WaitScm1Scm2FristFrameReady.....");
++		//灭灯
++		Set_AIM_SUS(true);
++		Set_LaserAiming(false);
++		Set_ILM_OUT(false);
++
++		pNode->Resume(0);
++		ALOGI("[CameraPerformance] start time of WaitCCMFristFrameReady.....");
++		pNode->WaitCCMFristFrameReady();
++		ALOGI("[CameraPerformance] end time of WaitCCMFristFrameReady.....");
++		//wait ccm frist frame
++		WaitCameraSOF();
++		frameNumCamera0 = 0;
++		frameNumCamera1 = 0;
++		frameNumCamera2 = 0;
++
++		startCapture = true;
++		//ALOGI("[CameraPerformance] start time of capture API called.....");
++		do {
++			nsecs_t starttime = systemTime();
++			ALOGI("[CameraPerformance] start time of capture API called count=%d.....",count);
++			WaitCameraSOF();
++			//usleep(1000*5);//假设ccm 曝光结束时间是16ms
++			ALOGI("[CameraPerformance] end of time ccm exposure ");
++			//亮灯
++			ALOGI("[CameraPerformance] set LD and LCM_OUT on");
++			Set_AIM_SUS(false);
++			Set_LaserAiming(true);
++			Set_ILM_OUT(true);
++			pNode->CaptureByCustomer(OnDataCallBackTestCamera1,OnDataCallBackTestCamera2,OnExposureCallback,OnDataCallBackTestCamera0);
++			//wait ccm call all back
++			//pthread_mutex_lock(&m_camera_0_mutex);
++			//pthread_cond_wait(&m_camera_0_cond,&m_camera_0_mutex);
++			//pthread_mutex_unlock(&m_camera_0_mutex);
++			WaitAllCameraAllDataCallback();
++			callbackcount = 0;
++			//灭灯
++			ALOGI("[CameraPerformance] set LD and LCM_OUT off");
++			Set_AIM_SUS(true);
++			Set_LaserAiming(false);
++			Set_ILM_OUT(false);
++			ALOGI("[CameraPerformance] end time of capture count:%d,timediff=%llums",count,(systemTime() - starttime)/1000000);
++		}while(count++ < 100);
++
++		CloseCameraSofDevice();
++		goto exit;
++    }
++	do {
++		char c;
++		printf("input s:supend  r:resume   c:capture  a:close  b:open  p:brightness f:flashlight_on q:flashlight_off m:movefocus  n:all_camera_capture_at_same_time   e:exit\n");
++		c = getchar();
++		if (c == 's') {
++			if (TestDualEnable) {
++				pNode->Suspend(0);
++				pNode->Suspend(1);
++				if (CameraId > 3) {
++					pNode->Suspend(2);
++				}
++				isCanCapture = false;
++			} else {
++				pNode->Suspend(CameraId);
++				isCanCapture = false;
++			}
++		} else if (c == 'r') {
++			if (TestDualEnable) {
++				pNode->Resume(0);
++				pNode->Resume(1);
++				if (CameraId > 3) {
++					pNode->Resume(2);
++				}
++				isCanCapture = true;
++			} else {
++				pNode->Resume(CameraId);
++				isCanCapture = true;
++			}
++		} else if (c == 'c') {
++			if (TestDualEnable) {
++				pNode->Capture(0,OnDataCallBackTestCamera0);
++				pNode->Capture(1,OnDataCallBackTestCamera1);
++				if (CameraId > 3) {
++					pNode->Capture(2,OnDataCallBackTestCamera2);
++				}
++			} else {
++				pNode->Capture(CameraId,OnDataCallBackTestCamera0);
++			}
++		} else if (c == 'a') {
++			if (TestDualEnable) {
++				pNode->Close(0);
++				pNode->Close(1);
++				if (CameraId > 3) {
++					pNode->Close(2);
++				}
++				isCanCapture = false;
++			} else {
++				pNode->Close(CameraId);
++				isCanCapture = false;
++			}
++		} else if (c == 'b') {
++			if (TestDualEnable) {
++				pNode->Open(0,witdth0,height0,format);
++				pNode->Open(1,witdth,height,cam1_format);
++				if (CameraId > 3) {
++					pNode->Open(2,witdth,height,cam2_format);
++				}
++				isCanCapture = false;
++			} else {
++				if (CameraId == 0) {
++					pNode->Open(CameraId,witdth0,height0,format);
++				} else {
++					pNode->Open(CameraId,witdth,height,format);
++				}
++				isCanCapture = false;
++			}
++		} else if (c == 'p') {
++			pNode->SetParameters(CameraId,SET_BRIGHTNESS,BRIGHTNESS_LEVEL_MAX);
++		} else if (c == 'f') {
++			pNode->SetParameters(CameraId,SET_FALSHLIGHT,FLASHLIGHT_ON);
++		} else if (c == 'q') {
++			pNode->SetParameters(CameraId,SET_FALSHLIGHT,FLASHLIGHT_OFF);
++		} else if (c == 'm') {
++			pNode->MoveFocus(CameraId,3.2);
++		} else if (c == 'n') {
++			pNode->CaptureByCustomer(OnDataCallBackTestCamera1,OnDataCallBackTestCamera2,OnExposureCallback,OnDataCallBackTestCamera0);
++		}else if (c == 'e') {
++			break;
++		}
++	}while(1);
++    frameNumCamera0 = 0;
++    frameNumCamera1 = 0;
++    frameNumCamera2 = 0;
++
++    startCapture = true;
++
++    if (!isCanCapture) {
++    	goto exit;
++    }
++	
++	if (IsCaptureAllCameraOnce) {
++		for (i = 0; i < testCount; i++) {
++			nsecs_t starttime = systemTime();
++			ALOGI("[CameraPerformance] start time of capture count:%d API called.....",i);
++			pNode->CaptureByCustomer(OnDataCallBackTestCamera1,OnDataCallBackTestCamera2,OnExposureCallback,OnDataCallBackTestCamera0);
++			pthread_mutex_lock(&m_camera_0_mutex);
++    		pthread_cond_wait(&m_camera_0_cond,&m_camera_0_mutex);
++    		pthread_mutex_unlock(&m_camera_0_mutex);
++			//usleep(1000*2000);
++			ALOGI("[CameraPerformance] end time of capture count:%d,timediff=%llums",i,(systemTime() - starttime)/1000000);
++		}
++		goto exit;
++	} else {
++		if (TestDualEnable) {
++			for (i = 0; i < testCount; i++) {
++				nsecs_t starttime = systemTime();
++				ALOGI("CameraTest camera 0 start capture count:%d",i);
++				pNode->Capture(0,OnDataCallBackTestCamera0);
++				pthread_mutex_lock(&m_camera_0_mutex);
++				pthread_cond_wait(&m_camera_0_cond,&m_camera_0_mutex);
++				pthread_mutex_unlock(&m_camera_0_mutex);
++				ALOGI("[CameraPerformance] CameraTest camera 0 get capture count:%d frame,timediff=%llums",i,(systemTime() - starttime)/1000000);
++			}
++		}else {
++			for (i = 0; i < testCount; i++) {
++				nsecs_t starttime = systemTime();
++				ALOGI("CameraTest camera %d start capture count:%d",CameraId,i);
++				pNode->Capture(CameraId,OnDataCallBackTestCamera0);
++				pthread_cond_wait(&m_camera_0_cond,&m_camera_0_mutex);
++				ALOGI("[CameraPerformance] CameraTest camera %d get capture count:%d frame,timediff=%llums",CameraId,i,(systemTime() - starttime)/1000000);
++			}
++		}
++    }
++exit:
++	//usleep(1000*1000);
++    isCanCapture = false;
++	pthread_join(thread_id, NULL);
++	pthread_join(thread2_id, NULL);
++    pthread_cond_destroy(&m_camera_0_cond);
++    pthread_mutex_destroy(&m_camera_0_mutex);
++    pthread_cond_destroy(&m_camera_1_cond);
++    pthread_mutex_destroy(&m_camera_1_mutex);
++    pthread_cond_destroy(&m_camera_2_cond);
++    pthread_mutex_destroy(&m_camera_2_mutex);
++
++    if (TestDualEnable) {
++    	pNode->Close(0);
++    	pNode->Close(1);
++    	if (CameraId > 4) {
++    		pNode->Close(2);
++    	}
++    } else {
++    	pNode->Close(CameraId);
++    }
++
++	DestoryCameraInterfaceNode(pNode);
++	return 0;
++}
+\ No newline at end of file
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.cpp
+new file mode 100755
+index 0000000..c934ea8
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.cpp
+@@ -0,0 +1,171 @@
++#include <cutils/properties.h>
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <time.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <time.h>
++#include "linkedQueue.h"
++
++
++static bool createQueue(struct LinkedQueue *q)
++{
++    pQNode pStartNode = (pQNode) malloc(sizeof(QNode));
++    assert(NULL != pStartNode);
++    
++    pStartNode->next = NULL;
++    q->front = q->rear = pStartNode;
++    pthread_mutex_init(&q->mutex, NULL);
++    q->linkedQueueSize = 0;
++    return true;
++}
++
++static bool enQueue(struct LinkedQueue *q, QElemType data)
++{
++    pQNode pNode = (pQNode) malloc(sizeof(QNode));
++    if (NULL == pNode)
++    {
++        return false;
++    }
++    pNode->next = NULL;
++    pNode->data = data;
++    
++    pthread_mutex_lock(&q->mutex);
++    q->rear->next = pNode;
++    q->rear = pNode;
++    q->linkedQueueSize++;
++    pthread_mutex_unlock(&q->mutex);
++    return true;
++}
++
++static bool deQueue(struct LinkedQueue *q, QElemType *pdata)
++{
++    if (q->isEmpty(q))
++    {
++        return false;
++    }
++    pthread_mutex_lock(&q->mutex);
++    pQNode p;
++    p = q->front->next;
++    if (p == NULL)
++    {
++        *pdata = NULL;
++        pthread_mutex_unlock(&q->mutex);
++        return false;
++    }
++    q->front->next = p->next;
++    *pdata = p->data;
++    if (q->rear == p)
++    {
++        q->rear = q->front;
++    }
++    q->linkedQueueSize--;
++    free(p);
++    pthread_mutex_unlock(&q->mutex);
++    return true;
++}
++
++static bool isEmpty(struct LinkedQueue *q)
++{
++    pthread_mutex_lock(&q->mutex);
++    if (q->front == q->rear)
++    {
++        pthread_mutex_unlock(&q->mutex);
++        return true;
++    }
++    pthread_mutex_unlock(&q->mutex);
++    return false;
++}
++
++void traverse(struct LinkedQueue *q)
++{
++    if (q->isEmpty(q))
++    {
++        ALOGI("the linked queue is empty");
++    }
++    else
++    {
++        pthread_mutex_lock(&q->mutex);
++        pQNode p = q->front->next;
++        while (p)
++        {
++            //LOG_INFO("%p\n", p->data);
++            p = p->next;
++        }
++        pthread_mutex_unlock(&q->mutex);
++    }
++}
++
++int getSize(struct LinkedQueue *q)
++{
++    pthread_mutex_lock(&q->mutex);
++    int size = q->linkedQueueSize;
++    pthread_mutex_unlock(&q->mutex);
++    return size;
++}
++
++static bool destoryQueue(struct LinkedQueue *q)
++{
++    pthread_mutex_lock(&q->mutex);
++    while (!q->isEmpty(q))
++    {
++        pQNode p = q->front->next;
++        q->front->next = p->next;
++        if (q->rear == p)
++        {
++            q->rear = q->front;
++        }
++        free(p);
++    }
++    free(q->front);
++    q->front = q->rear = NULL;
++    q->linkedQueueSize = 0;
++    pthread_mutex_unlock(&q->mutex);
++    pthread_mutex_destroy(&q->mutex);
++    return true;
++}
++LinkedQueue_ptr generateLinkedQueue()
++{
++    LinkedQueue_ptr q = NULL;
++    q = (LinkedQueue_ptr) malloc(sizeof(LinkedQueue));
++    memset(q, 0, sizeof(LinkedQueue));
++    q->createQueue = createQueue;
++    q->isEmpty = isEmpty;
++    q->enQueue = enQueue;
++    q->deQueue = deQueue;
++    q->traverse = traverse;
++    q->destoryQueue = destoryQueue;
++    
++    q->createQueue(q);
++    return q;
++}
++
++void destoryLinkedQueue(LinkedQueue_ptr * ppq)
++{
++    LinkedQueue_ptr q = *ppq;
++    if (NULL != q)
++    {
++        q->destoryQueue(q);
++        free(q);
++        q = NULL;
++    }
++}
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.h b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.h
+new file mode 100755
+index 0000000..731d15b
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/linkedQueue.h
+@@ -0,0 +1,30 @@
++
++#include <stdatomic.h>
++#include <pthread.h>
++
++//typedef unsigned char * QElemType;
++typedef void * QElemType;
++
++typedef struct QNode
++{
++    QElemType data;
++    struct QNode * next;
++} QNode, *pQNode;
++
++typedef struct LinkedQueue
++{
++    pQNode front, rear;
++    pthread_mutex_t mutex;
++    int linkedQueueSize;        //use atomic type for multiple thread.
++    bool (*createQueue)(struct LinkedQueue *q);
++    bool (*enQueue)(struct LinkedQueue *q, QElemType data);
++    bool (*deQueue)(struct LinkedQueue *q, QElemType *pdata);
++    bool (*isEmpty)(struct LinkedQueue *q);
++    void (*traverse)(struct LinkedQueue *q);
++    int (*getSize)(struct LinkedQueue *q);
++    bool (*destoryQueue)(struct LinkedQueue *q);
++} LinkedQueue, *LinkedQueue_ptr;
++
++LinkedQueue_ptr generateLinkedQueue();
++
++void destoryLinkedQueue(LinkedQueue_ptr * q);
+diff --git a/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/test/main.cpp b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/test/main.cpp
+new file mode 100755
+index 0000000..337cb5d
+--- /dev/null
++++ b/vendor/Barcode_Scanning_Service/MeigNativeCameraManager/test/main.cpp
+@@ -0,0 +1,210 @@
++
++#include <sys/resource.h>
++#include <utils/Log.h>
++#include <utils/threads.h>
++#include <cutils/properties.h>
++#include <utils/Log.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <pthread.h>
++#include <string.h>
++#include <errno.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <time.h>
++#include <poll.h>
++#include <dlfcn.h>
++#include <math.h>
++#include <sys/types.h> 
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <time.h>
++
++#include "../CameraInter.h"
++
++#define IMAGE_FORMAT_JPEG           0x100
++#define IMAGE_FORMAT_YUV_420_888    0x23
++#define IMAGE_FORMAT_YUV_NV21       0x20
++
++
++#define TEST_WIDTH  1280
++#define TEST_HEIGHT 720
++
++
++void DumpBuffer(char *patch, uint8_t *y,uint8_t *u,uint8_t *v,int32_t ylen,int32_t ulen,int32_t vlen) {
++  FILE* file = fopen(patch,"w+");
++  if (file != nullptr) {
++    fwrite(y, sizeof(uint8_t), ylen, file);
++    //fseek(file,0,SEEK_END);
++    //fwrite(u, sizeof(uint8_t), ulen, file);
++    //fseek(file,0,SEEK_END);
++    //fwrite(v, sizeof(uint8_t), vlen, file);
++    fclose(file);
++  }
++}
++
++static void OnDataCallBack(AImageReader *reader){
++#if 0
++    media_status_t ret;
++    AImage* image = NULL;
++    int32_t format = -1;
++    int32_t width = -1, height = -1;
++    char dumpFilePath[512];
++    int32_t numPlanes;
++    int32_t i = 0;
++
++    uint8_t *data[3];
++    int32_t datalen[3];
++    int32_t pixelStride[3];
++    int32_t rowStride[3];
++
++    if (!reader) {
++      return;
++    }
++
++    ret = AImageReader_acquireNextImage(reader, &image);
++    if (ret != AMEDIA_OK) {
++        ALOGE("CameraNativeManager::ImageCallback Failed to get image");
++        return;
++    }
++
++    ret = AImage_getFormat(image, &format);
++    if (ret != AMEDIA_OK || format == -1) {
++        AImage_delete(image);
++        ALOGE("CameraNativeManager:: get format for image %p failed! ret: %d, format %d",image, ret, format);
++        return;
++    }
++
++    ret = AImage_getWidth(image, &width);
++    if (ret != AMEDIA_OK || width <= 0) {
++        AImage_delete(image);
++        ALOGE("%s: get width for image %p failed! ret: %d, width %d",
++                     __FUNCTION__, image, ret, width);
++        return;
++    }
++
++    ret = AImage_getHeight(image, &height);
++    if (ret != AMEDIA_OK || height <= 0) {
++        AImage_delete(image);
++        ALOGE("%s: get height for image %p failed! ret: %d, width %d",
++                     __FUNCTION__, image, ret, height);
++        return;
++    }
++
++    ret  = AImage_getNumberOfPlanes(image,&numPlanes);
++
++    for (i = 0; i < numPlanes; i++) {
++      AImage_getPlaneData(image,i,&data[i],&datalen[i]);
++      AImage_getPlaneRowStride(image,i,&rowStride[i]);
++      AImage_getPlanePixelStride(image,i,&pixelStride[i]);
++      ALOGI("%s,+++++ 11111111 Get Capture imge Plane[%d] [%dx%d] rowStride[%d] pixelStride[%d] length[%d]\n", __FUNCTION__,i,width,height,
++           rowStride[i],
++           pixelStride[i],
++           datalen[i]);
++
++    }
++    //ALOGI("%s,+++++ 11111111 Get Capture imge [%dx%d] Planes:%d\n", __FUNCTION__,width,height,numPlanes);
++
++    sprintf(dumpFilePath, "%s/%dx%d.yuv", "/sdcard", width, height);
++
++    if(format == IMAGE_FORMAT_YUV_420_888) {
++        //DumpBuffer(dumpFilePath,data[i],data_u,data_v,ylen,ulen,vlen);
++    }
++
++    AImage_delete(image);
++#endif
++  ALOGI("xxxxxxxxxxxxxxx Get Capture imge.....");
++}
++
++int main(int argc, char* argv[])
++{
++    bool ret = true;
++    int i;
++    int32_t CameraId = 0;
++    int32_t witdth = TEST_WIDTH;
++    int32_t height = TEST_HEIGHT;
++    int32_t format = IMAGE_FORMAT_YUV_420_888;
++
++    CameraHandle *pHandle = NULL;
++
++    printf("[cameraid] [w] [h] [foramt]\n");
++
++    if (argv[1]) {
++        if(!strcmp(argv[1],"0")) {
++          CameraId = 0;
++        } else if(!strcmp(argv[1],"1")) {
++          CameraId = 1;
++        } else if(!strcmp(argv[1],"2")) {
++          CameraId = 2;
++        } else {
++          printf("invalid cameraid\n");
++          return 0;
++        }
++    }
++
++    if (argv[2]) {
++      witdth = atoi(argv[2]);
++    }
++
++    if (argv[3]) {
++      height = atoi(argv[3]);
++    }
++
++    if (argv[4]) {
++      if(!strcmp(argv[4],"YUV")) {
++        format = IMAGE_FORMAT_YUV_420_888;
++      } else if (!strcmp(argv[4],"JPEG")){
++        format = IMAGE_FORMAT_JPEG;
++      } else {
++        printf("invalid foramt\n");
++        return  0;
++      }
++    }
++
++    printf("start test cameraid=%d size[%dx%d] format:%d\n", CameraId,witdth,height,format);
++
++    if (!CreateCameraHandle(&pHandle)) {
++        printf("CreateCameraHandle failed\n");
++        return 0;
++    }
++
++    ret = pHandle->RegisterCameraServers();
++    if (!ret) {
++       printf("RegisterCameraServers failed\n");
++       goto exit;
++    }
++
++    ret = pHandle->Open(CameraId,witdth,height,format);
++    if (!ret) {
++       printf("Open failed\n");
++       goto open_failed;
++    }
++
++    do {
++        char c;
++        printf("e:exit  a:stop   b:start  s:switchsize\n");
++        c = getchar();
++        if (c == 'a') {
++          pHandle->stopCapture(CameraId);
++        } else if (c == 'b') {
++          pHandle->SnapShort(CameraId,OnDataCallBack,0);
++        } else if (c == 's') {
++        }else if(c == 'e') {
++            break;
++        }
++    }while(1);
++
++open_failed:
++    if (pHandle) {
++        pHandle->Close(CameraId);
++    }
++
++exit:
++   if (pHandle)
++       pHandle->DestoryCameraServers();
++
++   DestoryCameraHandle(pHandle);
++   return 0;
++
++}
+diff --git a/vendor/vendorcode/hardware/Android.bp b/vendor/vendorcode/hardware/Android.bp
+new file mode 100755
+index 0000000..9acb67f
+--- /dev/null
++++ b/vendor/vendorcode/hardware/Android.bp
+@@ -0,0 +1,4 @@
++// Pick up Android.bp in next directory level
++subdirs = [
++    "*"
++]
+diff --git a/vendor/vendorcode/hardware/interfaces/Android.bp b/vendor/vendorcode/hardware/interfaces/Android.bp
+new file mode 100755
+index 0000000..f0d19c2
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/Android.bp
+@@ -0,0 +1,9 @@
++// Pick up Android.bp in next directory level
++subdirs = [
++    "*"
++]
++
++hidl_package_root {
++    name: "vendor.scan.hardware",
++    path: "vendor/vendorcode/hardware/interfaces",
++}
+diff --git a/vendor/vendorcode/hardware/interfaces/current.txt b/vendor/vendorcode/hardware/interfaces/current.txt
+new file mode 100755
+index 0000000..de37acc
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/current.txt
+@@ -0,0 +1,16 @@
++16a16e6456a7617b3deaabab2ae82a598772711ded25890e605838563ee04f93 vendor.elo.hardware.oemlight@1.0::types
++48b535b96fbca0feb58fdcf185ddc27dde06b525a49c902d721e66fc497d1473 vendor.elo.hardware.oemlight@1.0::IOemLight
++beeae9d9a5f975cf85a74ed573a7d9c6cd372413eefe0c5bfb6881097c44941b vendor.elo.hardware.oemmisc@1.0::types
++8bcb932cfd16769c9c6ed7db8bb96f34b80084e7a3e871bef19c3768909eefee vendor.elo.hardware.oemmisc@1.0::IOemMisc
++66214758ca1640a834dfab2fdd2f821286e0f3ce02b27a62ebe24a7122c23420 vendor.elo.hardware.oemkeys@1.0::IOemKeys
++ac74c82763aa7bebb92349f4902415541a08bfee25f4cccb2b3419586fc30798 vendor.elo.hardware.oemuinput@1.0::IOemUinput
++acedddbe038baa8ba5ffd42bc5757a8214c83282947c192a01cb9cd162ed594f vendor.elo.hardware.oemusbconfig@1.0::types
++285200a042977b1a1ce45593a1c8ad0f91d242996bb9330524ca094684cee56c vendor.elo.hardware.oemusbconfig@1.0::IOemUsbConfig
++064c4da3b214de650d1bc32f2d7a671e79532d88e5b0ea4bfa8b70a89bb818a4 vendor.elo.hardware.oempowersave@1.0::types
++502436d6be73c9454efe84eb47950bbc31f35d3c31ef621f7bf885aa6565bf18 vendor.elo.hardware.oempowersave@1.0::IOemPowerSave
++9d96c74ab8ac9ed1d73ca4f1dd730a68296f368be4cd425227caa9c773cd5b3d vendor.elo.hardware.oemmisc@1.0::types
++bd887568c45f94ab8d20622efd3b43760819b2817e5852d1451e835e8dcc2a51 vendor.elo.hardware.oemmisc@1.0::IOemMisc
++088c5dac6d65f52d5b6b999b58654a1a753defe5afbf71665d0a6b98b3ae5700 vendor.elo.hardware.oemusbconfig@1.0::types
++8f9192fe29d0f6cd92ca3c9ba336ce2ecbd5a2aad789c2d2f2689f28057f4a24 vendor.elo.hardware.oemusbconfig@1.0::IOemUsbConfig
++8b74883292984ddeaafe8b14d298f22868965a18b4cd9da7b2182dbf09406114 vendor.elo.hardware.oemextdisp@1.0::types
++bf40b0c956ed8fb34fa4f5fdae33a06794fd65494a374d61373c9508ee6ce857 vendor.elo.hardware.oemextdisp@1.0::IOemExtdisp
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/Android.bp b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/Android.bp
+new file mode 100755
+index 0000000..3ce7f70
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/Android.bp
+@@ -0,0 +1,15 @@
++// This file is autogenerated by hidl-gen -Landroidbp.
++
++hidl_interface {
++    name: "vendor.scan.hardware.scanservice@1.0",
++    root: "vendor.scan.hardware",
++    product_specific: true,
++    srcs: [
++        "IScanService.hal",
++		"IScanServiceCallback.hal",
++    ],
++    interfaces: [
++        "android.hidl.base@1.0",
++    ],
++    gen_java: true,
++}
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanService.hal b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanService.hal
+new file mode 100755
+index 0000000..92e7cc6
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanService.hal
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package vendor.scan.hardware.scanservice@1.0;
++import IScanServiceCallback;
++
++interface IScanService {
++    //oemkeys_remap_set(string key_name, string new_key_name) generates (int32_t ret);
++    //oemkeys_wakeup_set(string key_name, int32_t wakeable) generates (int32_t ret);
++    //oemkeys_tp_wakeup(int32_t wakeable) generates (int32_t ret);
++    open(int32_t cameraId, int32_t width, int32_t height, int32_t format);
++    close(int32_t cameraId);
++    resume(int32_t cameraId);
++    suspend(int32_t cameraId);
++    capture(int32_t cameraId);
++    setParameters(int32_t cameraId,int32_t type,int32_t value);
++    move_focus(int32_t cameraId,float value);
++    setScanServiceCallback(IScanServiceCallback callback);
++};
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanServiceCallback.hal b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanServiceCallback.hal
+new file mode 100755
+index 0000000..b693eb2
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/IScanServiceCallback.hal
+@@ -0,0 +1,9 @@
++package vendor.scan.hardware.scanservice@1.0;
++
++interface IScanServiceCallback {
++	oneway onNotify(int32_t deviceId);
++ 	oneway onNotifyCamera0Data(int32_t deviceId);
++	oneway onNotifyCamera1Data(int32_t deviceId);
++	oneway onNotifyCamera2Data(int32_t deviceId);
++	oneway onNotifyExposure(int64_t exposuretime,int32_t iso);
++};
+\ No newline at end of file
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.bp.bak b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.bp.bak
+new file mode 100755
+index 0000000..f56feb6
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.bp.bak
+@@ -0,0 +1,32 @@
++cc_binary {
++    name: "vendor.meig.hardware.scanservice@1.0-service",
++    init_rc: ["vendor.meig.hardware.scanservice@1.0-service.rc"],
++    relative_install_path: "hw",
++    vendor: true,
++    srcs: [
++        "ScanService.cpp",
++        "service.cpp",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++
++
++    shared_libs: [
++        "vendor.meig.hardware.scanservice@1.0",
++        "libbase",
++        "libcutils",
++        "libhidlbase",
++        "libhidltransport",
++        "liblog",
++        "libutils",
++        "libhardware",
++	"libMeigNativeCamera",
++    ],
++    
++    export_shared_lib_headers: [
++    	"libMeigNativeCamera",
++    ],
++
++}
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.mk b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.mk
+new file mode 100755
+index 0000000..b41e5e5
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/Android.mk
+@@ -0,0 +1,35 @@
++LOCAL_PATH := $(call my-dir)
++include $(CLEAR_VARS)
++
++include $(CLEAR_VARS)
++LOCAL_MODULE := vendor.scan.hardware.scanservice@1.0-service
++LOCAL_INIT_RC := vendor.scan.hardware.scanservice@1.0-service.rc
++LOCAL_MODULE_RELATIVE_PATH := hw
++LOCAL_PROPRIETARY_MODULE := true
++LOCAL_SRC_FILES := \
++    ScanService.cpp \
++    service.cpp
++
++LOCAL_SHARED_LIBRARIES := \
++    vendor.scan.hardware.scanservice@1.0 \
++    libbase \
++    libcutils \
++    libhidlbase \
++    libhidltransport \
++    liblog \
++    libutils \
++    libhardware \
++    libui \
++    libcamera2ndk_vendor \
++    libcamera_metadata \
++    libmediandk \
++    libnativewindow \
++    libMeigNativeCamera
++
++LOCAL_CFLAGS += -D__ANDROID_VNDK__
++
++LOCAL_C_INCLUDES := $(LOCAL_PATH) \
++	system/core/include \
++    $(TARGET_OUT_HEADERS)/libMeigNativeCamera \
++
++include $(BUILD_EXECUTABLE)
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.cpp b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.cpp
+new file mode 100755
+index 0000000..49eb7c2
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.cpp
+@@ -0,0 +1,187 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#define LOG_TAG "ScanServiceHidl"
++
++#include "ScanService.h"
++
++#include <log/log.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <fcntl.h>
++#include <errno.h>
++
++namespace vendor {
++namespace scan {
++namespace hardware {
++namespace scanservice {
++namespace V1_0 {
++namespace implementation {
++//sp<IScanServiceCallback> ScanService::mCallback = NULL;
++sp<IScanServiceCallback> mCallback = NULL;
++int32_t mCameraId0 = 0;
++int32_t mCameraId1 = 0;
++int32_t mCameraId2 = 0;
++//static void OnDataCallBackTestCamera0(AImageReader *reader) {
++void OnDataCallBackTestCamera0(AImageReader *reader) {
++	ALOGD("%s: Get camera 0 Capture imge ", __func__);
++	if(mCallback != NULL) {
++ 		//mCallback->onNotify(mCameraId0);
++		mCallback->onNotifyCamera0Data(mCameraId0);
++ 	}
++}
++
++//static void OnDataCallBackTestCamera1(AImageReader *reader) {
++void OnDataCallBackTestCamera1(AImageReader *reader) {
++	ALOGD("%s: Get camera 1 Capture imge ", __func__);
++	if(mCallback != NULL) {
++ 		//mCallback->onNotify(mCameraId1);
++		mCallback->onNotifyCamera1Data(mCameraId1);
++ 	}
++
++}
++
++//static void OnDataCallBackTestCamera2(AImageReader *reader) {
++void OnDataCallBackTestCamera2(AImageReader *reader) {
++	ALOGD("%s: Get camera 2 Capture imge ", __func__);
++	if(mCallback != NULL) {
++ 		//mCallback->onNotify(mCameraId2);
++		mCallback->onNotifyCamera2Data(mCameraId2);
++ 	}
++}
++
++void OnExposureCallback(int64_t exposuretime,int32_t iso) {
++	ALOGD("CCM camera exprosure callback exposuretime=%ld iso=%d .....",exposuretime,iso);
++	if(mCallback != NULL) {
++		mCallback->onNotifyExposure(exposuretime, iso);
++ 	}
++}
++
++Return<void> ScanService::open(int32_t cameraId, int32_t width, int32_t height, int32_t format){
++	ALOGD("%s: cameraId:[ %d ], width:[ %d ] , height:[ %d ] , format:[ %d ] \n", __func__, cameraId, width, height, format);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	switch(cameraId){
++		case 0:
++			mCameraId0 = cameraId;
++			break;
++		case 1:
++			mCameraId1 = cameraId;
++			break;
++		default:
++			mCameraId2 = cameraId;
++			break;
++	}
++	
++	pNode->Open(cameraId, width, height, format);
++	return Void();
++}
++
++Return<void> ScanService::close(int32_t cameraId){
++	ALOGD("%s: cameraId:[ %d ] \n", __func__, cameraId);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	pNode->Close(cameraId);
++	return Void();
++}
++
++Return<void> ScanService::resume(int32_t cameraId){
++	ALOGD("%s: cameraId:[ %d ] \n", __func__, cameraId);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	pNode->Resume(cameraId);
++	return Void();
++}
++
++Return<void> ScanService::suspend(int32_t cameraId){
++	ALOGD("%s: cameraId:[ %d ] \n", __func__, cameraId);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	pNode->Suspend(cameraId);
++	return Void();
++}
++
++Return<void> ScanService::capture(int32_t cameraId){
++	ALOGD("%s: cameraId:[ %d ] \n", __func__, cameraId);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	/*switch(cameraId){
++		case 0:
++			pNode->Capture(cameraId, OnDataCallBackTestCamera0);
++			break;
++		case 1:
++			pNode->Capture(cameraId, OnDataCallBackTestCamera1);
++			break;
++		default:
++			pNode->Capture(cameraId, OnDataCallBackTestCamera2);
++			break;
++	}*/
++	pNode->CaptureByCustomer(OnDataCallBackTestCamera1, OnDataCallBackTestCamera2, OnExposureCallback, OnDataCallBackTestCamera0);
++	return Void();
++}
++
++Return<void> ScanService::setParameters(int32_t cameraId,int32_t type,int32_t value){
++	ALOGD("%s: cameraId:[ %d ] type:[ %d ] value:[%d]\n", __func__, cameraId, type, value);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	pNode->SetParameters(cameraId, (camera_parameters_type)type, value);
++	return Void();
++}
++
++Return<void> ScanService::move_focus(int32_t cameraId,float value){
++	ALOGD("%s: cameraId:[ %d ] value:[ %f ]\n", __func__, cameraId, value);
++	if( pNode == NULL){
++		ALOGD("%s: pNode == NULL, and exit!", __func__);
++		return Void();
++	}
++	pNode->MoveFocus(cameraId, value);
++	return Void();
++}
++
++Return<void> ScanService::setScanServiceCallback(const sp<IScanServiceCallback>& callback){
++	if(mCallback == NULL) {
++		ALOGD("setCallback: EXIT! mCallback == NULL");
++ 	}
++	ALOGD("%s: ", __func__);
++
++	mCallback = callback;
++	return Void();
++}
++
++ScanService::ScanService() {
++	ALOGD("%s, start",  __func__);
++	CreateCameraInterfaceNode(&pNode);
++}
++
++}  // namespace implementation
++}  // namespace V1_0
++}  // namespace ScanService
++}  // namespace hardware
++}  // namespace meig
++}  // namespace vendor
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.h b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.h
+new file mode 100755
+index 0000000..63f408e
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/ScanService.h
+@@ -0,0 +1,65 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#ifndef ANDROID_HARDWARE_SCANSERVICE_V1_0_SCANSERVICE_H
++#define ANDROID_HARDWARE_SCANSERVICE_V1_0_SCANSERVICE_H
++
++#include <vendor/scan/hardware/scanservice/1.0/IScanService.h>
++#include <vendor/scan/hardware/scanservice/1.0/IScanServiceCallback.h>
++//#include <vendor/meig/hardware/scanservice/1.0/types.h>
++#include <libMeigNativeCamera/Camera.h>
++
++namespace vendor {
++namespace scan {
++namespace hardware {
++namespace scanservice {
++namespace V1_0 {
++namespace implementation {
++
++using ::vendor::scan::hardware::scanservice::V1_0::IScanService;
++using ::vendor::scan::hardware::scanservice::V1_0::IScanServiceCallback;
++//using ::vendor::scan::hardware::scanservice::V1_0::types;
++using ::android::hardware::hidl_array;
++using ::android::hardware::hidl_memory;
++using ::android::hardware::hidl_string;
++using ::android::hardware::hidl_vec;
++using ::android::hardware::Return;
++using ::android::hardware::Void;
++using ::android::sp;
++
++struct ScanService : public IScanService {
++    //Return<int32_t> oemkeys_remap_set(const hidl_string& key_name, const hidl_string& new_key_name) override;
++    //Return<int32_t> oemkeys_wakeup_set(const hidl_string& key_name,  int32_t wakeable) override;
++    //Return<int32_t> oemkeys_tp_wakeup(int32_t wakeable) override;
++	ScanService();
++	Return<void> open(int32_t cameraId, int32_t width, int32_t height, int32_t format) override;
++	Return<void> close(int32_t cameraId) override;
++    Return<void> resume(int32_t cameraId) override;
++    Return<void> suspend(int32_t cameraId) override;
++    Return<void> capture(int32_t cameraId) override;
++    Return<void> setParameters(int32_t cameraId, int32_t type, int32_t value) override;
++    Return<void> move_focus(int32_t cameraId,float value) override;
++	Return<void> setScanServiceCallback(const sp<IScanServiceCallback>& callback) override;
++	CameraContrlNode *pNode = NULL;
++};
++
++}  // namespace implementation
++}  // namespace V1_0
++}  // namespace oemkeys
++}  // namespace hardware
++}  // namespace elo
++}  // namespace vendor
++
++#endif  // ANDROID_HARDWARE_OEMKEYS_V1_0_OEMKEYS_H
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/service.cpp b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/service.cpp
+new file mode 100755
+index 0000000..75b07eb
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/service.cpp
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#define LOG_TAG "vendor.scan.hardware.scanservice@1.0-service"
++
++#include <hidl/HidlSupport.h>
++#include <hidl/HidlTransportSupport.h>
++
++#include "ScanService.h"
++
++using ::android::hardware::configureRpcThreadpool;
++using ::vendor::scan::hardware::scanservice::V1_0::IScanService;
++using ::vendor::scan::hardware::scanservice::V1_0::implementation::ScanService;
++using ::android::hardware::joinRpcThreadpool;
++using ::android::OK;
++using ::android::sp;
++
++
++int main(int /* argc */, char* /* argv */ []) {
++    sp<IScanService> scanservice = new ScanService;
++	ALOGE("zll scanservice.");
++    configureRpcThreadpool(1, true /* will join */);
++    if (scanservice->registerAsService() != OK) {
++        ALOGE("Could not register service.");
++        return 1;
++    }
++    joinRpcThreadpool();
++
++    ALOGE("Service exited!");
++    return 1;
++}
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/vendor.scan.hardware.scanservice@1.0-service.rc b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/vendor.scan.hardware.scanservice@1.0-service.rc
+new file mode 100755
+index 0000000..8c00669
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/1.0/default/vendor.scan.hardware.scanservice@1.0-service.rc
+@@ -0,0 +1,5 @@
++service vendor.scanservice-1-0 /vendor/bin/hw/vendor.scan.hardware.scanservice@1.0-service
++    class hal
++    user system
++    group system
++
+diff --git a/vendor/vendorcode/hardware/interfaces/scanservice/Android.bp b/vendor/vendorcode/hardware/interfaces/scanservice/Android.bp
+new file mode 100755
+index 0000000..bbb3e4b
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/scanservice/Android.bp
+@@ -0,0 +1,4 @@
++// This is an autogenerated file, do not edit.
++subdirs = [
++    "1.0",
++]
+diff --git a/vendor/vendorcode/hardware/interfaces/update-makefiles.sh b/vendor/vendorcode/hardware/interfaces/update-makefiles.sh
+new file mode 100755
+index 0000000..a2e95c0
+--- /dev/null
++++ b/vendor/vendorcode/hardware/interfaces/update-makefiles.sh
+@@ -0,0 +1,8 @@
++#!/bin/bash
++
++source $ANDROID_BUILD_TOP/system/tools/hidl/update-makefiles-helper.sh
++
++do_makefiles_update \
++  "vendor.meig.hardware:vendor/vendorcode/hardware/interfaces" \
++  "android.hidl:system/libhidl/transport"
++
+diff --git a/vendor/vendorcode/manifest-base-oem.xml b/vendor/vendorcode/manifest-base-oem.xml
+new file mode 100755
+index 0000000..5c757cb
+--- /dev/null
++++ b/vendor/vendorcode/manifest-base-oem.xml
+@@ -0,0 +1,39 @@
++<!-- Copyright (c) 2020, The Linux Foundation. All rights reserved.
++
++Redistribution and use in source and binary forms, with or without
++modification, are permitted provided that the following conditions are
++met:
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above
++      copyright notice, this list of conditions and the following
++      disclaimer in the documentation and/or other materials provided
++      with the distribution.
++    * Neither the name of The Linux Foundation nor the names of its
++      contributors may be used to endorse or promote products derived
++      from this software without specific prior written permission.
++
++THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++-->
++<manifest version="1.0" type="framework">
++    <!-- 20200825, Snail.Qian, add for scan service hal interfaces -->
++    <hal format="hidl">
++        <name>vendor.scan.hardware.scanservice</name>
++        <transport>hwbinder</transport>
++        <version>1.0</version>
++        <interface>
++            <name>IScanService</name>
++            <instance>default</instance>
++        </interface>
++    </hal>
++</manifest>
+diff --git a/vendor/vendorcode/meig.mk b/vendor/vendorcode/meig.mk
+new file mode 100755
+index 0000000..612b58c
+--- /dev/null
++++ b/vendor/vendorcode/meig.mk
+@@ -0,0 +1,6 @@
++
++
++DEVICE_FRAMEWORK_MANIFEST_FILE += vendor/vendorcode/manifest-base-oem.xml
++
++PRODUCT_PACKAGES += vendor.scan.hardware.scanservice@1.0-service
++

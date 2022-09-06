@@ -1,0 +1,9 @@
+package vendor.scan.hardware.scanservice@1.0;
+
+interface IScanServiceCallback {
+	oneway onNotify(int32_t deviceId);
+ 	oneway onNotifyCamera0Data(int32_t deviceId);
+	oneway onNotifyCamera1Data(int32_t deviceId);
+	oneway onNotifyCamera2Data(int32_t deviceId);
+	oneway onNotifyExposure(int64_t exposuretime,int32_t iso);
+};

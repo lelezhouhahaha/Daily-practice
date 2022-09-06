@@ -1,0 +1,6 @@
+#OEM, Coco.KX.Wang, 20200416, add keys remap and wakeup
+type sysfs_keys_remap, sysfs_type, fs_type;
+
+#OEM, Coco.KX.Wang, 20200825, add for tp wakeup interface
+type sysfs_tp_wakeup, sysfs_type, fs_type;
+type keys_remap_data, file_type, data_file_type, core_data_file_type;

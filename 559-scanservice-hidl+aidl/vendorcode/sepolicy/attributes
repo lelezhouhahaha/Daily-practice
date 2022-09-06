@@ -1,0 +1,7 @@
+#20220825, add for scanservice
+attribute hal_scanservice;
+expandattribute hal_scanservice true;
+attribute hal_scanservice_client;
+expandattribute hal_scanservice_client true;
+attribute hal_scanservice_server;
+expandattribute hal_scanservice_server false;

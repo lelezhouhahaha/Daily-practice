@@ -1,0 +1,3 @@
+#20220825 scan service
+hal_client_domain(system_server, hal_scanservice)
+

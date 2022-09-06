@@ -1,0 +1,14 @@
+type hal_scanservice_default, domain;
+hal_server_domain(hal_scanservice_default, hal_scanservice)
+
+type hal_scanservice_default_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(hal_scanservice_default)
+
+#OEM, Coco.KX.Wang, 20200416, add keys remap and wakeup
+#allow hal_oemkeys_default sysfs_keys_remap:file { w_file_perms };
+
+#OEM, Coco.KX.Wang, 20200825, add for tp wakeup interface
+#allow hal_scanservice_default sysfs_tp_wakeup:file { w_file_perms };
+
+# modify for task 22637, add wake up feature
+#allow hal_scanservice_default proc:file { open write };

@@ -1,0 +1,2 @@
+#20200825,Snail.Qian, add for scan service
+vendor.scan.hardware.scanservice::IScanService                   u:object_r:hal_scanservice_hwservice:s0

@@ -1,0 +1,6 @@
+###################################
+# Dev nodes
+#
+#20200413,Snail.Qian, add for oem keys
+/(vendor|system/vendor)/bin/hw/vendor\.scan\.hardware\.scanservice@1\.0-service       u:object_r:hal_scanservice_default_exec:s0
+

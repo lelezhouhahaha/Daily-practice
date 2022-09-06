@@ -1,0 +1,3 @@
+#20220825
+type hal_scanservice_hwservice, hwservice_manager_type;
+

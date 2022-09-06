@@ -1,0 +1,32 @@
+/*
+ * Copyright (C) 2016 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package vendor.scan.hardware.scanservice@1.0;
+import IScanServiceCallback;
+
+interface IScanService {
+    //oemkeys_remap_set(string key_name, string new_key_name) generates (int32_t ret);
+    //oemkeys_wakeup_set(string key_name, int32_t wakeable) generates (int32_t ret);
+    //oemkeys_tp_wakeup(int32_t wakeable) generates (int32_t ret);
+    open(int32_t cameraId, int32_t width, int32_t height, int32_t format);
+    close(int32_t cameraId);
+    resume(int32_t cameraId);
+    suspend(int32_t cameraId);
+    capture(int32_t cameraId);
+    setParameters(int32_t cameraId,int32_t type,int32_t value);
+    move_focus(int32_t cameraId,float value);
+    setScanServiceCallback(IScanServiceCallback callback);
+};
