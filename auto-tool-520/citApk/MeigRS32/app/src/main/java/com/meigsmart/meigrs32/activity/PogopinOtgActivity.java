@@ -131,6 +131,7 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
         mTitle.setText(R.string.PogopinOtgActivity);
         mSuccess.setOnClickListener(this);
         mFail.setOnClickListener(this);
+        mSuccess.setVisibility(View.GONE);
         projectName = DataUtil.initConfig(Const.CIT_COMMON_CONFIG_PATH, CustomConfig.SUNMI_PROJECT_MARK);
         if(isMC520 || isMC520_GMS_version){
             writeToFile(POGOPIN_OTG_UHF,"1");
@@ -240,6 +241,8 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
     }
 
     private static final int HANDLER_POGOPIN_OTG = 1000;
+    private static final int HANDLER_POGOPIN_OTG_RESULT_SUCCESS = 1001;
+    private static final int HANDLER_POGOPIN_OTG_RESULT_FAIL = 1002;
     private static class MyHandler extends Handler {
         WeakReference<Activity> reference;
         public MyHandler(Activity activity) {
@@ -253,6 +256,12 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
             switch (msg.what) {
                 case HANDLER_POGOPIN_OTG:
                     activity.getDiskInfo();
+                    break;
+                case HANDLER_POGOPIN_OTG_RESULT_SUCCESS:
+                    activity.deInit(activity.mFatherName, activity.SUCCESS);//auto pass pcba
+                    break;
+                case HANDLER_POGOPIN_OTG_RESULT_FAIL:
+                    activity.deInit(activity.mFatherName, activity.FAILURE, activity.mFailReason);//auto pass pcba
                     break;
             }
         }
@@ -339,11 +348,10 @@ public class PogopinOtgActivity extends BaseActivity implements View.OnClickList
                             mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
                             deInit(mFatherName, SUCCESS);//auto pass pcba
                         }else if(mFatherName.equals(MyApplication.PCBAAutoTestNAME)){
-							try {
-                            	Thread.sleep(3000);
-                        	} catch (InterruptedException e) {
-                            	e.printStackTrace();
-                        	}
+                            mCurrentTestResult = true;
+							mSuccess.setVisibility(View.VISIBLE);
+                            mSuccess.setBackgroundColor(getResources().getColor(R.color.green_1));
+                            mHandler.sendEmptyMessageDelayed(HANDLER_POGOPIN_OTG_RESULT_SUCCESS, 3000);
 						}
 					}
 
