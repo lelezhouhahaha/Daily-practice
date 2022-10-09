@@ -1,0 +1,2584 @@
+commit 56f2710efe0f75fc11a05390c0d9e7ae878ec8dc
+Author: lelezhouhahaha@163.com <zhoulele@meigsmart.com>
+Date:   Sat Oct 8 02:33:57 2022 -0400
+
+    camera service add new api
+    
+    Change-Id: Ia5e0e5a3d0290a07309c04bca631bd82d98ba054
+
+diff --git a/build/soong/scripts/check_boot_jars/package_allowed_list.txt b/build/soong/scripts/check_boot_jars/package_allowed_list.txt
+index 3dc9847..457c640 100644
+--- a/build/soong/scripts/check_boot_jars/package_allowed_list.txt
++++ b/build/soong/scripts/check_boot_jars/package_allowed_list.txt
+@@ -247,6 +247,9 @@ com\.google\.i18n\.phonenumbers
+ org\.chromium\.arc
+ org\.chromium\.arc\..*
+ 
++com\.android
++com\.anroid\..*
++
+ # QC adds
+ com.qualcomm.qti
+ com.quicinc.tcmiface
+diff --git a/device/qcom/qssi/qssi.mk b/device/qcom/qssi/qssi.mk
+index 292d86a..505086c 100755
+--- a/device/qcom/qssi/qssi.mk
++++ b/device/qcom/qssi/qssi.mk
+@@ -213,6 +213,9 @@ PRODUCT_PACKAGES += \
+ # system prop for enabling QFS (QTI Fingerprint Solution)
+ PRODUCT_PROPERTY_OVERRIDES += \
+     persist.vendor.qfp=true
++	
++PRODUCT_PROPERTY_OVERRIDES += \
++    persist.vendor.camera.data_stream_control_flag=false
+ 
+ PRODUCT_SYSTEM_PROPERTIES += \
+     persist.device_config.runtime_native_boot.iorap_perfetto_enable=true
+@@ -310,4 +313,3 @@ PRODUCT_COPY_FILES += \
+ #CONFIG_OEM_SUPPORT = true
+ $(call inherit-product, vendor/vendorcode/oem/oem.mk)
+ #DEVICE_FRAMEWORK_MANIFEST_FILE += device/qcom/M51/manifest-base-oem.xml
+-#DEVICE_FRAMEWORK_MANIFEST_FILE += vendor/vendorcode/oem/manifest-base-oem.xml
+\ No newline at end of file
+diff --git a/device/qcom/sepolicy/generic/private/cameraserver.te b/device/qcom/sepolicy/generic/private/cameraserver.te
+index 0a288d8..8caa100 100644
+--- a/device/qcom/sepolicy/generic/private/cameraserver.te
++++ b/device/qcom/sepolicy/generic/private/cameraserver.te
+@@ -28,3 +28,5 @@
+ get_prop(cameraserver, vendor_persist_camera_prop)
+ #access to cameraservice apis by faceauth
+ hal_client_domain(cameraserver, hal_face)
++set_prop(cameraserver, vendor_public_vendor_default_prop)
++#allow cameraserver vendor_public_vendor_default_prop:property_service { set };
+diff --git a/device/qcom/sepolicy/generic/private/property.te b/device/qcom/sepolicy/generic/private/property.te
+index eede7c5..7e3cf3d 100644
+--- a/device/qcom/sepolicy/generic/private/property.te
++++ b/device/qcom/sepolicy/generic/private/property.te
+@@ -42,6 +42,7 @@ system_internal_prop(vendor_wigig_core_prop)
+ system_internal_prop(vendor_fst_prop)
+ system_internal_prop(ctl_dpmd_prop)
+ system_internal_prop(ctl_tcmd_prop)
++system_internal_prop(vendor_public_vendor_default_prop)
+ 
+ #XRCB property
+ system_internal_prop(vendor_xrcb_prop)
+@@ -50,4 +51,4 @@ system_internal_prop(vendor_xrcb_prop)
+ system_public_prop(vendor_bootreceiver_prop)
+ 
+ #MStatservice
+-system_vendor_config_prop(vendor_mstatservice_prop)
+\ No newline at end of file
++system_vendor_config_prop(vendor_mstatservice_prop)
+diff --git a/device/qcom/sepolicy/generic/private/property_contexts b/device/qcom/sepolicy/generic/private/property_contexts
+index 87efcf0..2dc26e2 100644
+--- a/device/qcom/sepolicy/generic/private/property_contexts
++++ b/device/qcom/sepolicy/generic/private/property_contexts
+@@ -39,6 +39,7 @@ persist.vendor.bluetooth.emailaccountcount u:object_r:bluetooth_prop:s0
+ persist.vendor.bt.a2dp                     u:object_r:bluetooth_prop:s0
+ persist.vendor.bt_logger.                  u:object_r:bluetooth_prop:s0
+ persist.vendor.service.bt.                 u:object_r:bluetooth_prop:s0
++persist.vendor.camera.data_stream_control_flag u:object_r:vendor_public_vendor_default_prop:s0
+ ro.vendor.btstack.                         u:object_r:bluetooth_prop:s0
+ vendor.pts.                                u:object_r:bluetooth_prop:s0
+ vendor.bt.pts.                             u:object_r:bluetooth_prop:s0
+diff --git a/frameworks/av/camera/aidl/android/hardware/ICameraService.aidl b/frameworks/av/camera/aidl/android/hardware/ICameraService.aidl
+old mode 100644
+new mode 100755
+index 78a77d4..879a8a4
+--- a/frameworks/av/camera/aidl/android/hardware/ICameraService.aidl
++++ b/frameworks/av/camera/aidl/android/hardware/ICameraService.aidl
+@@ -30,6 +30,8 @@ import android.hardware.camera2.impl.CameraMetadataNative;
+ import android.hardware.ICameraServiceListener;
+ import android.hardware.CameraInfo;
+ import android.hardware.CameraStatus;
++//import android.view.Surface;
++import android.hardware.camera2.params.OutputConfiguration;
+ 
+ /**
+  * Binder interface for the native camera service running in mediaserver.
+@@ -95,6 +97,31 @@ interface ICameraService
+             @nullable String featureId,
+             int clientUid, int oomScoreOffset,
+             int targetSdkVersion);
++			
++	void openMeigScanDevice(
++			in OutputConfiguration output, 
++			ICameraDeviceCallbacks cameraCb, 
++			String cameraId, 
++			String clientPackageName, 
++			@nullable String clientFeatureId,
++            int clientUid, 
++			int scoreOffset, 
++			int targetSdkVersion);
++			
++	void openScanDevice(ICameraDeviceCallbacks callbacks, 
++			String cameraId, 
++			String opPackageName,
++            @nullable String featureId,
++            int clientUid, int oomScoreOffset,
++            int targetSdkVersion);
++			
++	void closeScanDevice();
++	
++	void startPreview();
++	void stopPreviewMeig(in OutputConfiguration output);
++	void resume();
++	void suspend();
++	void capture();
+ 
+     /**
+      * Add listener for changes to camera device and flashlight state.
+diff --git a/frameworks/av/camera/aidl/android/hardware/camera2/ICameraDeviceUser.aidl b/frameworks/av/camera/aidl/android/hardware/camera2/ICameraDeviceUser.aidl
+old mode 100644
+new mode 100755
+index 8e1fcc0..0173f0e
+--- a/frameworks/av/camera/aidl/android/hardware/camera2/ICameraDeviceUser.aidl
++++ b/frameworks/av/camera/aidl/android/hardware/camera2/ICameraDeviceUser.aidl
+@@ -45,6 +45,9 @@ interface ICameraDeviceUser
+      * repeating request will trigger ERROR_ILLEGAL_ARGUMENT.
+      */
+     long cancelRequest(int requestId);
++	
++	void registerMeigBufferListener();
++	void unregisterMeigBufferListener();
+ 
+     /**
+      * Begin the device configuration.
+diff --git a/frameworks/av/camera/tests/CameraBinderTests.cpp b/frameworks/av/camera/tests/CameraBinderTests.cpp
+old mode 100644
+new mode 100755
+index 9f2f430..34304d8
+--- a/frameworks/av/camera/tests/CameraBinderTests.cpp
++++ b/frameworks/av/camera/tests/CameraBinderTests.cpp
+@@ -31,6 +31,7 @@
+ #include <system/graphics.h>
+ #include <hardware/camera3.h>
+ #include <hardware/gralloc.h>
++#include <unistd.h>
+ 
+ #include <camera/CameraMetadata.h>
+ #include <android/hardware/ICameraService.h>
+@@ -503,7 +504,7 @@ TEST_F(CameraClientBinderTest, CheckBinderCameraDeviceUser) {
+         EXPECT_EQ(OK, gbConsumer->setDefaultBufferSize(640, 480));
+         EXPECT_EQ(OK, gbConsumer->setDefaultBufferFormat(HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED));
+ 
+-        sp<Surface> surface(new Surface(gbProducer, /*controlledByApp*/false));
++        sp<Surface> surface(new Surface(gbProducer, /*controlledByApp*/true));
+ 
+         String16 noPhysicalId;
+         OutputConfiguration output(gbProducer, /*rotation*/0, noPhysicalId);
+@@ -555,6 +556,7 @@ TEST_F(CameraClientBinderTest, CheckBinderCameraDeviceUser) {
+         EXPECT_TRUE(callbacks->waitForStatus(TestCameraDeviceCallbacks::SENT_RESULT));
+         EXPECT_LE(0, info.mRequestId);
+ 
++		sleep(10);
+         // Can we stop requests?
+         res = device->cancelRequest(info.mRequestId, /*out*/&lastFrameNumber);
+         EXPECT_TRUE(res.isOk()) << res;
+diff --git a/frameworks/av/services/camera/libcameraservice/Android.bp b/frameworks/av/services/camera/libcameraservice/Android.bp
+old mode 100644
+new mode 100755
+index 26562e0..0ab8f2c
+--- a/frameworks/av/services/camera/libcameraservice/Android.bp
++++ b/frameworks/av/services/camera/libcameraservice/Android.bp
+@@ -61,6 +61,7 @@ cc_library_shared {
+         "api2/CameraDeviceClient.cpp",
+         "api2/CameraOfflineSessionClient.cpp",
+         "api2/CompositeStream.cpp",
++		"api2/MeigBufferStream.cpp",
+         "api2/DepthCompositeStream.cpp",
+         "api2/HeicEncoderInfoManager.cpp",
+         "api2/HeicCompositeStream.cpp",
+diff --git a/frameworks/av/services/camera/libcameraservice/CameraService.cpp b/frameworks/av/services/camera/libcameraservice/CameraService.cpp
+old mode 100644
+new mode 100755
+index 675a07c..fcf3daf
+--- a/frameworks/av/services/camera/libcameraservice/CameraService.cpp
++++ b/frameworks/av/services/camera/libcameraservice/CameraService.cpp
+@@ -68,6 +68,11 @@
+ #include <system/camera_metadata.h>
+ 
+ #include <system/camera.h>
++//
++#include <gui/BufferItemConsumer.h>
++#include <gui/IGraphicBufferProducer.h>
++#include <gui/Surface.h>
++//
+ 
+ #include "CameraService.h"
+ #include "api1/Camera2Client.h"
+@@ -1678,6 +1683,158 @@ Status CameraService::connectDevice(
+     return ret;
+ }
+ 
++Status CameraService::openMeigScanDevice(
++			const OutputConfiguration& output, 
++			const sp<hardware::camera2::ICameraDeviceCallbacks>& cameraCb, const String16& cameraId, 
++			const String16& clientPackageName, const std::optional<String16>& clientFeatureId,
++            int32_t clientUid, int scoreOffset, int targetSdkVersion){
++			ALOGD("zll %s: start", __FUNCTION__);
++			openScanDevice(cameraCb, cameraId, clientPackageName, clientFeatureId, clientUid, scoreOffset, targetSdkVersion);
++			stopPreviewMeig(output);
++			return Status::ok();
++}
++
++Status CameraService::openScanDevice(const sp<hardware::camera2::ICameraDeviceCallbacks>& cameraCb, const String16& cameraId, 
++			const String16& clientPackageName, const std::optional<String16>& clientFeatureId,
++            int32_t clientUid, int scoreOffset, int targetSdkVersion){
++		ALOGD("zll %s: start", __FUNCTION__);
++		mDeviceId = String8(cameraId);
++		connectDevice(cameraCb, cameraId, clientPackageName, clientFeatureId, clientUid, scoreOffset, targetSdkVersion, &device);
++		return Status::ok();
++}
++
++Status CameraService::closeScanDevice(){
++	ALOGD("zll %s: start", __FUNCTION__);
++	device->disconnect();
++	ALOGD("zll %s: end", __FUNCTION__);
++	return Status::ok();
++}
++
++//Status CameraService::stopPreview(const OutputConfiguration& output, const android::view::Surface& mSurface){
++
++
++
++
++Status CameraService::stopPreviewMeig(const OutputConfiguration& output){
++//Status CameraService::stopPreview(const OutputConfiguration& output, const Surface& mSurface){
++	binder::Status  res;
++	hardware::camera2::CaptureRequest request;
++	android::String8 id = android::String8(mDeviceId);
++	//OutputConfiguration output(mSurface);
++	res = device->beginConfigure();
++    status_t streamId;
++    res = device->createStream(output, &streamId);
++    CameraMetadata sessionParams;
++    std::vector<int> offlineStreamIds;
++    res = device->endConfigure(/*isConstrainedHighSpeed*/ false, sessionParams,
++            ns2ms(systemTime()), &offlineStreamIds);
++	
++// Session configuration must also be supported in this case
++        SessionConfiguration sessionConfiguration = { /*inputWidth*/ 0, /*inputHeight*/0,
++                /*inputFormat*/ -1, camera3::CAMERA_STREAM_CONFIGURATION_NORMAL_MODE};
++        sessionConfiguration.addOutputConfiguration(output);
++        bool queryStatus;
++        res = device->isSessionConfigurationSupported(sessionConfiguration, &queryStatus);
++        //EXPECT_TRUE(res.isOk() ||
++        //        (res.serviceSpecificErrorCode() == ICameraService::ERROR_INVALID_OPERATION))
++         //       << res;
++        if (res.isOk()) {
++			ALOGD("%s: zll isSessionConfigurationSupported", __FUNCTION__);
++            //EXPECT_TRUE(queryStatus);
++        }
++	// Can we make requests?
++    CameraMetadata requestTemplate;
++    res = device->createDefaultRequest(/*preview template*/hardware::camera2::ICameraDeviceUser::TEMPLATE_PREVIEW,
++            /*out*/&requestTemplate);
++	
++	
++    request.mPhysicalCameraSettings.push_back({std::string(id.string()), requestTemplate});
++	const std::vector<sp<IGraphicBufferProducer>>& bufferProducers = output.getGraphicBufferProducers();
++	for (auto& bufferProducer : bufferProducers){
++		sp<Surface> surface = new Surface(bufferProducer);
++		request.mSurfaceList.add(surface);
++	}
++    request.mIsReprocess = false;
++
++	hardware::camera2::utils::SubmitInfo info2;
++	res = device->submitRequest(request, /*streaming*/true,
++        /*out*/&info2);
++	return Status::ok();
++}
++
++Status  CameraService::startPreview(){
++	binder::Status  res;
++	hardware::camera2::CaptureRequest request;
++	//android::String8 id = android::String8("1");
++	android::String8 id = android::String8(mDeviceId);
++	// Setup a buffer queue; I'm just using the vendor opaque format here as that is
++    // guaranteed to be present
++    sp<IGraphicBufferProducer> gbProducer;
++    sp<IGraphicBufferConsumer> gbConsumer;
++    BufferQueue::createBufferQueue(&gbProducer, &gbConsumer);
++    sp<BufferItemConsumer> opaqueConsumer = new BufferItemConsumer(gbConsumer,
++            GRALLOC_USAGE_SW_READ_NEVER, /*maxImages*/2, /*controlledByApp*/true);
++    opaqueConsumer->setName(String8("nom nom nom"));
++
++
++
++    sp<Surface> surface(new Surface(gbProducer, /*controlledByApp*/false));
++
++    String16 noPhysicalId;
++    OutputConfiguration output(gbProducer, /*rotation*/0, noPhysicalId);
++
++    res = device->beginConfigure();
++    status_t streamId;
++    res = device->createStream(output, &streamId);
++    CameraMetadata sessionParams;
++    std::vector<int> offlineStreamIds;
++    res = device->endConfigure(/*isConstrainedHighSpeed*/ false, sessionParams,
++            ns2ms(systemTime()), &offlineStreamIds);
++		
++// Session configuration must also be supported in this case
++        SessionConfiguration sessionConfiguration = { /*inputWidth*/ 0, /*inputHeight*/0,
++                /*inputFormat*/ -1, camera3::CAMERA_STREAM_CONFIGURATION_NORMAL_MODE};
++        sessionConfiguration.addOutputConfiguration(output);
++        bool queryStatus;
++        res = device->isSessionConfigurationSupported(sessionConfiguration, &queryStatus);
++        //EXPECT_TRUE(res.isOk() ||
++        //        (res.serviceSpecificErrorCode() == ICameraService::ERROR_INVALID_OPERATION))
++         //       << res;
++        if (res.isOk()) {
++			ALOGD("%s: zll isSessionConfigurationSupported", __FUNCTION__);
++            //EXPECT_TRUE(queryStatus);
++        }
++	// Can we make requests?
++    CameraMetadata requestTemplate;
++    res = device->createDefaultRequest(/*preview template*/hardware::camera2::ICameraDeviceUser::TEMPLATE_PREVIEW,
++            /*out*/&requestTemplate);
++			
++    request.mPhysicalCameraSettings.push_back({std::string(id.string()), requestTemplate});
++    request.mSurfaceList.add(surface);
++    request.mIsReprocess = false;
++
++	hardware::camera2::utils::SubmitInfo info2;
++	res = device->submitRequest(request, /*streaming*/true,
++        /*out*/&info2);
++	return Status::ok();
++}
++
++Status CameraService::resume(){
++	property_set("persist.vendor.camera.data_stream_control_flag", "true");
++	return Status::ok();
++}
++Status CameraService::suspend(){
++	property_set("persist.vendor.camera.data_stream_control_flag", "false");
++	return Status::ok();
++}
++
++Status CameraService::capture(){
++	ALOGD("%s: start", __FUNCTION__);
++	device->registerMeigBufferListener();
++	return Status::ok();
++}
++
++
+ template<class CALLBACK, class CLIENT>
+ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8& cameraId,
+         int api1CameraId, const String16& clientPackageName,
+diff --git a/frameworks/av/services/camera/libcameraservice/CameraService.h b/frameworks/av/services/camera/libcameraservice/CameraService.h
+old mode 100644
+new mode 100755
+index bc2e347..edaf6b8
+--- a/frameworks/av/services/camera/libcameraservice/CameraService.h
++++ b/frameworks/av/services/camera/libcameraservice/CameraService.h
+@@ -95,6 +95,8 @@ public:
+ 
+     // Event log ID
+     static const int SN_EVENT_LOG_ID = 0x534e4554;
++	String8 mDeviceId;
++	sp<hardware::camera2::ICameraDeviceUser> device;
+ 
+     // Implementation of BinderService<T>
+     static char const* getServiceName() { return "media.camera"; }
+@@ -141,7 +143,26 @@ public:
+             int32_t clientUid, int scoreOffset, int targetSdkVersion,
+             /*out*/
+             sp<hardware::camera2::ICameraDeviceUser>* device);
+-
++			
++	virtual binder::Status openScanDevice(
++			const sp<hardware::camera2::ICameraDeviceCallbacks>& cameraCb, const String16& cameraId, 
++			const String16& clientPackageName, const std::optional<String16>& clientFeatureId,
++            int32_t clientUid, int scoreOffset, int targetSdkVersion);
++			
++		virtual binder::Status openMeigScanDevice(
++			const OutputConfiguration& output, 
++			const sp<hardware::camera2::ICameraDeviceCallbacks>& cameraCb, const String16& cameraId, 
++			const String16& clientPackageName, const std::optional<String16>& clientFeatureId,
++            int32_t clientUid, int scoreOffset, int targetSdkVersion);
++			
++	virtual binder::Status closeScanDevice();
++			
++	virtual binder::Status startPreview();
++//	virtual binder::Status stopPreview(const OutputConfiguration& output, const android::view::Surface& mSurface);
++	virtual binder::Status stopPreviewMeig(const OutputConfiguration& output);
++	virtual binder::Status resume();
++	virtual binder::Status suspend();
++	virtual binder::Status capture();
+     virtual binder::Status    addListener(const sp<hardware::ICameraServiceListener>& listener,
+             /*out*/
+             std::vector<hardware::CameraStatus>* cameraStatuses);
+diff --git a/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.cpp b/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
+old mode 100644
+new mode 100755
+index 4340207..fceca0a
+--- a/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
++++ b/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
+@@ -31,6 +31,7 @@
+ #include "device3/Camera3Device.h"
+ #include "device3/Camera3OutputStream.h"
+ #include "api2/CameraDeviceClient.h"
++//#include "api2/MeigBufferStream.h"
+ #include "utils/CameraServiceProxyWrapper.h"
+ 
+ #include <camera_metadata_hidden.h>
+@@ -101,7 +102,7 @@ CameraDeviceClient::CameraDeviceClient(const sp<CameraService>& cameraService,
+     mStreamingRequestId(REQUEST_ID_NONE),
+     mRequestIdCounter(0),
+     mPrivilegedClient(false),
+-    mOverrideForPerfClass(overrideForPerfClass) {
++    mOverrideForPerfClass(overrideForPerfClass){
+ 
+     char value[PROPERTY_VALUE_MAX];
+     property_get("persist.vendor.camera.privapp.list", value, "");
+@@ -109,7 +110,6 @@ CameraDeviceClient::CameraDeviceClient(const sp<CameraService>& cameraService,
+     if (packagelist.contains(clientPackageName.string())) {
+         mPrivilegedClient = true;
+     }
+-
+     ATRACE_CALL();
+     ALOGI("CameraDeviceClient %s: Opened", cameraId.string());
+ }
+@@ -149,6 +149,7 @@ status_t CameraDeviceClient::initializeImpl(TProviderPtr providerPtr, const Stri
+     }
+ 
+     mProviderManager = providerPtr;
++	//mMeigBufferStream = MeigBufferStream(mDevice);
+     // Cache physical camera ids corresponding to this device and also the high
+     // resolution sensors in this device + physical camera ids
+     mProviderManager->isLogicalCamera(mCameraIdStr.string(), &mPhysicalCameraIds);
+@@ -172,6 +173,7 @@ binder::Status CameraDeviceClient::submitRequest(
+         /*out*/
+         hardware::camera2::utils::SubmitInfo *submitInfo) {
+     std::vector<hardware::camera2::CaptureRequest> requestList = { request };
++ALOGD("%s: zll submitRequest.", __FUNCTION__);
+     return submitRequestList(requestList, streaming, submitInfo);
+ }
+ 
+@@ -182,13 +184,14 @@ binder::Status CameraDeviceClient::insertGbpLocked(const sp<IGraphicBufferProduc
+ 
+     // Trying to submit request with surface that wasn't created
+     if (idx == NAME_NOT_FOUND) {
+-        ALOGE("%s: Camera %s: Tried to submit a request with a surface that"
++        ALOGE("%s:zll Camera %s: Tried to submit a request with a surface that"
+                 " we have not called createStream on",
+                 __FUNCTION__, mCameraIdStr.string());
+         return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                 "Request targets Surface that is not part of current capture session");
+     } else if ((compositeIdx = mCompositeStreamMap.indexOfKey(IInterface::asBinder(gbp)))
+             != NAME_NOT_FOUND) {
++				ALOGD("%s:zll 1", __FUNCTION__);
+         mCompositeStreamMap.valueAt(compositeIdx)->insertGbp(outSurfaceMap, outputStreamIds,
+                 currentStreamId);
+         return binder::Status::ok();
+@@ -227,8 +230,9 @@ binder::Status CameraDeviceClient::submitRequestList(
+         bool streaming,
+         /*out*/
+         hardware::camera2::utils::SubmitInfo *submitInfo) {
++ALOGD("%s, zll submitRequestList start", __FUNCTION__);
+     ATRACE_CALL();
+-    ALOGV("%s-start of function. Request list size %zu", __FUNCTION__, requests.size());
++    ALOGV("zll %s-start of function. Request list size %zu", __FUNCTION__, requests.size());
+ 
+     binder::Status res = binder::Status::ok();
+     status_t err;
+@@ -239,11 +243,12 @@ binder::Status CameraDeviceClient::submitRequestList(
+     Mutex::Autolock icl(mBinderSerializationLock);
+ 
+     if (!mDevice.get()) {
++		ALOGD("%s, zll submitRequestList 1", __FUNCTION__);
+         return STATUS_ERROR(CameraService::ERROR_DISCONNECTED, "Camera device no longer alive");
+     }
+ 
+     if (requests.empty()) {
+-        ALOGE("%s: Camera %s: Sent null request. Rejecting request.",
++        ALOGE("%s:zll Camera %s: Sent null request. Rejecting request.",
+               __FUNCTION__, mCameraIdStr.string());
+         return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT, "Empty request list");
+     }
+@@ -255,19 +260,20 @@ binder::Status CameraDeviceClient::submitRequestList(
+ 
+     for (auto&& request: requests) {
+         if (request.mIsReprocess) {
++			ALOGD("%s, zll submitRequestList request.mIsReprocess", __FUNCTION__);
+             if (!mInputStream.configured) {
+-                ALOGE("%s: Camera %s: no input stream is configured.", __FUNCTION__,
++                ALOGE("%s:zll Camera %s: no input stream is configured.", __FUNCTION__,
+                         mCameraIdStr.string());
+                 return STATUS_ERROR_FMT(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                         "No input configured for camera %s but request is for reprocessing",
+                         mCameraIdStr.string());
+             } else if (streaming) {
+-                ALOGE("%s: Camera %s: streaming reprocess requests not supported.", __FUNCTION__,
++                ALOGE("%s:zll Camera %s: streaming reprocess requests not supported.", __FUNCTION__,
+                         mCameraIdStr.string());
+                 return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                         "Repeating reprocess requests not supported");
+             } else if (request.mPhysicalCameraSettings.size() > 1) {
+-                ALOGE("%s: Camera %s: reprocess requests not supported for "
++                ALOGE("%s:zll Camera %s: reprocess requests not supported for "
+                         "multiple physical cameras.", __FUNCTION__,
+                         mCameraIdStr.string());
+                 return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+@@ -276,7 +282,7 @@ binder::Status CameraDeviceClient::submitRequestList(
+         }
+ 
+         if (request.mPhysicalCameraSettings.empty()) {
+-            ALOGE("%s: Camera %s: request doesn't contain any settings.", __FUNCTION__,
++            ALOGE("%s:zll Camera %s: request doesn't contain any settings.", __FUNCTION__,
+                     mCameraIdStr.string());
+             return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                     "Request doesn't contain any settings");
+@@ -284,15 +290,16 @@ binder::Status CameraDeviceClient::submitRequestList(
+ 
+         //The first capture settings should always match the logical camera id
+         String8 logicalId(request.mPhysicalCameraSettings.begin()->id.c_str());
++		ALOGD("%s, zll submitRequestList logicalId:[%s]", __FUNCTION__, logicalId.c_str());
+         if (mDevice->getId() != logicalId) {
+-            ALOGE("%s: Camera %s: Invalid camera request settings.", __FUNCTION__,
++            ALOGE("%s:zll Camera %s: Invalid camera request settings.", __FUNCTION__,
+                     mCameraIdStr.string());
+             return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                     "Invalid camera request settings");
+         }
+ 
+         if (request.mSurfaceList.isEmpty() && request.mStreamIdxList.size() == 0) {
+-            ALOGE("%s: Camera %s: Requests must have at least one surface target. "
++            ALOGE("%s:zll Camera %s: Requests must have at least one surface target. "
+                     "Rejecting request.", __FUNCTION__, mCameraIdStr.string());
+             return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                     "Request has no output targets");
+@@ -306,6 +313,7 @@ binder::Status CameraDeviceClient::submitRequestList(
+         Vector<int32_t> outputStreamIds;
+         std::vector<std::string> requestedPhysicalIds;
+         if (request.mSurfaceList.size() > 0) {
++			ALOGD("%s, zll submitRequestList request.mSurfaceList.size():[%zu]", __FUNCTION__, request.mSurfaceList.size());
+             for (const sp<Surface>& surface : request.mSurfaceList) {
+                 if (surface == 0) continue;
+ 
+@@ -313,10 +321,12 @@ binder::Status CameraDeviceClient::submitRequestList(
+                 sp<IGraphicBufferProducer> gbp = surface->getIGraphicBufferProducer();
+                 res = insertGbpLocked(gbp, &surfaceMap, &outputStreamIds, &streamId);
+                 if (!res.isOk()) {
++					ALOGD("%s, zll submitRequestList 2", __FUNCTION__);
+                     return res;
+                 }
+ 
+                 ssize_t index = mConfiguredOutputs.indexOfKey(streamId);
++				ALOGD("%s, zll submitRequestList index:[%zu]", __FUNCTION__, index);
+                 if (index >= 0) {
+                     String8 requestedPhysicalId(
+                             mConfiguredOutputs.valueAt(index).getPhysicalCameraId());
+@@ -326,11 +336,13 @@ binder::Status CameraDeviceClient::submitRequestList(
+                 }
+             }
+         } else {
++							ALOGD("%s, zll submitRequestList 3 request.mSurfaceList.size() <= 0", __FUNCTION__);
+             for (size_t i = 0; i < request.mStreamIdxList.size(); i++) {
+                 int streamId = request.mStreamIdxList.itemAt(i);
+                 int surfaceIdx = request.mSurfaceIdxList.itemAt(i);
+ 
+                 ssize_t index = mConfiguredOutputs.indexOfKey(streamId);
++				ALOGD("%s, zll submitRequestList 3 request.mSurfaceList.size() <= 0 index:[%zu]", __FUNCTION__, index);
+                 if (index < 0) {
+                     ALOGE("%s: Camera %s: Tried to submit a request with a surface that"
+                             " we have not called createStream on: stream %d",
+@@ -356,13 +368,15 @@ binder::Status CameraDeviceClient::submitRequestList(
+                 String8 requestedPhysicalId(
+                         mConfiguredOutputs.valueAt(index).getPhysicalCameraId());
+                 requestedPhysicalIds.push_back(requestedPhysicalId.string());
++				ALOGD("%s, zll submitRequestList 3 request.mSurfaceList.size() <= 0 requestedPhysicalId:[%s]", __FUNCTION__, requestedPhysicalId.c_str());
+             }
+         }
+ 
+         CameraDeviceBase::PhysicalCameraSettingsList physicalSettingsList;
+         for (const auto& it : request.mPhysicalCameraSettings) {
++			ALOGD("%s, zll submitRequestList 4", __FUNCTION__);
+             if (it.settings.isEmpty()) {
+-                ALOGE("%s: Camera %s: Sent empty metadata packet. Rejecting request.",
++                ALOGE("%s:zll Camera %s: Sent empty metadata packet. Rejecting request.",
+                         __FUNCTION__, mCameraIdStr.string());
+                 return STATUS_ERROR(CameraService::ERROR_ILLEGAL_ARGUMENT,
+                         "Request settings are empty");
+@@ -387,12 +401,15 @@ binder::Status CameraDeviceClient::submitRequestList(
+             }
+ 
+             String8 physicalId(it.id.c_str());
++			ALOGD("%s, zll submitRequestList 5 physicalId:[%s]", __FUNCTION__, physicalId.c_str());
+             bool hasTestPatternModePhysicalKey = std::find(mSupportedPhysicalRequestKeys.begin(),
+                     mSupportedPhysicalRequestKeys.end(), ANDROID_SENSOR_TEST_PATTERN_MODE) !=
+                     mSupportedPhysicalRequestKeys.end();
+             bool hasTestPatternDataPhysicalKey = std::find(mSupportedPhysicalRequestKeys.begin(),
+                     mSupportedPhysicalRequestKeys.end(), ANDROID_SENSOR_TEST_PATTERN_DATA) !=
+                     mSupportedPhysicalRequestKeys.end();
++					ALOGD("%s, zll submitRequestList 5 hasTestPatternModePhysicalKey:[%s]", __FUNCTION__, hasTestPatternModePhysicalKey?"true":"false");
++					ALOGD("%s, zll submitRequestList 5 hasTestPatternDataPhysicalKey:[%s]", __FUNCTION__, hasTestPatternDataPhysicalKey?"true":"false");
+             if (physicalId != mDevice->getId()) {
+                 auto found = std::find(requestedPhysicalIds.begin(), requestedPhysicalIds.end(),
+                         it.id);
+@@ -406,6 +423,7 @@ binder::Status CameraDeviceClient::submitRequestList(
+                 if (!mSupportedPhysicalRequestKeys.empty()) {
+                     // Filter out any unsupported physical request keys.
+                     CameraMetadata filteredParams(mSupportedPhysicalRequestKeys.size());
++					ALOGD("%s, zll submitRequestList 5 mSupportedPhysicalRequestKeys.size():[%zu]", __FUNCTION__, mSupportedPhysicalRequestKeys.size());
+                     camera_metadata_t *meta = const_cast<camera_metadata_t *>(
+                             filteredParams.getAndLock());
+                     set_camera_metadata_vendor_id(meta, mDevice->getVendorTagId());
+@@ -413,6 +431,7 @@ binder::Status CameraDeviceClient::submitRequestList(
+ 
+                     for (const auto& keyIt : mSupportedPhysicalRequestKeys) {
+                         camera_metadata_ro_entry entry = it.settings.find(keyIt);
++						ALOGD("%s, zll submitRequestList 5 entry.count:[%zu]", __FUNCTION__, entry.count);
+                         if (entry.count > 0) {
+                             filteredParams.update(entry);
+                         }
+@@ -436,12 +455,14 @@ binder::Status CameraDeviceClient::submitRequestList(
+                 &outputStreamIds[0], outputStreamIds.size());
+ 
+         if (request.mIsReprocess) {
++			ALOGD("%s, zll submitRequestList 6 update ANDROID_REQUEST_INPUT_STREAMS", __FUNCTION__);
+             physicalSettingsList.begin()->metadata.update(ANDROID_REQUEST_INPUT_STREAMS,
+                     &mInputStream.id, 1);
+         }
+ 
+         physicalSettingsList.begin()->metadata.update(ANDROID_REQUEST_ID,
+                 &(submitInfo->mRequestId), /*size*/1);
++				ALOGD("%s, zll submitRequestList 6 update ANDROID_REQUEST_ID", __FUNCTION__);
+         loopCounter++; // loopCounter starts from 1
+         ALOGV("%s: Camera %s: Creating request with ID %d (%d of %zu)",
+                 __FUNCTION__, mCameraIdStr.string(), submitInfo->mRequestId,
+@@ -451,8 +472,10 @@ binder::Status CameraDeviceClient::submitRequestList(
+         surfaceMapList.push_back(surfaceMap);
+     }
+     mRequestIdCounter++;
++	ALOGD("%s, zll submitRequestList 6 mRequestIdCounter:[%d]", __FUNCTION__, mRequestIdCounter);
+ 
+     if (streaming) {
++	ALOGD("%s, zll setStreamingRequestList start",  __FUNCTION__);
+         err = mDevice->setStreamingRequestList(metadataRequestList, surfaceMapList,
+                 &(submitInfo->mLastFrameNumber));
+         if (err != OK) {
+@@ -467,6 +490,7 @@ binder::Status CameraDeviceClient::submitRequestList(
+             mStreamingRequestId = submitInfo->mRequestId;
+         }
+     } else {
++	ALOGD("%s, zll captureList start",  __FUNCTION__);
+         err = mDevice->captureList(metadataRequestList, surfaceMapList,
+                 &(submitInfo->mLastFrameNumber));
+         if (err != OK) {
+@@ -525,6 +549,33 @@ binder::Status CameraDeviceClient::cancelRequest(
+     return res;
+ }
+ 
++binder::Status CameraDeviceClient::registerMeigBufferListener() {
++	if(mMeigBufferStream != nullptr){
++		mMeigBufferStream = new MeigBufferStream(mDevice);
++	}
++	if(mMeigBufferStream != nullptr){
++		//ALOGD("%s: mDevice->getId():[%s]", __FUNCTION__, mDevice->getId().c_str());
++		const char *id = mDevice->getId().c_str();
++		ALOGD("%s: 2 id_str:[%s]", __FUNCTION__, id);
++		int streamId = atoi(id);
++		mMeigBufferStream->registerMeigBufferStreamListener(streamId);
++	}
++    return binder::Status::ok();
++}
++
++binder::Status CameraDeviceClient::unregisterMeigBufferListener() {
++	if(mMeigBufferStream != nullptr){
++		//ALOGD("%s: mDevice->getId():[%s]", __FUNCTION__, mDevice->getId().c_str());
++		const char *id = mDevice->getId().c_str();
++		ALOGD("%s: 2 id_str:[%s]", __FUNCTION__, id);
++		int streamId = atoi(id);
++		mMeigBufferStream->removeMeigBufferStreamListener(streamId);
++	}else{
++		ALOGD("%s: mMeigBufferStream == nullptr", __FUNCTION__);
++	}
++    return binder::Status::ok();
++}
++
+ binder::Status CameraDeviceClient::beginConfigure() {
+     // TODO: Implement this.
+     ATRACE_CALL();
+@@ -795,7 +846,7 @@ binder::Status CameraDeviceClient::createStream(
+         /*out*/
+         int32_t* newStreamId) {
+     ATRACE_CALL();
+-
++	ALOGD("%s: zll start", __FUNCTION__);
+     binder::Status res;
+     if (!(res = checkPidStatus(__FUNCTION__)).isOk()) return res;
+ 
+@@ -804,24 +855,33 @@ binder::Status CameraDeviceClient::createStream(
+     const std::vector<sp<IGraphicBufferProducer>>& bufferProducers =
+             outputConfiguration.getGraphicBufferProducers();
+     size_t numBufferProducers = bufferProducers.size();
++	ALOGD("%s: zll numBufferProducers:[%zu]", __FUNCTION__, numBufferProducers);
+     bool deferredConsumer = outputConfiguration.isDeferred();
++	ALOGD("%s: zll deferredConsumer:[%s]", __FUNCTION__, deferredConsumer?"true":"false");
+     bool isShared = outputConfiguration.isShared();
++	ALOGD("%s: zll isShared:[%s]", __FUNCTION__, isShared?"true":"false");
+     String8 physicalCameraId = String8(outputConfiguration.getPhysicalCameraId());
++	ALOGD("%s: zll isShared:[%s]", __FUNCTION__, physicalCameraId.c_str());
+     bool deferredConsumerOnly = deferredConsumer && numBufferProducers == 0;
++	ALOGD("%s: zll deferredConsumerOnly:[%s]", __FUNCTION__, deferredConsumerOnly?"true":"false");
+     bool isMultiResolution = outputConfiguration.isMultiResolution();
++	ALOGD("%s: zll isMultiResolution:[%s]", __FUNCTION__, isMultiResolution?"true":"false");
+ 
+     res = SessionConfigurationUtils::checkSurfaceType(numBufferProducers, deferredConsumer,
+             outputConfiguration.getSurfaceType());
+     if (!res.isOk()) {
++	ALOGD("%s: zll !res.isOk() checkSurfaceType", __FUNCTION__);
+         return res;
+     }
+ 
+     if (!mDevice.get()) {
++	ALOGD("%s: zll !mDevice.get()", __FUNCTION__);
+         return STATUS_ERROR(CameraService::ERROR_DISCONNECTED, "Camera device no longer alive");
+     }
+     res = SessionConfigurationUtils::checkPhysicalCameraId(mPhysicalCameraIds,
+             physicalCameraId, mCameraIdStr);
+     if (!res.isOk()) {
++	ALOGD("%s: zll !res.isOk() checkPhysicalCameraId", __FUNCTION__);
+         return res;
+     }
+ 
+@@ -831,6 +891,7 @@ binder::Status CameraDeviceClient::createStream(
+ 
+     // Create stream for deferred surface case.
+     if (deferredConsumerOnly) {
++	ALOGD("%s:  zll deferredConsumerOnly",  __FUNCTION__);
+         return createDeferredSurfaceStreamLocked(outputConfiguration, isShared, newStreamId);
+     }
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.h b/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.h
+old mode 100644
+new mode 100755
+index 05a5c20..c4fd922
+--- a/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.h
++++ b/frameworks/av/services/camera/libcameraservice/api2/CameraDeviceClient.h
+@@ -28,10 +28,12 @@
+ #include "common/FrameProcessorBase.h"
+ #include "common/Camera2ClientBase.h"
+ #include "CompositeStream.h"
++#include "MeigBufferStream.h"
+ #include "utils/SessionConfigurationUtils.h"
+ 
+ using android::camera3::OutputStreamInfo;
+ using android::camera3::CompositeStream;
++using android::camera3::MeigBufferStream;
+ 
+ namespace android {
+ 
+@@ -159,6 +161,9 @@ public:
+     // Finalize the output configurations with surfaces not added before.
+     virtual binder::Status finalizeOutputConfigurations(int32_t streamId,
+             const hardware::camera2::params::OutputConfiguration &outputConfiguration) override;
++	virtual binder::Status registerMeigBufferListener() override;
++	virtual binder::Status unregisterMeigBufferListener() override;
++	sp<MeigBufferStream> mMeigBufferStream;
+ 
+     virtual binder::Status setCameraAudioRestriction(int32_t mode) override;
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.cpp b/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.cpp
+new file mode 100755
+index 0000000..dd37d36
+--- /dev/null
++++ b/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.cpp
+@@ -0,0 +1,47 @@
++#define LOG_TAG "Camera3-MeigBufferStream"
++#define ATRACE_TAG ATRACE_TAG_CAMERA
++#include <utils/Log.h>
++#include <utils/Trace.h>
++#include "MeigBufferStream.h"
++namespace android {
++namespace camera3 {
++MeigBufferStream::MeigBufferStream(sp<CameraDeviceBase> device) :
++        mDevice(device){
++}
++status_t MeigBufferStream::onBufferResult(const void *buf, const int64_t buffer_size){
++	ALOGD("%s: zll start", __FUNCTION__);
++	if(buf != nullptr){
++		ALOGD("%s: zll buf:[%s] buffer_size:[%lld]", __FUNCTION__, (char *)buf, (long long)buffer_size);	
++	}
++	return OK;
++}
++status_t MeigBufferStream::registerMeigBufferStreamListener(int32_t streamId) {
++    sp<CameraDeviceBase> device = mDevice.promote();
++    if (device.get() == nullptr) {
++        return NO_INIT;
++    }
++
++    auto ret = device->addMeigBufferListenerForStream(streamId, this);
++    if (ret != OK) {
++        ALOGE("%s: Failed to register composite stream listener!", __FUNCTION__);
++    }
++
++    return ret;
++}
++
++
++status_t MeigBufferStream::removeMeigBufferStreamListener(int32_t streamId) {
++    sp<CameraDeviceBase> device = mDevice.promote();
++    if (device.get() == nullptr) {
++        return NO_INIT;
++    }
++
++    auto ret = device->removeMeigBufferListenerForStream(streamId, this);
++    if (ret != OK) {
++        ALOGE("%s: Failed to register composite stream listener!", __FUNCTION__);
++    }
++
++    return ret;
++}
++}; // namespace camera3
++}; // namespace android
+diff --git a/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.h b/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.h
+new file mode 100755
+index 0000000..8949773
+--- /dev/null
++++ b/frameworks/av/services/camera/libcameraservice/api2/MeigBufferStream.h
+@@ -0,0 +1,20 @@
++#ifndef ANDROID_SERVERS_CAMERA_CAMERA3_MEIG_BUFFER_STREAM_H
++#define ANDROID_SERVERS_CAMERA_CAMERA3_MEIG_BUFFER_STREAM_H
++#include "CameraService.h"
++#include "device3/Camera3StreamInterface.h"
++namespace android {
++namespace camera3 {
++class MeigBufferStream : public camera3::Camera3MeigStreamBufferListener {
++public:
++    MeigBufferStream(sp<CameraDeviceBase> device);
++    virtual ~MeigBufferStream() {}
++status_t onBufferResult(const void *buf, const int64_t buffer_size) override;
++status_t registerMeigBufferStreamListener(int32_t streamId);
++status_t removeMeigBufferStreamListener(int32_t streamId);
++    wp<CameraDeviceBase>   mDevice;
++//    mutable Mutex          mMutex;
++//    Condition              mInputReadyCondition;
++};
++}; //namespace camera3
++}; //namespace android
++#endif
+diff --git a/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.cpp b/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.cpp
+old mode 100644
+new mode 100755
+index 5e086c0..2dcc357
+--- a/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.cpp
++++ b/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.cpp
+@@ -69,6 +69,7 @@ Camera2ClientBase<TClientBase>::Camera2ClientBase(
+             String8(clientPackageName).string(), clientPid, clientUid);
+ 
+     mInitialClientPid = clientPid;
++	//mMeigBufferStream = new MeigBufferStream(mDevice);
+     LOG_ALWAYS_FATAL_IF(mDevice == 0, "Device should never be NULL here.");
+ }
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.h b/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.h
+old mode 100644
+new mode 100755
+index c49ea2c..6061f95
+--- a/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.h
++++ b/frameworks/av/services/camera/libcameraservice/common/Camera2ClientBase.h
+@@ -19,12 +19,14 @@
+ 
+ #include "common/CameraDeviceBase.h"
+ #include "camera/CaptureResult.h"
++//#include "api2/MeigBufferStream.h"
+ 
+ namespace android {
+ 
+ class IMemory;
+ 
+ class CameraService;
++//class MeigBufferStream;
+ 
+ template <typename TClientBase>
+ class Camera2ClientBase :
+@@ -114,6 +116,7 @@ public:
+         sp<TCamCallbacks> mRemoteCallback;
+         mutable Mutex mRemoteCallbackLock;
+     } mSharedCameraCallbacks;
++//	sp<MeigBufferStream> mMeigBufferStream;
+ 
+ protected:
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/common/CameraDeviceBase.h b/frameworks/av/services/camera/libcameraservice/common/CameraDeviceBase.h
+old mode 100644
+new mode 100755
+index b42f3f6..40babe9
+--- a/frameworks/av/services/camera/libcameraservice/common/CameraDeviceBase.h
++++ b/frameworks/av/services/camera/libcameraservice/common/CameraDeviceBase.h
+@@ -32,6 +32,8 @@
+ #include "camera/CaptureResult.h"
+ #include "gui/IGraphicBufferProducer.h"
+ #include "device3/Camera3StreamInterface.h"
++//#include "device3/Camera3MeigStreamBufferListener.h"
++//#include "MeigBufferStream.h"
+ #include "device3/StatusTracker.h"
+ #include "binder/Status.h"
+ #include "FrameProducer.h"
+@@ -76,7 +78,7 @@ using camera3::camera_stream_configuration_mode_t;
+ using camera3::camera_stream_rotation_t;
+ 
+ class CameraProviderManager;
+-
++//class MeigBufferStream;
+ // Mapping of output stream index to surface ids
+ typedef std::unordered_map<int, std::vector<size_t> > SurfaceMap;
+ 
+@@ -365,7 +367,12 @@ class CameraDeviceBase : public virtual FrameProducer {
+      */
+     virtual status_t addBufferListenerForStream(int streamId,
+             wp<camera3::Camera3StreamBufferListener> listener) = 0;
+-
++			
++	virtual status_t addMeigBufferListenerForStream(int streamId,
++            wp<camera3::Camera3MeigStreamBufferListener> listener) = 0;
++			
++    virtual status_t removeMeigBufferListenerForStream(int streamId,
++            const sp<camera3::Camera3MeigStreamBufferListener>& listener) = 0;
+     /**
+      * Prepare stream by preallocating up to maxCount buffers for it asynchronously.
+      * Calls notifyPrepared() once allocation is complete.
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.cpp b/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.cpp
+old mode 100644
+new mode 100755
+index 65b4b11..761c28a
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.cpp
+@@ -982,6 +982,7 @@ status_t Camera3Device::submitRequestsHelper(
+         /*out*/
+         int64_t *lastFrameNumber) {
+     ATRACE_CALL();
++	CLOGE("Camera3Device submitRequestsHelper start");
+     nsecs_t requestTimeNs = systemTime();
+ 
+     Mutex::Autolock il(mInterfaceLock);
+@@ -1003,8 +1004,10 @@ status_t Camera3Device::submitRequestsHelper(
+     }
+ 
+     if (repeating) {
++	CLOGE("Camera3Device submitRequestsHelper mRequestThread->setRepeatingRequests start");
+         res = mRequestThread->setRepeatingRequests(requestList, lastFrameNumber);
+     } else {
++	CLOGE("Camera3Device submitRequestsHelper  mRequestThread->queueRequestList start");
+         res = mRequestThread->queueRequestList(requestList, lastFrameNumber);
+     }
+ 
+@@ -1021,6 +1024,7 @@ status_t Camera3Device::submitRequestsHelper(
+         return BAD_VALUE;
+     }
+ 
++	CLOGE("Camera3Device submitRequestsHelper end");
+     return res;
+ }
+ 
+@@ -1048,6 +1052,7 @@ hardware::Return<void> Camera3Device::processCaptureResult_3_4(
+     // Ideally we should grab mLock, but that can lead to deadlock, and
+     // it's not super important to get up to date value of mStatus for this
+     // warning print, hence skipping the lock here
++	ALOGD("%s: zll 1 start", __FUNCTION__);
+     if (mStatus == STATUS_ERROR) {
+         // Per API contract, HAL should act as closed after device error
+         // But mStatus can be set to error by framework as well, so just log
+@@ -1093,6 +1098,7 @@ hardware::Return<void> Camera3Device::processCaptureResult_3_4(
+         processOneCaptureResultLocked(states, result.v3_2, result.physicalCameraMetadata);
+     }
+     mProcessCaptureResultLock.unlock();
++	ALOGD("%s: zll 1 end", __FUNCTION__);
+     return hardware::Void();
+ }
+ 
+@@ -1102,7 +1108,7 @@ hardware::Return<void> Camera3Device::processCaptureResult(
+         const hardware::hidl_vec<
+                 hardware::camera::device::V3_2::CaptureResult>& results) {
+     hardware::hidl_vec<hardware::camera::device::V3_4::PhysicalCameraMetadata> noPhysMetadata;
+-
++	ALOGD("%s: zll start", __FUNCTION__);
+     // Ideally we should grab mLock, but that can lead to deadlock, and
+     // it's not super important to get up to date value of mStatus for this
+     // warning print, hence skipping the lock here
+@@ -1152,6 +1158,7 @@ hardware::Return<void> Camera3Device::processCaptureResult(
+         processOneCaptureResultLocked(states, result, noPhysMetadata);
+     }
+     mProcessCaptureResultLock.unlock();
++	ALOGD("%s: zll end", __FUNCTION__);
+     return hardware::Void();
+ }
+ 
+@@ -1218,6 +1225,7 @@ status_t Camera3Device::setStreamingRequestList(
+         const List<const PhysicalCameraSettingsList> &requestsList,
+         const std::list<const SurfaceMap> &surfaceMaps, int64_t *lastFrameNumber) {
+     ATRACE_CALL();
++	CLOGE("Camera3Device setStreamingRequestList submitRequestsHelper start");
+ 
+     return submitRequestsHelper(requestsList, surfaceMaps, /*repeating*/true, lastFrameNumber);
+ }
+@@ -1250,7 +1258,7 @@ status_t Camera3Device::clearStreamingRequest(int64_t *lastFrameNumber) {
+     ATRACE_CALL();
+     Mutex::Autolock il(mInterfaceLock);
+     Mutex::Autolock l(mLock);
+-
++	CLOGE("Camera3Device clearStreamingRequest START");
+     switch (mStatus) {
+         case STATUS_ERROR:
+             CLOGE("Device has encountered a serious error");
+@@ -2161,6 +2169,40 @@ status_t Camera3Device::addBufferListenerForStream(int streamId,
+     return OK;
+ }
+ 
++status_t Camera3Device::addMeigBufferListenerForStream(int streamId,
++        wp<Camera3MeigStreamBufferListener> listener) {
++    ATRACE_CALL();
++    ALOGV("%s: Camera %s: Adding buffer listener for stream %d", __FUNCTION__, mId.string(), streamId);
++    Mutex::Autolock il(mInterfaceLock);
++    Mutex::Autolock l(mLock);
++
++    sp<Camera3StreamInterface> stream = mOutputStreams.get(streamId);
++    if (stream == nullptr) {
++        CLOGE("Stream %d does not exist", streamId);
++        return BAD_VALUE;
++    }
++    stream->addMeigBufferListener(listener);
++
++    return OK;
++}
++
++status_t Camera3Device::removeMeigBufferListenerForStream(int streamId,
++        const sp<Camera3MeigStreamBufferListener>& listener) {
++    ATRACE_CALL();
++    ALOGV("%s: Camera %s: Adding buffer listener for stream %d", __FUNCTION__, mId.string(), streamId);
++    Mutex::Autolock il(mInterfaceLock);
++    Mutex::Autolock l(mLock);
++
++    sp<Camera3StreamInterface> stream = mOutputStreams.get(streamId);
++    if (stream == nullptr) {
++        CLOGE("Stream %d does not exist", streamId);
++        return BAD_VALUE;
++    }
++    stream->removeMeigBufferListener(listener);
++
++    return OK;
++}
++
+ /**
+  * Methods called by subclasses
+  */
+@@ -4347,6 +4389,7 @@ bool Camera3Device::RequestThread::isRepeatingRequestLocked(const sp<CaptureRequ
+ status_t Camera3Device::RequestThread::clearRepeatingRequests(/*out*/int64_t *lastFrameNumber) {
+     ATRACE_CALL();
+     Mutex::Autolock l(mRequestLock);
++	CLOGE("Camera3Device RequestThread clearRepeatingRequests START");
+     return clearRepeatingRequestsLocked(lastFrameNumber);
+ 
+ }
+@@ -4831,14 +4874,17 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+     ATRACE_CALL();
+ 
+     bool batchedRequest = mNextRequests[0].captureRequest->mBatchSize > 1;
++	ALOGD("%s: zll mNextRequests.size():[%zu]", __FUNCTION__, mNextRequests.size());
+     for (size_t i = 0; i < mNextRequests.size(); i++) {
+         auto& nextRequest = mNextRequests.editItemAt(i);
++	ALOGD("%s: zll i:[%zu]", __FUNCTION__, i);
+         sp<CaptureRequest> captureRequest = nextRequest.captureRequest;
+         camera_capture_request_t* halRequest = &nextRequest.halRequest;
+         Vector<camera_stream_buffer_t>* outputBuffers = &nextRequest.outputBuffers;
+ 
+         // Prepare a request to HAL
+         halRequest->frame_number = captureRequest->mResultExtras.frameNumber;
++	ALOGD("%s: zll halRequest->frame_number:[%u]", __FUNCTION__, halRequest->frame_number);
+ 
+         // Insert any queued triggers (before metadata is locked)
+         status_t res = insertTriggers(captureRequest);
+@@ -5048,6 +5094,7 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+ 
+         outputBuffers->insertAt(camera_stream_buffer_t(), 0,
+                 captureRequest->mOutputStreams.size());
++	ALOGD("%s: zll captureRequest->mOutputStreams.size():[%zu]", __FUNCTION__, captureRequest->mOutputStreams.size());
+         halRequest->output_buffers = outputBuffers->array();
+         std::set<std::set<String8>> requestedPhysicalCameras;
+ 
+@@ -5061,12 +5108,15 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+ 
+         SurfaceMap uniqueSurfaceIdMap;
+         for (size_t j = 0; j < captureRequest->mOutputStreams.size(); j++) {
++	ALOGD("%s: zll outputStream j:[%zu]", __FUNCTION__, j);
+             sp<Camera3OutputStreamInterface> outputStream =
+                     captureRequest->mOutputStreams.editItemAt(j);
+             int streamId = outputStream->getId();
++	ALOGD("%s: zll outputStream streamId:[%d]", __FUNCTION__, streamId);
+ 
+             // Prepare video buffers for high speed recording on the first video request.
+             if (mPrepareVideoStream && outputStream->isVideoStream()) {
++	ALOGD("%s: zll outputStream (mPrepareVideoStream && outputStream->isVideoStream())", __FUNCTION__);
+                 // Only try to prepare video stream on the first video request.
+                 mPrepareVideoStream = false;
+ 
+@@ -5076,7 +5126,7 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+                     res = outputStream->prepareNextBuffer();
+                 }
+                 if (res != OK) {
+-                    ALOGW("%s: Preparing video buffers for high speed failed: %s (%d)",
++                    ALOGW("%s: zll outputStream Preparing video buffers for high speed failed: %s (%d)",
+                         __FUNCTION__, strerror(-res), res);
+                     outputStream->cancelPrepare();
+                 }
+@@ -5088,15 +5138,17 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+                     &uniqueSurfaceIds);
+             // INVALID_OPERATION is normal output for streams not supporting surfaceIds
+             if (res != OK && res != INVALID_OPERATION) {
+-                ALOGE("%s: failed to query stream %d unique surface IDs",
++                ALOGE("%s:zll outputStream failed to query stream %d unique surface IDs",
+                         __FUNCTION__, streamId);
+                 return res;
+             }
+             if (res == OK) {
++	ALOGD("%s: zll (mPrepareVideoStream && outputStream->isVideoStream()) res == OK", __FUNCTION__);
+                 uniqueSurfaceIdMap.insert({streamId, std::move(uniqueSurfaceIds)});
+             }
+ 
+             if (mUseHalBufManager) {
++	ALOGD("%s: zll outputStream mUseHalBufManager", __FUNCTION__);
+                 if (outputStream->isAbandoned()) {
+                     ALOGV("%s: stream %d is abandoned, skipping request", __FUNCTION__, streamId);
+                     return TIMED_OUT;
+@@ -5113,6 +5165,7 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+                 // buffers are requested.
+                 outputStream->markUnpreparable();
+             } else {
++	ALOGD("%s: zll outputStream !mUseHalBufManager", __FUNCTION__);
+                 res = outputStream->getBuffer(&outputBuffers->editItemAt(j),
+                         waitDuration,
+                         captureRequest->mOutputSurfaces[streamId]);
+@@ -5120,7 +5173,7 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+                     // Can't get output buffer from gralloc queue - this could be due to
+                     // abandoned queue or other consumer misbehavior, so not a fatal
+                     // error
+-                    ALOGV("RequestThread: Can't get output buffer, skipping request:"
++                    ALOGV("zll outputStreamRequestThread: Can't get output buffer, skipping request:"
+                             " %s (%d)", strerror(-res), res);
+ 
+                     return TIMED_OUT;
+@@ -5131,7 +5184,11 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+                 sp<Camera3Device> parent = mParent.promote();
+                 if (parent != nullptr) {
+                     const String8& streamCameraId = outputStream->getPhysicalCameraId();
++		if(!streamCameraId.isEmpty()){
++	ALOGD("%s: zll outputStream streamCameraId:[%s]", __FUNCTION__, streamCameraId.c_str());
++		}
+                     for (const auto& settings : captureRequest->mSettingsList) {
++	ALOGD("%s: zll outputStream settings.cameraId.c_str():[%s]", __FUNCTION__, settings.cameraId.c_str());
+                         if ((streamCameraId.isEmpty() &&
+                                 parent->getId() == settings.cameraId.c_str()) ||
+                                 streamCameraId == settings.cameraId.c_str()) {
+@@ -5153,6 +5210,7 @@ status_t Camera3Device::RequestThread::prepareHalRequests() {
+             halRequest->num_output_buffers++;
+         }
+         totalNumBuffers += halRequest->num_output_buffers;
++	ALOGD("%s: zll outputStream totalNumBuffers:[%u]", __FUNCTION__, totalNumBuffers);
+ 
+         // Log request in the in-flight queue
+         // If this request list is for constrained high speed recording (not
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.h b/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.h
+old mode 100644
+new mode 100755
+index e8a6a08..5af9e10
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.h
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3Device.h
+@@ -58,6 +58,7 @@
+ #include "utils/TagMonitor.h"
+ #include "utils/LatencyHistogram.h"
+ #include <camera_metadata_hidden.h>
++#include "Camera3MeigStreamBufferListener.h"
+ 
+ using android::camera3::camera_capture_request_t;
+ using android::camera3::camera_jpeg_blob_t;
+@@ -189,6 +190,10 @@ class Camera3Device :
+ 
+     status_t addBufferListenerForStream(int streamId,
+             wp<camera3::Camera3StreamBufferListener> listener) override;
++	status_t addMeigBufferListenerForStream(int streamId,
++        wp<camera3::Camera3MeigStreamBufferListener> listener) override;
++	status_t removeMeigBufferListenerForStream(int streamId,
++        const sp<camera3::Camera3MeigStreamBufferListener>& listener) override;
+ 
+     status_t prepare(int maxCount, int streamId) override;
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp b/frameworks/av/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
+index 5f7e4cf..63ec7b3 100644
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
+@@ -228,7 +228,7 @@ status_t Camera3IOStreamBase::returnAnyBufferLocked(
+         int32_t transform,
+         const std::vector<size_t>& surface_ids) {
+     status_t res;
+-
++	ALOGD("%s: start", __FUNCTION__);
+     // returnBuffer may be called from a raw pointer, not a sp<>, and we'll be
+     // decrementing the internal refcount next. In case this is the last ref, we
+     // might get destructed on the decStrong(), so keep an sp around until the
+@@ -242,8 +242,10 @@ status_t Camera3IOStreamBase::returnAnyBufferLocked(
+     }
+ 
+     sp<Fence> releaseFence;
++	ALOGD("%s: returnBufferCheckedLocked start", __FUNCTION__);
+     res = returnBufferCheckedLocked(buffer, timestamp, output, transform, surface_ids,
+                                     &releaseFence);
++	ALOGD("%s: returnBufferCheckedLocked end", __FUNCTION__);
+     // Res may be an error, but we still want to decrement our owned count
+     // to enable clean shutdown. So we'll just return the error but otherwise
+     // carry on
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3MeigStreamBufferListener.h b/frameworks/av/services/camera/libcameraservice/device3/Camera3MeigStreamBufferListener.h
+new file mode 100755
+index 0000000..417d9a4
+--- /dev/null
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3MeigStreamBufferListener.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2013 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef ANDROID_SERVERS_CAMERA3_MEIG_STREAMBUFFERLISTENER_H
++#define ANDROID_SERVERS_CAMERA3_MEIG_STREAMBUFFERLISTENER_H
++
++//#include <camera/CameraMetadata.h>
++//#include <gui/Surface.h>
++//#include <utils/RefBase.h>
++
++namespace android {
++
++namespace camera3 {
++
++class Camera3MeigStreamBufferListener : public virtual RefBase {
++public:
++
++    /*struct BufferInfo {
++        int mStreamId;
++        bool mOutput; // if false then input buffer
++        Rect mCrop;
++        uint32_t mTransform;
++        uint32_t mScalingMode;
++        int64_t mTimestamp;
++        uint64_t mFrameNumber;
++        bool mError;
++    };*/
++
++    // Buffer was resulted by the HAL
++    virtual status_t onBufferResult(const void *buf, const int64_t buffer_size) = 0;
++
++};
++
++}; //namespace camera3
++}; //namespace android
++
++#endif
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputStream.cpp b/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
+old mode 100644
+new mode 100755
+index 3738d01..cc614d5
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
+@@ -25,6 +25,7 @@
+ #include <ui/GraphicBuffer.h>
+ #include <utils/Log.h>
+ #include <utils/Trace.h>
++#include <cutils/properties.h>
+ 
+ #include "api1/client2/JpegProcessor.h"
+ #include "Camera3OutputStream.h"
+@@ -258,6 +259,7 @@ status_t Camera3OutputStream::getBuffersLocked(std::vector<OutstandingBuffer>* o
+ status_t Camera3OutputStream::queueBufferToConsumer(sp<ANativeWindow>& consumer,
+             ANativeWindowBuffer* buffer, int anwReleaseFence,
+             const std::vector<size_t>&) {
++	ALOGD("%s: zll start", __FUNCTION__);
+     return consumer->queueBuffer(consumer.get(), buffer, anwReleaseFence);
+ }
+ 
+@@ -265,12 +267,15 @@ status_t Camera3OutputStream::returnBufferLocked(
+         const camera_stream_buffer &buffer,
+         nsecs_t timestamp, int32_t transform, const std::vector<size_t>& surface_ids) {
+     ATRACE_HFR_CALL();
++	ALOGD("%s: zll start", __FUNCTION__);
+ 
+     if (mHandoutTotalBufferCount == 1) {
+         returnPrefetchedBuffersLocked();
+     }
+ 
++	ALOGD("%s: zll returnAnyBufferLocked start", __FUNCTION__);
+     status_t res = returnAnyBufferLocked(buffer, timestamp, /*output*/true, transform, surface_ids);
++	ALOGD("%s: zll returnAnyBufferLocked end", __FUNCTION__);
+ 
+     if (res != OK) {
+         return res;
+@@ -292,8 +297,10 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+             sp<Fence> *releaseFenceOut) {
+ 
+     (void)output;
++	//char value[PROPERTY_VALUE_MAX] = {0}; 
+     ALOG_ASSERT(output, "Expected output to be true");
+-
++	ALOGD("%s: zll start", __FUNCTION__);
++			
+     status_t res;
+ 
+     // Fence management - always honor release fence from HAL
+@@ -307,28 +314,28 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+      * queueBuffer
+      */
+     sp<ANativeWindow> currentConsumer = mConsumer;
+-    StreamState state = mState;
+-    mLock.unlock();
++    StreamState state = mState;    mLock.unlock();
+ 
+     ANativeWindowBuffer *anwBuffer = container_of(buffer.buffer, ANativeWindowBuffer, handle);
+     /**
+      * Return buffer back to ANativeWindow
+      */
+     if (buffer.status == CAMERA_BUFFER_STATUS_ERROR || mDropBuffers || timestamp == 0) {
++	ALOGD("%s: zll buffer.status == CAMERA_BUFFER_STATUS_ERROR || mDropBuffers || timestamp == 0", __FUNCTION__);
+         // Cancel buffer
+         if (mDropBuffers) {
+-            ALOGV("%s: Dropping a frame for stream %d.", __FUNCTION__, mId);
++            ALOGV("%s: zll Dropping a frame for stream %d.", __FUNCTION__, mId);
+         } else if (buffer.status == CAMERA_BUFFER_STATUS_ERROR) {
+-            ALOGV("%s: A frame is dropped for stream %d due to buffer error.", __FUNCTION__, mId);
++            ALOGV("%s: zll A frame is dropped for stream %d due to buffer error.", __FUNCTION__, mId);
+         } else {
+-            ALOGE("%s: Stream %d: timestamp shouldn't be 0", __FUNCTION__, mId);
++            ALOGE("%s: zll Stream %d: timestamp shouldn't be 0", __FUNCTION__, mId);
+         }
+ 
+         res = currentConsumer->cancelBuffer(currentConsumer.get(),
+                 anwBuffer,
+                 anwReleaseFence);
+         if (shouldLogError(res, state)) {
+-            ALOGE("%s: Stream %d: Error cancelling buffer to native window:"
++            ALOGE("%s: zll Stream %d: Error cancelling buffer to native window:"
+                   " %s (%d)", __FUNCTION__, mId, strerror(-res), res);
+         }
+ 
+@@ -338,6 +345,7 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+             mBufferProducerListener->onBufferReleased();
+         }
+     } else {
++	ALOGD("%s: zll 2", __FUNCTION__);
+         if (mTraceFirstBuffer && (stream_type == CAMERA_STREAM_OUTPUT)) {
+             {
+                 char traceLog[48];
+@@ -357,7 +365,7 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+         res = native_window_set_buffers_timestamp(mConsumer.get(),
+                 mUseMonoTimestamp ? timestamp - mTimestampOffset : timestamp);
+         if (res != OK) {
+-            ALOGE("%s: Stream %d: Error setting timestamp: %s (%d)",
++            ALOGE("%s: zll Stream %d: Error setting timestamp: %s (%d)",
+                   __FUNCTION__, mId, strerror(-res), res);
+             return res;
+         }
+@@ -368,9 +376,18 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+             dumpImageToDisk(timestamp, anwBuffer, anwReleaseFence);
+         }
+ 
++		//	ALOGD("%s: zll get persist.vendor.camera.data_stream_control_flag value  start", __FUNCTION__);
++		//property_get("persist.vendor.camera.data_stream_control_flag", value, "false");
++		//ALOGD("%s: zll get persist.vendor.camera.data_stream_control_flag value:[%s] end", __FUNCTION__, value);
++		//if(strncmp(value, "true", sizeof("true")) == 0){
++			ALOGD("%s: zll queueBufferToConsumer start", __FUNCTION__);
+         res = queueBufferToConsumer(currentConsumer, anwBuffer, anwReleaseFence, surface_ids);
++			ALOGD("%s: zll queueBufferToConsumer end", __FUNCTION__);
++		//}else{
++		//	          res = currentConsumer->cancelBuffer(currentConsumer.get(), anwBuffer, anwReleaseFence);
++		//}
+         if (shouldLogError(res, state)) {
+-            ALOGE("%s: Stream %d: Error queueing buffer to native window:"
++            ALOGE("%s: zll Stream %d: Error queueing buffer to native window:"
+                   " %s (%d)", __FUNCTION__, mId, strerror(-res), res);
+         }
+     }
+@@ -379,10 +396,12 @@ status_t Camera3OutputStream::returnBufferCheckedLocked(
+     // Once a valid buffer has been returned to the queue, can no longer
+     // dequeue all buffers for preallocation.
+     if (buffer.status != CAMERA_BUFFER_STATUS_ERROR) {
++		ALOGD("%s: zll buffer.status != CAMERA_BUFFER_STATUS_ERROR", __FUNCTION__);
+         mStreamUnpreparable = true;
+     }
+ 
+     if (res != OK) {
++		ALOGD("%s: zll res != OK", __FUNCTION__);
+         close(anwReleaseFence);
+     }
+ 
+@@ -609,13 +628,15 @@ status_t Camera3OutputStream::configureConsumerQueueLocked() {
+ status_t Camera3OutputStream::getBufferLockedCommon(ANativeWindowBuffer** anb, int* fenceFd) {
+     ATRACE_HFR_CALL();
+     status_t res;
++	//char value[PROPERTY_VALUE_MAX] = {0};
+ 
+     if ((res = getBufferPreconditionCheckLocked()) != OK) {
+         return res;
+     }
+ 
+     bool gotBufferFromManager = false;
+-
++	ALOGD("%s: zll getBufferLockedCommon mUseBufferManager:[%s]", __FUNCTION__, mUseBufferManager?"true":"false");
++	ALOGD("%s: zll getBufferLockedCommon gotBufferFromManager:[%s]", __FUNCTION__, gotBufferFromManager?"true":"false");
+     if (mUseBufferManager) {
+         sp<GraphicBuffer> gb;
+         res = mBufferManager->getBufferForStream(getId(), getStreamSetId(),
+@@ -667,8 +688,15 @@ status_t Camera3OutputStream::getBufferLockedCommon(ANativeWindowBuffer** anb, i
+ 
+         size_t batchSize = mBatchSize.load();
+         if (batchSize == 1) {
++		ALOGD("%s: zll getBufferLockedCommon batchSize == 1 ", __FUNCTION__);
+             sp<ANativeWindow> anw = consumer;
++			//property_get("persist.vendor.camera.data_stream_control_flag", value, "false");
++		//ALOGD("%s: get persist.vendor.camera.data_stream_control_flag value:[%s] end", __FUNCTION__, value);
++		//if(strncmp(value, "true", sizeof("true")) == 0){
++		//ALOGD("%s: zll getBufferLockedCommon batchSize == 1 dequeueBuffer start", __FUNCTION__);
+             res = anw->dequeueBuffer(anw.get(), anb, fenceFd);
++		ALOGD("%s: zll getBufferLockedCommon batchSize == 1 dequeueBuffer end", __FUNCTION__);
++		//}
+         } else {
+             std::unique_lock<std::mutex> batchLock(mBatchLock);
+             res = OK;
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp b/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
+old mode 100644
+new mode 100755
+index d765b02..e7ba142
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
+@@ -427,6 +427,7 @@ void removeInFlightRequestIfReadyLocked(CaptureOutputStates& states, int idx) {
+     const InFlightRequest &request = inflightMap.valueAt(idx);
+     const uint32_t frameNumber = inflightMap.keyAt(idx);
+     SessionStatsBuilder& sessionStatsBuilder = states.sessionStatsBuilder;
++	ALOGD("%s:zll start", __FUNCTION__);
+ 
+     nsecs_t sensorTimestamp = request.sensorTimestamp;
+     nsecs_t shutterTimestamp = request.shutterTimestamp;
+@@ -460,6 +461,7 @@ void removeInFlightRequestIfReadyLocked(CaptureOutputStates& states, int idx) {
+         assert(request.requestStatus != OK ||
+                request.pendingOutputBuffers.size() == 0);
+ 
++	ALOGD("%s: zll returnOutputBuffers start request.pendingOutputBuffers.size():[%zu]", __FUNCTION__, request.pendingOutputBuffers.size());
+         returnOutputBuffers(
+             states.useHalBufManager, states.listener,
+             request.pendingOutputBuffers.array(),
+@@ -469,6 +471,7 @@ void removeInFlightRequestIfReadyLocked(CaptureOutputStates& states, int idx) {
+             request.outputSurfaces, request.resultExtras,
+             request.errorBufStrategy, request.transform);
+ 
++	ALOGD("%s: zll returnOutputBuffers end", __FUNCTION__);
+         // Note down the just completed frame number
+         if (request.hasInputBuffer) {
+             states.lastCompletedReprocessFrameNumber = frameNumber;
+@@ -507,6 +510,7 @@ void processCaptureResult(CaptureOutputStates& states, const camera_capture_resu
+     status_t res;
+ 
+     uint32_t frameNumber = result->frame_number;
++	ALOGD("%s: zll frameNumber:[%d] start", __FUNCTION__, frameNumber);
+     if (result->result == NULL && result->num_output_buffers == 0 &&
+             result->input_buffer == NULL) {
+         SET_ERR("No result data provided by HAL for frame %d",
+@@ -696,7 +700,9 @@ void processCaptureResult(CaptureOutputStates& states, const camera_capture_resu
+                     request.physicalMetadatas);
+             }
+         }
++	ALOGD("%s: zll removeInFlightRequestIfReadyLocked start", __FUNCTION__);
+         removeInFlightRequestIfReadyLocked(states, idx);
++	ALOGD("%s: zll removeInFlightRequestIfReadyLocked end", __FUNCTION__);
+     } // scope for states.inFlightLock
+ 
+     if (result->input_buffer != NULL) {
+@@ -731,6 +737,7 @@ void processOneCaptureResultLocked(
+     camera_capture_result r;
+     status_t res;
+     r.frame_number = result.frameNumber;
++	ALOGD("%s: zll r.frame_number:[%d]",  __FUNCTION__, r.frame_number);
+ 
+     // Read and validate the result metadata.
+     hardware::camera::device::V3_2::CameraMetadata resultMetadata;
+@@ -746,11 +753,13 @@ void processOneCaptureResultLocked(
+ 
+     // Read and validate physical camera metadata
+     size_t physResultCount = physicalCameraMetadata.size();
++	ALOGD("%s: zll physResultCount:[%zu]",  __FUNCTION__, physResultCount);
+     std::vector<const char*> physCamIds(physResultCount);
+     std::vector<const camera_metadata_t *> phyCamMetadatas(physResultCount);
+     std::vector<hardware::camera::device::V3_2::CameraMetadata> physResultMetadata;
+     physResultMetadata.resize(physResultCount);
+     for (size_t i = 0; i < physicalCameraMetadata.size(); i++) {
++	ALOGD("%s: zll physResultCount: i[%zu]",  __FUNCTION__, i);
+         res = readOneCameraMetadataLocked(fmq, physicalCameraMetadata[i].fmqMetadataSize,
+                 physResultMetadata[i], physicalCameraMetadata[i].metadata);
+         if (res != OK) {
+@@ -770,6 +779,7 @@ void processOneCaptureResultLocked(
+     std::vector<camera_stream_buffer_t> outputBuffers(result.outputBuffers.size());
+     std::vector<buffer_handle_t> outputBufferHandles(result.outputBuffers.size());
+     for (size_t i = 0; i < result.outputBuffers.size(); i++) {
++	ALOGD("%s: zll result.outputBuffers.size(): i[%zu]",  __FUNCTION__, i);
+         auto& bDst = outputBuffers[i];
+         const StreamBuffer &bSrc = result.outputBuffers[i];
+ 
+@@ -784,6 +794,7 @@ void processOneCaptureResultLocked(
+         bool noBufferReturned = false;
+         buffer_handle_t *buffer = nullptr;
+         if (states.useHalBufManager) {
++ALOGD("%s: zll states.useHalBufManager",  __FUNCTION__);
+             // This is suspicious most of the time but can be correct during flush where HAL
+             // has to return capture result before a buffer is requested
+             if (bSrc.bufferId == BUFFER_ID_NO_BUFFER) {
+@@ -800,11 +811,12 @@ void processOneCaptureResultLocked(
+                 res = bufferRecords.popInflightRequestBuffer(bSrc.bufferId, &buffer);
+             }
+         } else {
++ALOGD("%s: zll !states.useHalBufManager",  __FUNCTION__);
+             res = bufferRecords.popInflightBuffer(result.frameNumber, bSrc.streamId, &buffer);
+         }
+ 
+         if (res != OK) {
+-            ALOGE("%s: Frame %d: Buffer %zu: No in-flight buffer for stream %d",
++            ALOGE("%s: zll Frame %d: Buffer %zu: No in-flight buffer for stream %d",
+                     __FUNCTION__, result.frameNumber, i, bSrc.streamId);
+             return;
+         }
+@@ -875,11 +887,12 @@ void returnOutputBuffers(
+         const SurfaceMap& outputSurfaces,
+         const CaptureResultExtras &inResultExtras,
+         ERROR_BUF_STRATEGY errorBufStrategy, int32_t transform) {
+-
++ALOGD("%s: zll start", __FUNCTION__);
+     for (size_t i = 0; i < numBuffers; i++)
+     {
+         Camera3StreamInterface *stream = Camera3Stream::cast(outputBuffers[i].stream);
+         int streamId = stream->getId();
++ALOGD("%s: zll streamId:[%d]", __FUNCTION__, streamId);
+ 
+         // Call notify(ERROR_BUFFER) if necessary.
+         if (outputBuffers[i].status == CAMERA_BUFFER_STATUS_ERROR &&
+@@ -914,11 +927,14 @@ void returnOutputBuffers(
+         // buffer strategy is CACHE.
+         if (outputBuffers[i].status != CAMERA_BUFFER_STATUS_ERROR ||
+                 errorBufStrategy != ERROR_BUF_CACHE) {
++ALOGD("%s:zll  1", __FUNCTION__);
+             if (it != outputSurfaces.end()) {
++ALOGD("%s:zll 2", __FUNCTION__);
+                 res = stream->returnBuffer(
+                         outputBuffers[i], timestamp, timestampIncreasing, it->second,
+                         inResultExtras.frameNumber, transform);
+             } else {
++ALOGD("%s: zll 3", __FUNCTION__);
+                 res = stream->returnBuffer(
+                         outputBuffers[i], timestamp, timestampIncreasing,
+                         std::vector<size_t> (), inResultExtras.frameNumber, transform);
+@@ -949,6 +965,7 @@ void returnOutputBuffers(
+         if (it != outputSurfaces.end() && res == TIMED_OUT &&
+                 outputBuffers[i].status == CAMERA_BUFFER_STATUS_OK) {
+             // cancel the buffer
++ALOGD("%s: zll 4", __FUNCTION__);
+             camera_stream_buffer_t sb = outputBuffers[i];
+             sb.status = CAMERA_BUFFER_STATUS_ERROR;
+             stream->returnBuffer(sb, /*timestamp*/0,
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.cpp b/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.cpp
+old mode 100644
+new mode 100755
+index afcfd2a..eb9a8e2
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.cpp
+@@ -628,10 +628,11 @@ status_t Camera3Stream::getBuffer(camera_stream_buffer *buffer,
+     ATRACE_HFR_CALL();
+     Mutex::Autolock l(mLock);
+     status_t res = OK;
++	ALOGD("%s: start", __FUNCTION__);
+ 
+     // This function should be only called when the stream is configured already.
+     if (mState != STATE_CONFIGURED) {
+-        ALOGE("%s: Stream %d: Can't get buffers if stream is not in CONFIGURED state %d",
++        ALOGE("%s: zll Stream %d: Can't get buffers if stream is not in CONFIGURED state %d",
+                 __FUNCTION__, mId, mState);
+         if (mState == STATE_ABANDONED) {
+             return DEAD_OBJECT;
+@@ -642,8 +643,9 @@ status_t Camera3Stream::getBuffer(camera_stream_buffer *buffer,
+ 
+     // Wait for new buffer returned back if we are running into the limit.
+     size_t numOutstandingBuffers = getHandoutOutputBufferCountLocked();
++	ALOGD("%s: numOutstandingBuffers:[%zu]", __FUNCTION__, numOutstandingBuffers);
+     if (numOutstandingBuffers == camera_stream::max_buffers) {
+-        ALOGV("%s: Already dequeued max output buffers (%d), wait for next returned one.",
++        ALOGV("%s: zll Already dequeued max output buffers (%d), wait for next returned one.",
+                         __FUNCTION__, camera_stream::max_buffers);
+         nsecs_t waitStart = systemTime(SYSTEM_TIME_MONOTONIC);
+         if (waitBufferTimeout < kWaitForBufferDuration) {
+@@ -662,22 +664,25 @@ status_t Camera3Stream::getBuffer(camera_stream_buffer *buffer,
+         }
+ 
+         size_t updatedNumOutstandingBuffers = getHandoutOutputBufferCountLocked();
++	ALOGD("%s: updatedNumOutstandingBuffers:[%zu]", __FUNCTION__, updatedNumOutstandingBuffers);
+         if (updatedNumOutstandingBuffers >= numOutstandingBuffers) {
+-            ALOGE("%s: outsanding buffer count goes from %zu to %zu, "
++            ALOGE("%s: zll outsanding buffer count goes from %zu to %zu, "
+                     "getBuffer(s) call must not run in parallel!", __FUNCTION__,
+                     numOutstandingBuffers, updatedNumOutstandingBuffers);
+             return INVALID_OPERATION;
+         }
+     }
+-
++	ALOGD("%s: getBufferLocked start", __FUNCTION__);
+     res = getBufferLocked(buffer, surface_ids);
+     if (res == OK) {
++	ALOGD("%s: getBufferLocked  == OK", __FUNCTION__);
+         fireBufferListenersLocked(*buffer, /*acquired*/true, /*output*/true);
+         if (buffer->buffer) {
+             Mutex::Autolock l(mOutstandingBuffersLock);
+             mOutstandingBuffers.push_back(*buffer->buffer);
+         }
+     }
++	ALOGD("%s: getBufferLocked end", __FUNCTION__);
+ 
+     return res;
+ }
+@@ -717,10 +722,11 @@ status_t Camera3Stream::returnBuffer(const camera_stream_buffer &buffer,
+          const std::vector<size_t>& surface_ids, uint64_t frameNumber, int32_t transform) {
+     ATRACE_HFR_CALL();
+     Mutex::Autolock l(mLock);
++	ALOGD("%s: start",  __FUNCTION__);
+ 
+     // Check if this buffer is outstanding.
+     if (!isOutstandingBuffer(buffer)) {
+-        ALOGE("%s: Stream %d: Returning an unknown buffer.", __FUNCTION__, mId);
++        ALOGE("%s: zll  Stream %d: Returning an unknown buffer.", __FUNCTION__, mId);
+         return BAD_VALUE;
+     }
+ 
+@@ -743,14 +749,19 @@ status_t Camera3Stream::returnBuffer(const camera_stream_buffer &buffer,
+      *
+      * Do this for getBuffer as well.
+      */
++	ALOGD("%s: returnBufferLocked start",  __FUNCTION__);
+     status_t res = returnBufferLocked(b, timestamp, transform, surface_ids);
++	ALOGD("%s: returnBufferLocked end",  __FUNCTION__);
+     if (res == OK) {
++	ALOGD("%s: returnBufferLocked end res == OK",  __FUNCTION__);
+         fireBufferListenersLocked(b, /*acquired*/false, /*output*/true, timestamp, frameNumber);
+     }
+ 
+     // Even if returning the buffer failed, we still want to signal whoever is waiting for the
+     // buffer to be returned.
++	ALOGD("%s: mOutputBufferReturnedSignal.signal() start",  __FUNCTION__);
+     mOutputBufferReturnedSignal.signal();
++	ALOGD("%s: mOutputBufferReturnedSignal.signal() end",  __FUNCTION__);
+ 
+     return res;
+ }
+@@ -843,7 +854,7 @@ void Camera3Stream::fireBufferListenersLocked(
+         const camera_stream_buffer& buffer, bool acquired, bool output, nsecs_t timestamp,
+         uint64_t frameNumber) {
+     List<wp<Camera3StreamBufferListener> >::iterator it, end;
+-
++	List<wp<Camera3MeigStreamBufferListener> >::iterator itMeig, endMeig;
+     // TODO: finish implementing
+ 
+     Camera3StreamBufferListener::BufferInfo info =
+@@ -869,6 +880,41 @@ void Camera3Stream::fireBufferListenersLocked(
+             }
+         }
+     }
++	{
++	//sp<Fence> releaseFence = new Fence(buffer.release_fence);
++    //int anwReleaseFence = releaseFence->dup();
++
++    /**
++     * Release the lock briefly to avoid deadlock with
++     * StreamingProcessor::startStream -> Camera3Stream::isConfiguring (this
++     * thread will go into StreamingProcessor::onFrameAvailable) during
++     * queueBuffer
++     */
++  /*  sp<ANativeWindow> currentConsumer = mConsumer;
++    StreamState state = mState;
++    mLock.unlock();
++
++    ANativeWindowBuffer *anwBuffer = container_of(buffer.buffer, ANativeWindowBuffer, handle);
++	
++	
++	sp<GraphicBuffer> buf(GraphicBuffer::from(anwBuffer));
++	uint32_t buf_width = buf->getWidth();
++	uint32_t buf_Height = buf->getHeight();
++	uint8_t *img = NULL;
++	status_t err = NO_ERROR;
++	 err = buf->lock(GRALLOC_USAGE_SW_READ_OFTEN, (void**)(&img));
++	 ALOGV("@@@wjf get buf's address %p  ;;",img);
++	 */
++	for (itMeig = mMeigBufferListenerList.begin(), endMeig = mMeigBufferListenerList.end();
++         itMeig != endMeig;
++         ++itMeig) {
++
++        sp<Camera3MeigStreamBufferListener> listener = itMeig->promote();
++        if (listener != 0) {
++        	listener->onBufferResult("zll test", sizeof("zll test"));
++        }
++    }
++	}
+ }
+ 
+ bool Camera3Stream::hasOutstandingBuffers() const {
+@@ -967,6 +1013,49 @@ void Camera3Stream::addBufferListener(
+     mBufferListenerList.push_back(listener);
+ }
+ 
++void Camera3Stream::addMeigBufferListener(
++        wp<Camera3MeigStreamBufferListener> listener) {
++    Mutex::Autolock l(mLock);
++
++    List<wp<Camera3MeigStreamBufferListener> >::iterator it, end;
++    for (it = mMeigBufferListenerList.begin(), end = mMeigBufferListenerList.end();
++         it != end;
++         ) {
++        if (*it == listener) {
++            ALOGE("%s: Try to add the same listener twice, ignoring...", __FUNCTION__);
++            return;
++        }
++        it++;
++    }
++
++    mMeigBufferListenerList.push_back(listener);
++}
++
++void Camera3Stream::removeMeigBufferListener(
++        const sp<Camera3MeigStreamBufferListener>& listener) {
++    Mutex::Autolock l(mLock);
++
++    bool erased = true;
++    List<wp<Camera3MeigStreamBufferListener> >::iterator it, end;
++    for (it = mMeigBufferListenerList.begin(), end = mMeigBufferListenerList.end();
++         it != end;
++         ) {
++
++        if (*it == listener) {
++            it = mMeigBufferListenerList.erase(it);
++            erased = true;
++        } else {
++            ++it;
++        }
++    }
++
++    if (!erased) {
++        ALOGW("%s: Could not find listener to remove, already removed",
++              __FUNCTION__);
++    }
++}
++
++
+ void Camera3Stream::removeBufferListener(
+         const sp<Camera3StreamBufferListener>& listener) {
+     Mutex::Autolock l(mLock);
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.h b/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.h
+old mode 100644
+new mode 100755
+index fc75f79..9e4c9fb
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.h
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3Stream.h
+@@ -25,6 +25,7 @@
+ 
+ #include "utils/LatencyHistogram.h"
+ #include "Camera3StreamBufferListener.h"
++#include "Camera3MeigStreamBufferListener.h"
+ #include "Camera3StreamInterface.h"
+ 
+ namespace android {
+@@ -432,6 +433,12 @@ class Camera3Stream :
+     void             removeBufferListener(
+             const sp<Camera3StreamBufferListener>& listener);
+ 
++			
++	void             addMeigBufferListener(
++            wp<Camera3MeigStreamBufferListener> listener);
++			
++	void             removeMeigBufferListener(
++            const sp<Camera3MeigStreamBufferListener>& listener);
+ 
+     // Setting listener will remove previous listener (if exists)
+     virtual void     setBufferFreedListener(
+@@ -581,6 +588,7 @@ class Camera3Stream :
+     void fireBufferListenersLocked(const camera_stream_buffer& buffer,
+             bool acquired, bool output, nsecs_t timestamp = 0, uint64_t frameNumber = 0);
+     List<wp<Camera3StreamBufferListener> > mBufferListenerList;
++	List<wp<Camera3MeigStreamBufferListener> > mMeigBufferListenerList;
+ 
+     status_t        cancelPrepareLocked();
+ 
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/Camera3StreamInterface.h b/frameworks/av/services/camera/libcameraservice/device3/Camera3StreamInterface.h
+old mode 100644
+new mode 100755
+index 3aa5a3c..aea7a4a
+--- a/frameworks/av/services/camera/libcameraservice/device3/Camera3StreamInterface.h
++++ b/frameworks/av/services/camera/libcameraservice/device3/Camera3StreamInterface.h
+@@ -21,6 +21,7 @@
+ 
+ #include <camera/CameraMetadata.h>
+ #include "Camera3StreamBufferListener.h"
++#include "Camera3MeigStreamBufferListener.h"
+ #include "Camera3StreamBufferFreedListener.h"
+ 
+ namespace android {
+@@ -434,6 +435,10 @@ class Camera3StreamInterface : public virtual RefBase {
+     virtual void     removeBufferListener(
+             const sp<Camera3StreamBufferListener>& listener) = 0;
+ 
++    virtual void     addMeigBufferListener(
++            wp<Camera3MeigStreamBufferListener> listener) = 0;
++    virtual void     removeMeigBufferListener(
++            const sp<Camera3MeigStreamBufferListener>& listener) = 0;
+     /**
+      * Setting listner will remove previous listener (if exists)
+      * Only allow set listener during stream configuration because stream is guaranteed to be IDLE
+diff --git a/frameworks/base/core/java/android/hardware/camera2/CameraManager.java b/frameworks/base/core/java/android/hardware/camera2/CameraManager.java
+old mode 100644
+new mode 100755
+index 0fca321..668f43d
+--- a/frameworks/base/core/java/android/hardware/camera2/CameraManager.java
++++ b/frameworks/base/core/java/android/hardware/camera2/CameraManager.java
+@@ -71,6 +71,7 @@ import java.util.concurrent.Executors;
+ import java.util.concurrent.RejectedExecutionException;
+ import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.TimeUnit;
++import android.hardware.camera2.params.OutputConfiguration;
+ 
+ /**
+  * <p>A system service manager for detecting, characterizing, and connecting to
+@@ -734,6 +735,128 @@ public final class CameraManager {
+ 
+         return device;
+     }
++	
++	private void openMeigScanDeviceUserAsync(String cameraId,
++            CameraDevice.StateCallback callback, Executor executor, final int uid, final int oomScoreOffset, OutputConfiguration output) throws CameraAccessException {
++		Log.d(TAG, "zll openScanDeviceUserAsync 3");
++		CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
++        Map<String, CameraCharacteristics> physicalIdsToChars =
++                getPhysicalIdToCharsMap(characteristics);
++		android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =
++                    new android.hardware.camera2.impl.CameraDeviceImpl(
++                        cameraId,
++                        callback,
++                        executor,
++                        characteristics,
++                        physicalIdsToChars,
++                        mContext.getApplicationInfo().targetSdkVersion,
++                        mContext);
++
++            ICameraDeviceCallbacks callbacks = deviceImpl.getCallbacks();
++		try {
++                ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++                if (cameraService == null) {
++                    throw new ServiceSpecificException(
++                        ICameraService.ERROR_DISCONNECTED,
++                        "Camera service is currently unavailable");
++                }
++                cameraService.openMeigScanDevice(output, callbacks, cameraId, 
++                    mContext.getOpPackageName(),  mContext.getAttributionTag(), uid,
++                    oomScoreOffset, mContext.getApplicationInfo().targetSdkVersion);
++            } catch (ServiceSpecificException e) {
++                if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++                    throw new AssertionError("Should've gone down the shim path");
++				} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++                        e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++                        e.errorCode == ICameraService.ERROR_DISABLED ||
++                        e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++                        e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++                    // Received one of the known connection errors
++                    // The remote camera device cannot be connected to, so
++                    // set the local camera to the startup error state
++                    deviceImpl.setRemoteFailure(e);
++
++                    if (e.errorCode == ICameraService.ERROR_DISABLED ||
++                            e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++                            e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++                        // Per API docs, these failures call onError and throw
++                        throwAsPublicException(e);
++                    }
++                } else {
++                    // Unexpected failure - rethrow
++                    throwAsPublicException(e);
++                }
++            } catch (RemoteException e) {
++                // Camera service died - act as if it's a CAMERA_DISCONNECTED case
++                ServiceSpecificException sse = new ServiceSpecificException(
++                    ICameraService.ERROR_DISCONNECTED,
++                    "Camera service is currently unavailable");
++                //deviceImpl.setRemoteFailure(sse);
++                throwAsPublicException(sse);
++            }
++			//device = deviceImpl;
++	}
++	
++	private void openScanDeviceUserAsync(String cameraId,
++            CameraDevice.StateCallback callback, Executor executor, final int uid, final int oomScoreOffset) throws CameraAccessException {
++		Log.d(TAG, "zll openScanDeviceUserAsync 3");
++		CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
++        Map<String, CameraCharacteristics> physicalIdsToChars =
++                getPhysicalIdToCharsMap(characteristics);
++		android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =
++                    new android.hardware.camera2.impl.CameraDeviceImpl(
++                        cameraId,
++                        callback,
++                        executor,
++                        characteristics,
++                        physicalIdsToChars,
++                        mContext.getApplicationInfo().targetSdkVersion,
++                        mContext);
++
++            ICameraDeviceCallbacks callbacks = deviceImpl.getCallbacks();
++		try {
++                ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++                if (cameraService == null) {
++                    throw new ServiceSpecificException(
++                        ICameraService.ERROR_DISCONNECTED,
++                        "Camera service is currently unavailable");
++                }
++                cameraService.openScanDevice(callbacks, cameraId, 
++                    mContext.getOpPackageName(),  mContext.getAttributionTag(), uid,
++                    oomScoreOffset, mContext.getApplicationInfo().targetSdkVersion);
++            } catch (ServiceSpecificException e) {
++                if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++                    throw new AssertionError("Should've gone down the shim path");
++                } else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++                        e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++                        e.errorCode == ICameraService.ERROR_DISABLED ||
++                        e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++                        e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++                    // Received one of the known connection errors
++                    // The remote camera device cannot be connected to, so
++                    // set the local camera to the startup error state
++                    deviceImpl.setRemoteFailure(e);
++
++                    if (e.errorCode == ICameraService.ERROR_DISABLED ||
++                            e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++                            e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++                        // Per API docs, these failures call onError and throw
++                        throwAsPublicException(e);
++                    }
++                } else {
++                    // Unexpected failure - rethrow
++                    throwAsPublicException(e);
++                }
++            } catch (RemoteException e) {
++                // Camera service died - act as if it's a CAMERA_DISCONNECTED case
++                ServiceSpecificException sse = new ServiceSpecificException(
++                    ICameraService.ERROR_DISCONNECTED,
++                    "Camera service is currently unavailable");
++                //deviceImpl.setRemoteFailure(sse);
++                throwAsPublicException(sse);
++            }
++			//device = deviceImpl;
++	}
+ 
+     /**
+      * Open a connection to a camera with the given ID.
+@@ -820,6 +943,91 @@ public final class CameraManager {
+         openCameraForUid(cameraId, callback, CameraDeviceImpl.checkAndWrapHandler(handler),
+                 USE_CALLING_UID);
+     }
++	
++	/**
++     * Open a connection to a scan device with the given ID.
++     *
++     * <p>Use {@link #getCameraIdList} to get the list of available camera
++     * devices. Note that even if an id is listed, open may fail if the device
++     * is disconnected between the calls to {@link #getCameraIdList} and
++     * {@link #openCamera}, or if a higher-priority camera API client begins using the
++     * camera device.</p>
++     *
++     * <p>As of API level 23, devices for which the
++     * {@link AvailabilityCallback#onCameraUnavailable(String)} callback has been called due to the
++     * device being in use by a lower-priority, background camera API client can still potentially
++     * be opened by calling this method when the calling camera API client has a higher priority
++     * than the current camera API client using this device.  In general, if the top, foreground
++     * activity is running within your application process, your process will be given the highest
++     * priority when accessing the camera, and this method will succeed even if the camera device is
++     * in use by another camera API client. Any lower-priority application that loses control of the
++     * camera in this way will receive an
++     * {@link android.hardware.camera2.CameraDevice.StateCallback#onDisconnected} callback.
++     * Opening the same camera ID twice in the same application will similarly cause the
++     * {@link android.hardware.camera2.CameraDevice.StateCallback#onDisconnected} callback
++     * being fired for the {@link CameraDevice} from the first open call and all ongoing tasks
++     * being droppped.</p>
++     *
++     * <p>Once the camera is successfully opened, {@link CameraDevice.StateCallback#onOpened} will
++     * be invoked with the newly opened {@link CameraDevice}. The camera device can then be set up
++     * for operation by calling {@link CameraDevice#createCaptureSession} and
++     * {@link CameraDevice#createCaptureRequest}</p>
++     *
++     * <p>Before API level 30, when the application tries to open multiple {@link CameraDevice} of
++     * different IDs and the device does not support opening such combination, either the
++     * {@link #openCamera} will fail and throw a {@link CameraAccessException} or one or more of
++     * already opened {@link CameraDevice} will be disconnected and receive
++     * {@link android.hardware.camera2.CameraDevice.StateCallback#onDisconnected} callback. Which
++     * behavior will happen depends on the device implementation and can vary on different devices.
++     * Starting in API level 30, if the device does not support the combination of cameras being
++     * opened, it is guaranteed the {@link #openCamera} call will fail and none of existing
++     * {@link CameraDevice} will be disconnected.</p>
++     *
++     * <!--
++     * <p>Since the camera device will be opened asynchronously, any asynchronous operations done
++     * on the returned CameraDevice instance will be queued up until the device startup has
++     * completed and the callback's {@link CameraDevice.StateCallback#onOpened onOpened} method is
++     * called. The pending operations are then processed in order.</p>
++     * -->
++     * <p>If the camera becomes disconnected during initialization
++     * after this function call returns,
++     * {@link CameraDevice.StateCallback#onDisconnected} with a
++     * {@link CameraDevice} in the disconnected state (and
++     * {@link CameraDevice.StateCallback#onOpened} will be skipped).</p>
++     *
++     * <p>If opening the camera device fails, then the device callback's
++     * {@link CameraDevice.StateCallback#onError onError} method will be called, and subsequent
++     * calls on the camera device will throw a {@link CameraAccessException}.</p>
++     *
++     * @param cameraId
++     *             The unique identifier of the camera device to open
++     * @param callback
++     *             The callback which is invoked once the camera is opened
++     * @param handler
++     *             The handler on which the callback should be invoked, or
++     *             {@code null} to use the current thread's {@link android.os.Looper looper}.
++     *
++     * @throws CameraAccessException if the camera is disabled by device policy,
++     * has been disconnected, is being used by a higher-priority camera API client, or the device
++     * has reached its maximal resource and cannot open this camera device.
++     *
++     * @throws IllegalArgumentException if cameraId or the callback was null,
++     * or the cameraId does not match any currently or previously available
++     * camera device returned by {@link #getCameraIdList}.
++     *
++     * @throws SecurityException if the application does not have permission to
++     * access the camera
++     *
++     * @see #openScan
++     * @see android.app.admin.DevicePolicyManager#setCameraDisabled
++     */
++	//@RequiresPermission(android.Manifest.permission.CAMERA)
++    /*public void openScan(@NonNull String cameraId,
++            @NonNull final CameraDevice.StateCallback callback, @Nullable Handler handler)
++            throws CameraAccessException {
++		Log.d(TAG, "zll openScan 1");
++        openScanForUid(cameraId, callback, CameraDeviceImpl.checkAndWrapHandler(handler), USE_CALLING_UID);
++    }*/
+ 
+     /**
+      * Open a connection to a camera with the given ID.
+@@ -960,6 +1168,302 @@ public final class CameraManager {
+ 
+         openCameraDeviceUserAsync(cameraId, callback, executor, clientUid, oomScoreOffset);
+     }
++	
++	/**
++	*@hide
++	*/
++//	public void openScanForUid(@NonNull String cameraId,
++//            @NonNull final CameraDevice.StateCallback callback, Executor executor,
++//            int clientUid) throws CameraAccessException {
++//Log.d(TAG, "zll openScanForUid 2");
++//        if (cameraId == null) {
++//            throw new IllegalArgumentException("cameraId was null");
++//        } else if (callback == null) {
++//            throw new IllegalArgumentException("callback was null");
++//        }
++//        if (CameraManagerGlobal.sCameraServiceDisabled) {
++//            throw new IllegalArgumentException("No cameras available on device");
++//        }
++//
++//        openScanDeviceUserAsync(cameraId, callback, executor, clientUid, /*oomScoreOffset*/0);
++//    }
++	
++	public void openMeigScanForUid(@NonNull String cameraId,
++            @NonNull final CameraDevice.StateCallback callback, Executor executor,
++            int clientUid, @NonNull final OutputConfiguration output) throws CameraAccessException {
++Log.d(TAG, "zll openScanForUid 2");
++        if (cameraId == null) {
++            throw new IllegalArgumentException("cameraId was null");
++        } else if (callback == null) {
++            throw new IllegalArgumentException("callback was null");
++        }
++        if (CameraManagerGlobal.sCameraServiceDisabled) {
++            throw new IllegalArgumentException("No cameras available on device");
++        }
++
++        openMeigScanDeviceUserAsync(cameraId, callback, executor, clientUid, /*oomScoreOffset*/0, output);
++    }
++	
++	
++	public void closeScanDevice(){
++	Log.d(TAG, "zll closeScanDevice start");
++		try{
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.closeScanDevice();
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
++	
++	
++	public void startPreview(){
++	Log.d(TAG, "zll startPreview");
++		try {
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.startPreview();
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
++	
++		public void startMeigPreview(@NonNull final OutputConfiguration output){
++	Log.d(TAG, "zll startPreview");
++		try {
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.stopPreviewMeig(output);
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
++	
++	
++	public void resumeMeig(){
++	Log.d(TAG, "zll startPreview");
++		try {
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.resume();
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
++	
++	public void suspendMeig(){
++	Log.d(TAG, "zll startPreview");
++		try {
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.suspend();
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
++	
++	public void captureMeig(){
++	Log.d(TAG, "zll startPreview");
++		try {
++			ICameraService cameraService = CameraManagerGlobal.get().getCameraService();
++			if (cameraService == null) {
++				throw new ServiceSpecificException(
++					ICameraService.ERROR_DISCONNECTED,
++					"Camera service is currently unavailable");
++			}
++			cameraService.capture();
++		} catch (ServiceSpecificException e) {
++			if (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) {
++				throw new AssertionError("Should've gone down the shim path");
++			} else if (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||
++					e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||
++					e.errorCode == ICameraService.ERROR_DISABLED ||
++					e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++					e.errorCode == ICameraService.ERROR_INVALID_OPERATION) {
++				// Received one of the known connection errors
++				// The remote camera device cannot be connected to, so
++				// set the local camera to the startup error state
++				//device.setRemoteFailure(e);
++
++				if (e.errorCode == ICameraService.ERROR_DISABLED ||
++						e.errorCode == ICameraService.ERROR_DISCONNECTED ||
++						e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) {
++					// Per API docs, these failures call onError and throw
++					//throwAsPublicException(e);
++				}
++			} else {
++				// Unexpected failure - rethrow
++				//throwAsPublicException(e);
++			}
++		} catch (RemoteException e) {
++			// Camera service died - act as if it's a CAMERA_DISCONNECTED case
++			ServiceSpecificException sse = new ServiceSpecificException(
++				ICameraService.ERROR_DISCONNECTED,
++				"Camera service is currently unavailable");
++			//device.setRemoteFailure(sse);
++			//throwAsPublicException(sse);
++		}
++	}
+ 
+     /**
+      * Open a connection to a camera with the given ID, on behalf of another application
+diff --git a/frameworks/base/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java b/frameworks/base/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
+index b2f118b..281f804 100644
+--- a/frameworks/base/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
++++ b/frameworks/base/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
+@@ -42,7 +42,7 @@ import static com.android.internal.util.Preconditions.*;
+ public class CameraCaptureSessionImpl extends CameraCaptureSession
+         implements CameraCaptureSessionCore {
+     private static final String TAG = "CameraCaptureSession";
+-    private static final boolean DEBUG = false;
++    private static final boolean DEBUG = true;
+ 
+     /** Simple integer ID for session for debugging */
+     private final int mId;
+diff --git a/frameworks/base/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java b/frameworks/base/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
+index cabb141..6edfe2b 100644
+--- a/frameworks/base/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
++++ b/frameworks/base/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
+@@ -86,7 +86,7 @@ import java.util.concurrent.ExecutorService;
+ public class CameraDeviceImpl extends CameraDevice
+         implements IBinder.DeathRecipient {
+     private final String TAG;
+-    private final boolean DEBUG = false;
++    private final boolean DEBUG = true;
+ 
+     private static final int REQUEST_ID_NONE = -1;
+     private int customOpMode = 0;
+@@ -445,15 +445,20 @@ public class CameraDeviceImpl extends CameraDevice
+             long createSessionStartTime)
+                     throws CameraAccessException {
+         // Treat a null input the same an empty list
++	Log.d(TAG, "zll configureStreamsChecked start");
+         if (outputs == null) {
++	Log.d(TAG, "zll configureStreamsChecked outputs == null");
+             outputs = new ArrayList<OutputConfiguration>();
+         }
+         if (outputs.size() == 0 && inputConfig != null) {
++	Log.d(TAG, "zll configureStreamsChecked outputs.size() == 0 && inputConfig != null");
+             throw new IllegalArgumentException("cannot configure an input stream without " +
+                     "any output streams");
+         }
+ 
++	Log.d(TAG, "zll configureStreamsChecked checkInputConfiguration start");
+         checkInputConfiguration(inputConfig);
++	Log.d(TAG, "zll configureStreamsChecked checkInputConfiguration end");
+ 
+         boolean success = false;
+ 
+@@ -473,8 +478,10 @@ public class CameraDeviceImpl extends CameraDevice
+                     // Always delete the deferred output configuration when the session
+                     // is created, as the deferred output configuration doesn't have unique surface
+                     // related identifies.
++	Log.d(TAG, "zll configureStreamsChecked 1");
+                     deleteList.add(streamId);
+                 } else {
++	Log.d(TAG, "zll configureStreamsChecked 2");
+                     addSet.remove(outConfig);  // Don't create a stream previously created
+                 }
+             }
+@@ -491,12 +498,14 @@ public class CameraDeviceImpl extends CameraDevice
+                 InputConfiguration currentInputConfig = mConfiguredInput.getValue();
+                 if (inputConfig != currentInputConfig &&
+                         (inputConfig == null || !inputConfig.equals(currentInputConfig))) {
++	Log.d(TAG, "zll configureStreamsChecked 3");
+                     if (currentInputConfig != null) {
+                         mRemoteDevice.deleteStream(mConfiguredInput.getKey());
+                         mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
+                                 REQUEST_ID_NONE, null);
+                     }
+                     if (inputConfig != null) {
++	Log.d(TAG, "zll configureStreamsChecked 4");
+                         int streamId = mRemoteDevice.createInputStream(inputConfig.getWidth(),
+                                 inputConfig.getHeight(), inputConfig.getFormat(),
+                                 inputConfig.isMultiResolution());
+@@ -507,14 +516,17 @@ public class CameraDeviceImpl extends CameraDevice
+ 
+                 // Delete all streams first (to free up HW resources)
+                 for (Integer streamId : deleteList) {
++	Log.d(TAG, "zll configureStreamsChecked 5");
+                     mRemoteDevice.deleteStream(streamId);
+                     mConfiguredOutputs.delete(streamId);
+                 }
+ 
+                 // Add all new streams
+                 for (OutputConfiguration outConfig : outputs) {
++	Log.d(TAG, "zll configureStreamsChecked 6");
+                     if (addSet.contains(outConfig)) {
+                         int streamId = mRemoteDevice.createStream(outConfig);
++	Log.d(TAG, "zll configureStreamsChecked 7 streamId:" + streamId);
+                         mConfiguredOutputs.put(streamId, outConfig);
+                     }
+                 }
+@@ -531,7 +543,9 @@ public class CameraDeviceImpl extends CameraDevice
+ 
+                 mOfflineSupport.clear();
+                 if ((offlineStreamIds != null) && (offlineStreamIds.length > 0)) {
++	Log.d(TAG, "zll configureStreamsChecked 8");
+                     for (int offlineStreamId : offlineStreamIds) {
++	Log.d(TAG, "zll configureStreamsChecked 9");
+                         mOfflineSupport.add(offlineStreamId);
+                     }
+                 }
+@@ -550,8 +564,10 @@ public class CameraDeviceImpl extends CameraDevice
+                 throw e;
+             } finally {
+                 if (success && outputs.size() > 0) {
++			Log.d(TAG, "zll configureStreamsChecked 1");
+                     mDeviceExecutor.execute(mCallOnIdle);
+                 } else {
++			Log.d(TAG, "zll configureStreamsChecked 2");
+                     // Always return to the 'unconfigured' state if we didn't hit a fatal error
+                     mDeviceExecutor.execute(mCallOnUnconfigured);
+                 }
+@@ -565,8 +581,10 @@ public class CameraDeviceImpl extends CameraDevice
+     public void createCaptureSession(List<Surface> outputs,
+             CameraCaptureSession.StateCallback callback, Handler handler)
+             throws CameraAccessException {
++	Log.d(TAG, "zll createCaptureSession outputs.size():" + outputs.size());
+         List<OutputConfiguration> outConfigurations = new ArrayList<>(outputs.size());
+         for (Surface surface : outputs) {
++	Log.d(TAG, "zll createCaptureSession add OutputConfiguration");
+             outConfigurations.add(new OutputConfiguration(surface));
+         }
+         createCaptureSessionInternal(null, outConfigurations, callback,
+@@ -1538,6 +1556,7 @@ public class CameraDeviceImpl extends CameraDevice
+ 
+     private void checkInputConfiguration(InputConfiguration inputConfig) {
+         if (inputConfig == null) {
++		Log.d(TAG, "zll checkInputConfiguration inputConfig == null");
+             return;
+         }
+         int inputFormat = inputConfig.getFormat();
+diff --git a/frameworks/base/core/java/android/hardware/camera2/impl/CameraExtensionSessionImpl.java b/frameworks/base/core/java/android/hardware/camera2/impl/CameraExtensionSessionImpl.java
+index 71047af..602df9a 100644
+--- a/frameworks/base/core/java/android/hardware/camera2/impl/CameraExtensionSessionImpl.java
++++ b/frameworks/base/core/java/android/hardware/camera2/impl/CameraExtensionSessionImpl.java
+@@ -1177,22 +1177,24 @@ public final class CameraExtensionSessionImpl extends CameraExtensionSession {
+         }
+ 
+         public void registerListener(Long timestamp, OnImageAvailableListener listener) {
++		Log.d(TAG, "zll registerListener start");
+             if (mImageListenerMap.containsKey(timestamp)) {
+                 Pair<Image, OnImageAvailableListener> entry = mImageListenerMap.remove(timestamp);
+                 if (entry.first != null) {
+                     listener.onImageAvailable(mImageReader, entry.first);
+                     if (mOutOfBuffers) {
+                         mOutOfBuffers = false;
+-                        Log.w(TAG,"Out of buffers, retry!");
++                        Log.w(TAG,"zll Out of buffers, retry!");
+                         onImageAvailable(mImageReader);
+                     }
+                 } else {
+-                    Log.w(TAG, "No valid image for listener with ts: " +
++                    Log.w(TAG, "zll No valid image for listener with ts: " +
+                             timestamp.longValue());
+                 }
+             } else {
+                 mImageListenerMap.put(timestamp, new Pair<>(null, listener));
+             }
++		Log.d(TAG, "zll registerListener end");
+         }
+ 
+         @Override
+diff --git a/frameworks/base/core/java/android/hardware/camera2/params/OutputConfiguration.java b/frameworks/base/core/java/android/hardware/camera2/params/OutputConfiguration.java
+index 5bb7201..9388e87 100644
+--- a/frameworks/base/core/java/android/hardware/camera2/params/OutputConfiguration.java
++++ b/frameworks/base/core/java/android/hardware/camera2/params/OutputConfiguration.java
+@@ -319,6 +319,10 @@ public final class OutputConfiguration implements Parcelable {
+         mPhysicalCameraId = null;
+         mIsMultiResolution = false;
+         mSensorPixelModesUsed = new ArrayList<Integer>();
++	Log.d(TAG, "zll mSurfaceGroupId:" + mSurfaceGroupId);
++	Log.d(TAG, "zll mConfiguredSize:" + mConfiguredSize);
++	Log.d(TAG, "zll mConfiguredFormat:" + mConfiguredFormat);
++	Log.d(TAG, "zll mConfiguredDataspace:" + mConfiguredDataspace);
+     }
+ 
+     /**
+diff --git a/frameworks/base/media/jni/android_media_MediaPlayer.cpp b/frameworks/base/media/jni/android_media_MediaPlayer.cpp
+index 8dcdc98..30d0f01 100644
+--- a/frameworks/base/media/jni/android_media_MediaPlayer.cpp
++++ b/frameworks/base/media/jni/android_media_MediaPlayer.cpp
+@@ -142,17 +142,20 @@ JNIMediaPlayerListener::~JNIMediaPlayerListener()
+ 
+ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2, const Parcel *obj)
+ {
++	ALOGD("ZLL JNIMediaPlayerListener notify START");
+     JNIEnv *env = AndroidRuntime::getJNIEnv();
+     if (obj && obj->dataSize() > 0) {
+         jobject jParcel = createJavaParcelObject(env);
+         if (jParcel != NULL) {
+             Parcel* nativeParcel = parcelForJavaObject(env, jParcel);
+             nativeParcel->setData(obj->data(), obj->dataSize());
++	ALOGD("ZLL JNIMediaPlayerListener notify 1");
+             env->CallStaticVoidMethod(mClass, fields.post_event, mObject,
+                     msg, ext1, ext2, jParcel);
+             env->DeleteLocalRef(jParcel);
+         }
+     } else {
++	ALOGD("ZLL JNIMediaPlayerListener notify 2");
+         env->CallStaticVoidMethod(mClass, fields.post_event, mObject,
+                 msg, ext1, ext2, NULL);
+     }
