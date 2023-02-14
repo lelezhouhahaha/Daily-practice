@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">CameraDemo</string>
+    <string name="setting_title">settings</string>
+    <array name="setting_items">
+        <item>"1280*720"</item>  <!-- 100wan -->
+        <item>"1280*960"</item>  <!-- 130wan -->
+        <item>"1920*1080"</item>  <!-- 200wan -->
+        <item>"2408*1536"</item> <!-- 300wan -->
+        <item>"1600*2500"</item>  <!-- 400wan -->
+        <item>"1280*960"</item>  <!-- 430wan -->
+        <item>"2560*1920"</item>  <!-- 500wan -->
+        <item>"3024*2016"</item>  <!-- 600wan -->
+        <item>"4080*2720"</item>  <!-- 1100wan -->
+        <item>"4536*3024"</item>  <!-- 1400wan -->
+        <item>"1280*960"</item>  <!-- 1600wan -->
+        <item>"1280*960"</item>  <!-- 2000wan -->
+        <item>"1280*960"</item>  <!-- 3200wan -->
+        <item>"1280*960"</item>  <!-- 4000wan -->
+    </array>
+</resources>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextureView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/textureView"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ttttt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="拍照"
+        android:id="@+id/photoButton"
+        android:onClick="takePicture_onClick"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开启预览"
+            android:id="@+id/startPreviewButton"
+            android:onClick="startPreview_onClick"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="停止预览"
+            android:id="@+id/stopPreviewButton"
+            android:onClick="stopPreview_onClick"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/settings"
+        android:layout_width="70dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="12dp"
+        android:gravity="center_vertical|right"
+        android:orientation="vertical"
+        android:padding="@dimen/pad">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="@string/setting_title"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
