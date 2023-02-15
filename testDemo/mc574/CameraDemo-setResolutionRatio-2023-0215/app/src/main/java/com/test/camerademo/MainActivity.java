@@ -47,6 +47,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -73,11 +74,10 @@ public class MainActivity extends Activity {
     private File mFile;
     public LinearLayoutCompat mSettings;
     public Context mContext;
-    String[] mResolutionRatio = new String[] {"1280*720", "1280*960", "1920*1080", "2408*1536", "1600*2500", "1280*960", "2560*1920", "3024*2016", "4080*2720", "4536*3024", "1280*960", "1280*960", "1280*960", "1280*960"};
+    String[] mResolutionRatio = new String[] {"1280*720", "1280*960", "1920*1080", "2408*1536", "1600*2500", "1280*960", "2560*1920", "3024*2016", "4080*2720", "4536*3024"};
     List<String> mResolutionList;
-    private int mRefreshWidth = 0;
-    private int mRefreshHeight = 0;
-
+    public int mRefreshWidth = 2048;
+    public int mRefreshHeight = 1536;
     static {
         ORIENTATION.append(Surface.ROTATION_0, 90);
         ORIENTATION.append(Surface.ROTATION_90, 0);
@@ -94,6 +94,9 @@ public class MainActivity extends Activity {
     private MyHandler myHandler;
     private CameraDevice mCameraDevice;
     private TextureView mTextureView;
+    private Button mStartPreviewButton;
+    private Button mStopPreviewButton;
+    private Button mCaptureButton;
     private ImageReader mImageReader;
     private CaptureRequest.Builder mCaptureRequestBuilder = null;
     private CaptureRequest mCaptureRequest = null;
@@ -153,10 +156,9 @@ public class MainActivity extends Activity {
         super.handleMessage(msg);
         switch (msg.what) {
             case 1000:
-                startCameraThread();
-                if (!mTextureView.isAvailable()) {
-                    mTextureView.setSurfaceTextureListener(mTextureListener);
-                }
+                Log.d(TAG, "zll 1000 openCamera start");
+                openCamera();
+                Log.d(TAG, "zll 1000 openCamera end");
                 break;
         }
     }
@@ -177,6 +179,10 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         mTextureView = (TextureView) findViewById(R.id.textureView);
+        mStartPreviewButton = (Button) findViewById(R.id.startPreviewButton);
+        mStopPreviewButton = (Button) findViewById(R.id.stopPreviewButton);
+        mCaptureButton = (Button) findViewById(R.id.photoButton);
+        mStartPreviewButton.setVisibility(View.GONE);
         mSettings = (LinearLayoutCompat) findViewById(R.id.settings);
         mSettings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,6 +206,7 @@ public class MainActivity extends Activity {
                                 }
                                 mRefreshWidth = Integer.parseInt(mAll[0]);
                                 mRefreshHeight = Integer.parseInt(mAll[1]);
+                                setupImageReader();
                                 Log.d(TAG, "zll 1 mRefreshWidth:" + mRefreshWidth);
                                 Log.d(TAG, "zll 1 mRefreshHeight:" + mRefreshHeight);
                                 break;
@@ -214,6 +221,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         Log.d(TAG, "zll onResume");
+        startCameraThread();
+        if (!mTextureView.isAvailable()) {
+        mTextureView.setSurfaceTextureListener(mTextureListener);
+        }
         super.onResume();
     }
 
@@ -228,9 +239,9 @@ public class MainActivity extends Activity {
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
             //当SurefaceTexture可用的时候，设置相机参数并打开相机
             setupCamera(width, height);
-            Log.d(TAG, "mTextureListener openCamera start");
+            /*Log.d(TAG, "mTextureListener openCamera start");
             openCamera();
-            Log.d(TAG, "mTextureListener openCamera end");
+            Log.d(TAG, "mTextureListener openCamera end");*/
         }
 
         @Override
@@ -339,8 +350,12 @@ public class MainActivity extends Activity {
                 CameraCharacteristics cameraCharacteristics = mCameraManager.getCameraCharacteristics(mCameraId);
                 StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] sizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG);
+                Log.d(TAG, "zll sizes.length:" + sizes.length);
                 for (int i = 0; i < sizes.length; i++) { //遍历所有Size
                     Size itemSize = sizes[i];
+                    if(itemSize == null){
+                        break;
+                    }
                     Log.e(TAG, "当前itemSize 宽=" + itemSize.getWidth() + "高=" + itemSize.getHeight());
                 }
 
@@ -349,8 +364,8 @@ public class MainActivity extends Activity {
             }
 
 
-            //startPreview();
-            //Log.d(TAG, "onOpened startPreview end");
+            startPreview();
+            Log.d(TAG, "onOpened startPreview end");
         }
 
         @Override
@@ -425,6 +440,7 @@ public class MainActivity extends Activity {
 
     public void startPreview_onClick(View view){
         Log.d(TAG, "startPreview start");
+        mStartPreviewButton.setVisibility(View.GONE);
         if( (mCaptureRequest != null) && ( mCameraCaptureSession != null )) {
             restartPreview();
         }else{
@@ -435,6 +451,7 @@ public class MainActivity extends Activity {
 
     public void stopPreview_onClick(View view){
         Log.d(TAG, "stopPreview start");
+        mStartPreviewButton.setVisibility(View.VISIBLE);
         stopPreview();
         Log.d(TAG, "stopPreview end");
     }
@@ -540,14 +557,18 @@ public class MainActivity extends Activity {
 
         //mImageReader = ImageReader.newInstance(320, 240,
         //        ImageFormat.JPEG, 2);
-        mImageReader = ImageReader.newInstance(1536, 2048,
+        //mImageReader = ImageReader.newInstance(1536, 2048,
+        //        ImageFormat.JPEG, 2);
+        Log.d(TAG, "zll setupImageReader mRefreshHeight:" + mRefreshHeight);
+        Log.d(TAG, "zll setupImageReader mRefreshWidth:" + mRefreshWidth);
+        mImageReader = ImageReader.newInstance(mRefreshHeight, mRefreshWidth,
                 ImageFormat.JPEG, 2);
-        Log.d(TAG, "zll mCaptureSize.getWidth():" + mCaptureSize.getWidth());
-        Log.d(TAG, "zll mCaptureSize.getHeight():" + mCaptureSize.getHeight());
+        Log.d(TAG, "zll setupImageReader mCaptureSize.getWidth():" + mCaptureSize.getWidth());
+        Log.d(TAG, "zll setupImageReader mCaptureSize.getHeight():" + mCaptureSize.getHeight());
         mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                Log.d(TAG, "zll onImageAvailable");
+                Log.d(TAG, "zll setupImageReader onImageAvailable");
                 mCameraHandler.post(new imageSaver(reader.acquireNextImage(), mFile));
             }
         }, mCameraHandler);

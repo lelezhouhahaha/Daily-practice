@@ -12,9 +12,5 @@
         <item>"3024*2016"</item>  <!-- 600wan -->
         <item>"4080*2720"</item>  <!-- 1100wan -->
         <item>"4536*3024"</item>  <!-- 1400wan -->
-        <item>"1280*960"</item>  <!-- 1600wan -->
-        <item>"1280*960"</item>  <!-- 2000wan -->
-        <item>"1280*960"</item>  <!-- 3200wan -->
-        <item>"1280*960"</item>  <!-- 4000wan -->
     </array>
 </resources>
