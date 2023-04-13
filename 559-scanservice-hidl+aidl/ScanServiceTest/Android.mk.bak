@@ -1,0 +1,18 @@
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+LOCAL_PACKAGE_NAME := MeigScanServiceTest
+#LOCAL_PRIVATE_PLATFORM_APIS := true
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_SRC_FILES := \
+    $(call all-java-files-under, java)
+	
+LOCAL_STATIC_LIBRARIES := vendor.scan.hardware.scanservice-V1.0-java
+LOCAL_STATIC_ANDROID_LIBRARIES := androidx.appcompat_appcompat \
+		androidx-constraintlayout_constraintlayout
+LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
+LOCAL_VENDOR_MODULE := true
+#LOCAL_PROGUARD_ENABLED := disabled
+
+LOCAL_CERTIFICATE := platform
+include $(BUILD_PACKAGE)
