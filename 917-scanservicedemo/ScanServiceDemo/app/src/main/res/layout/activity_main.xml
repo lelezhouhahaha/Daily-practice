@@ -119,6 +119,26 @@
                 android:id="@+id/linear_l4"
                 android:layout_weight="1"
                 android:orientation="horizontal">
+                <!--Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/regAddr"
+                    android:layout_weight="1"
+                    android:textSize="10dp"
+                    android:visibility="gone"
+                    android:onClick="alert_reg_addr_edit"
+                    android:text="reg Addr" />
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/regData"
+                    android:layout_weight="1"
+                    android:textSize="10dp"
+                    android:visibility="gone"
+                    android:onClick="alert_reg_data_edit"
+                    android:text="reg Data" /-->
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -127,7 +147,7 @@
 
                 <EditText
                     android:id="@+id/regAddrEdit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_alignParentStart="true"
@@ -152,7 +172,7 @@
 
                 <EditText
                     android:id="@+id/regDataEdit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_alignParentStart="true"
@@ -165,10 +185,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="210dp"
-                android:layout_marginLeft="80dp"
+                android:layout_centerHorizontal="true"
                 android:id="@+id/linear_l6"
                 android:layout_weight="1"
                 android:orientation="horizontal">
+                <Button
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/mcuI2cWrite"
+                    android:layout_weight="1"
+                    android:textSize="10dp"
+                    android:text="Mcu I2c Write" />
                 <Button
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
@@ -250,21 +277,30 @@
         android:layout_weight="1"
         android:text="set focus:" />
 
+
         <EditText
             android:id="@+id/cam_set_focus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:ems="15"
             android:inputType="text"
             android:text="" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/setFocus"
+            android:layout_weight="1"
+            android:textSize="10dp"
+            android:text="set Focus" />
     </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="370dp"
+            android:layout_marginTop="410dp"
             android:layout_marginLeft="80dp"
             android:id="@+id/linear_l10"
             android:layout_weight="1"
