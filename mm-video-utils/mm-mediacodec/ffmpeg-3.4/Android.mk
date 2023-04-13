@@ -1,0 +1,34 @@
+OLD_LOCAL_PATH := $(LOCAL_PATH)
+LOCAL_PATH := $(call my-dir)
+
+ifeq ($(call is-vendor-board-platform,QCOM),true)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE       := ffmpeg34
+LOCAL_SRC_FILES    := ffmpeg34
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_MODULE_TAGS  := optional
+LOCAL_MODULE_PATH  := $(TARGET_OUT)/bin
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE       := ffprobe34
+LOCAL_SRC_FILES    := ffprobe34
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_MODULE_TAGS  := optional
+LOCAL_MODULE_PATH  := $(TARGET_OUT)/bin
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE       := ffserver34
+LOCAL_SRC_FILES    := ffserver34
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_MODULE_TAGS  := optional
+LOCAL_MODULE_PATH  := $(TARGET_OUT)/bin
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+endif
+LOCAL_PATH := $(OLD_LOCAL_PATH)

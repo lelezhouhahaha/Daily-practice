@@ -1,0 +1,30 @@
+<!--
+Copyright (c) 2016 Qualcomm Technologies, Inc.
+All Rights Reserved.
+Confidential and Proprietary - Qualcomm Technologies, Inc.
+-->
+<xml>
+	<EncodeSession>
+		<TestCaseID>Output_1080p</TestCaseID>
+		<Bitrate>17000000</Bitrate>
+		<BitrateLevel>Medium</BitrateLevel>
+		<Classification>CAM</Classification>
+		<ColorFormat>NV12</ColorFormat>
+		<CompressionFormat>VIDEO_CodingAVC</CompressionFormat>
+		<CrcFileRoot>\</CrcFileRoot>
+		<FPSDenominator>1</FPSDenominator>
+		<FPSNumerator>30</FPSNumerator>
+		<InputFile>P_C256_0030.yuv</InputFile>
+		<OutputHeight>1080</OutputHeight>
+		<OutputWidth>1920</OutputWidth>
+		<ProfileIDC>VIDEO_AVCProfileMain</ProfileIDC>
+		<SourceHeight>1080</SourceHeight>
+		<SourceWidth>1920</SourceWidth>
+		<eControlRate>VBR_CFR</eControlRate>
+		<nFramesToParse>30</nFramesToParse>
+		<nPframes>59</nPframes>
+		<InitialQP>1</InitialQP>
+		<EntropyCoding>CABAC</EntropyCoding>
+		<session_mode>enc</session_mode>
+	</EncodeSession>
+</xml>

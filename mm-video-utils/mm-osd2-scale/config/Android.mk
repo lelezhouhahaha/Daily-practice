@@ -1,0 +1,40 @@
+OLD_LOCAL_PATH := $(LOCAL_PATH)
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE:= time_str.yuv
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_SRC_FILES := time_str.yuv
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(PRODUCT_OUT)/system/etc/camera/
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE:= time_str_480p.yuv
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_SRC_FILES := time_str_480p.yuv
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(PRODUCT_OUT)/system/etc/camera/
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE:= simblack.ttf
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_SRC_FILES := simblack.ttf
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(PRODUCT_OUT)/system/etc/camera/
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE:= libhidapi.so
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_SRC_FILES := libhidapi.so
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(PRODUCT_OUT)/system/lib/
+LOCAL_MODULE_OWNER := qti
+include $(BUILD_PREBUILT)
+
+LOCAL_PATH := $(OLD_LOCAL_PATH)

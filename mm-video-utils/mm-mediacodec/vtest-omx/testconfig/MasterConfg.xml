@@ -1,0 +1,19 @@
+<!--
+Copyright (c) 2016 Qualcomm Technologies, Inc.
+All Rights Reserved.
+Confidential and Proprietary - Qualcomm Technologies, Inc.
+-->
+<xml>
+	<DecOutPortBufCnt>4</DecOutPortBufCnt>
+	<DefaultHeight>720</DefaultHeight>
+	<DefaultWidth>1280</DefaultWidth>
+	<DisplayBufCount>3</DisplayBufCount>
+	<EncCapPortBufCnt>5</EncCapPortBufCnt>
+	<EncOutPortBufCnt>7</EncOutPortBufCnt>
+	<FWLogMask>0x3F</FWLogMask>
+	<InputFileRoot>/data/misc/camera/</InputFileRoot>
+	<LogMask>0x7</LogMask>
+	<MinFrameDelay>0</MinFrameDelay>
+	<OutputDump>Enable</OutputDump>
+	<OutputFileRoot>/data/misc/camera/</OutputFileRoot>
+</xml>

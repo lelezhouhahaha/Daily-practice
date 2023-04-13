@@ -1,0 +1,28 @@
+<!--
+Copyright (c) 2016 Qualcomm Technologies, Inc.
+All Rights Reserved.
+Confidential and Proprietary - Qualcomm Technologies, Inc.
+-->
+<xml>
+	<DecodeSession>
+		<TestCaseID>Output_h264</TestCaseID>
+		<Bitrate>17000000</Bitrate>
+		<BitrateLevel>Medium</BitrateLevel>
+		<Classification>CAM</Classification>
+		<ColorFormat>NV12</ColorFormat>
+		<CompressionFormat>VIDEO_CodingHEVC</CompressionFormat>
+		<CrcFileRoot>\</CrcFileRoot>
+		<FPSDenominator>1</FPSDenominator>
+		<FPSNumerator>30</FPSNumerator>
+		<InputFile>Output_h264.264</InputFile>
+		<OutputHeight>1920</OutputHeight>
+		<OutputWidth>1080</OutputWidth>
+		<ProfileIDC>VIDEO_HEVCProfileMain</ProfileIDC>
+		<SourceHeight>1920</SourceHeight>
+		<SourceWidth>1080</SourceWidth>
+		<eControlRate>VBR_CFR</eControlRate>
+		<nFramesToParse>200</nFramesToParse>
+		<nPframes>30</nPframes>
+		<session_mode>dec</session_mode>
+	</DecodeSession>
+</xml>
