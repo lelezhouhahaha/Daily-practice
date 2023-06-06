@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ScanServiceDemo</string>
+    <string name="set_focus_message">the value of focus is between 1 and 5000, please select again!</string>
+    <string name="set_focus_is_empty_message">the value of set focus is empty, please input again!</string>
+    <string name="mcu_i2c_write_addr_length_messag">the length of mcu i2c addr is not match, please input again! </string>
+    <string name="i2c_write_addr_length_messag">the length of i2c addr is not match, please input again! </string>
+    <string name="device_type_not_match_messag">the device type is not match, please select again!</string>
+    <string name="reg_data_length_not_select_message">Please attention, regData reselect again!</string>
+    <string name="reg_addr_not_input_message">Please attention, the content of regAddr need input first!</string>
+    <string name="reg_data_not_input_message">Please attention, the content of regData need input first!</string>
+    <string name="reg_addr_length_too_long_message">Please attention, the length of regAddr is more than 4 byte and input again, please!</string>
+</resources>

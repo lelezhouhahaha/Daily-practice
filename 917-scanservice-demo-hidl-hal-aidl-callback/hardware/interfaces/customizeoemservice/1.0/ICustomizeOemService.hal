@@ -1,0 +1,5 @@
+package vendor.oem.hardware.customizeoemservice@1.0;
+interface ICustomizeOemService {
+	customize_SetProvisionStatus(uint32_t enable) generates (int32_t ret);
+	customize_GetProvisionStatus() generates (int32_t ret);
+};

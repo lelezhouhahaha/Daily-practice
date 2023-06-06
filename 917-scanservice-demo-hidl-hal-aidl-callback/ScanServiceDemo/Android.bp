@@ -1,0 +1,16 @@
+android_app {
+    name: "ScanServiceDemo",
+	//vendor: true,
+    srcs: [
+        "java/**/*.java",
+    ],
+    platform_apis: true,
+    //sdk_version: "current",
+    //privileged: true,
+    certificate: "platform",
+    static_libs: [
+        "vendor.scan.hardware.scanservice-V1.0-java",
+	"androidx.appcompat_appcompat",
+	"androidx-constraintlayout_constraintlayout",
+    ],
+}

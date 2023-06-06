@@ -1,0 +1,5 @@
+allow system_app hal_scanservice_hwservice:hwservice_manager find;
+allow system_app hal_scanservice_default:binder call;
+
+allow system_app hal_customizeservice_hwservice:hwservice_manager find;
+allow system_app hal_customizeservice_default:binder call;

@@ -1,0 +1,12 @@
+###################################
+# Dev nodes
+#
+#20200413,Snail.Qian, add for oem keys
+/(vendor|system/vendor)/bin/hw/vendor\.scan\.hardware\.scanservice@1\.0-service       u:object_r:hal_scanservice_default_exec:s0
+/dev/scanner_flash	u:object_r:scanner_device:s0
+/dev/scanner_actuator	u:object_r:scanner_device:s0
+/dev/scanner_info	u:object_r:scanner_device:s0
+
+/(vendor|system/vendor)/bin/hw/vendor\.oem\.hardware\.customizeoemservice@1\.0-impl       u:object_r:hal_customizeservice_default_exec:s0
+
+/(vendor|system/vendor)/bin/hw/android\.hardware\.oem\.customizescanservice-service       u:object_r:hal_customizescanservice_default_exec:s0

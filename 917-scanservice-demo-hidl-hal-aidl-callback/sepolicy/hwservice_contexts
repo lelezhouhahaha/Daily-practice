@@ -1,0 +1,7 @@
+#20200825,Snail.Qian, add for scan service
+vendor.scan.hardware.scanservice::IScanService                   u:object_r:hal_scanservice_hwservice:s0
+
+#20230427,Snail.Qian, add for customize scan service
+android.hardware.oem.customizescanservice::ICustomizeScanService                   u:object_r:hal_customizescanservice_hwservice:s0
+
+vendor.oem.hardware.customizeoemservice::ICustomizeOemService                   u:object_r:hal_customizeservice_hwservice:s0

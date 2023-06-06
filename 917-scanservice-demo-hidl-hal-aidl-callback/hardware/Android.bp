@@ -1,0 +1,4 @@
+// Pick up Android.bp in next directory level
+subdirs = [
+    "*"
+]

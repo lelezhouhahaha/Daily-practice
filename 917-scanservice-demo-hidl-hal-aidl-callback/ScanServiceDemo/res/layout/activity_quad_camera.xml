@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linear_l1"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/quad_cam_open"
+        android:layout_weight="1"
+        android:textSize="10dp"
+        android:text="Open" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/quad_cam_close"
+            android:layout_weight="1"
+            android:textSize="10dp"
+            android:text="Close" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/quad_cam_resume"
+            android:layout_weight="1"
+            android:textSize="10dp"
+            android:text="Resume" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/quad_cam_suspend"
+            android:layout_weight="1"
+            android:textSize="10dp"
+            android:text="Suspend" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/quad_cam_capture"
+            android:layout_weight="1"
+            android:textSize="10dp"
+            android:text="Capture" />
+    </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="90dp"
+            android:layout_marginLeft="80dp"
+            android:id="@+id/linear_l3"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Free Buffer:" />
+            <Spinner
+                android:id="@+id/quad_freeBuffer"
+                style="@style/Widget.AppCompat.Spinner.Underlined"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_weight="0.6"
+                android:entries="@array/freeBufferItem"
+                tools:ignore="MissingConstraints"
+                tools:layout_editor_absoluteX="61dp"
+                tools:layout_editor_absoluteY="80dp">
+            </Spinner>
+        </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="130dp"
+                android:layout_marginLeft="80dp"
+                android:id="@+id/linear_l4"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="reg Addr:" />
+
+                <EditText
+                    android:id="@+id/quad_regAddrEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:ems="15"
+                    android:inputType="text"
+                    android:text="" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="160dp"
+                android:layout_marginLeft="80dp"
+                android:id="@+id/linear_l5"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="reg Data:" />
+
+                <EditText
+                    android:id="@+id/quad_regDataEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:ems="15"
+                    android:inputType="text"
+                    android:text="" />
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="210dp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/linear_regDataLength"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reg Data Length:" />
+            <Spinner
+                android:id="@+id/quad_regDataLength"
+                style="@style/Widget.AppCompat.Spinner.Underlined"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_weight="0.6"
+                android:entries="@array/regDataLength"
+                tools:ignore="MissingConstraints"
+                tools:layout_editor_absoluteX="61dp"
+                tools:layout_editor_absoluteY="80dp">
+            </Spinner>
+        </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="260dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/linear_l6"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <Button
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/quad_i2cWrite"
+                    android:layout_weight="1"
+                    android:textSize="10dp"
+                    android:text="I2c write" />
+                <Button
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/quad_i2cRead"
+                    android:layout_weight="1"
+                    android:textSize="10dp"
+                    android:text="I2c Read" />
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="320dp"
+            android:layout_marginLeft="80dp"
+            android:id="@+id/linear_l10"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/quad_i2c_read_result"
+                android:text="I2c result:" />
+        </LinearLayout>
+    </RelativeLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

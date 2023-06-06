@@ -1,0 +1,18 @@
+aidl_interface {
+    name: "android.hardware.oem.customizescanservice",
+    vendor_available: true,
+    owner: "vendor",
+    srcs: [
+        "android/hardware/oem/customizescanservice/*.aidl",
+    ],
+    stability: "vintf",
+    backend: {
+        java: {
+            platform_apis: true,
+        },
+        ndk: {
+            enabled: true,
+        },
+    },
+    versions: ["1"],
+}

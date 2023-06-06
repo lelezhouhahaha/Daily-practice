@@ -1,0 +1,52 @@
+/*
+ * Copyright (C) 2016 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package vendor.scan.hardware.scanservice@1.0;
+
+interface IScanService {
+	cam_open() generates (int32_t ret);
+	cam_close() generates (int32_t ret);
+	cam_suspend() generates (int32_t ret);
+	cam_resume() generates (int32_t ret);
+	cam_scm_capture(uint8_t target_cam) generates (int32_t ret);
+	cam_ccm_capture() generates (int32_t ret);
+	cam_scm_mcu_i2c_write(vec<reg_array> SendData, uint32_t length) generates (int32_t ret);
+	cam_scm_i2c_write(uint8_t slaveAddress, vec<reg_array> SendData,uint32_t length) generates (int32_t ret);
+	cam_scm_i2c_read(uint8_t slaveAddress,uint32_t SendData,uint32_t AddrType,uint32_t DataType) generates (uint32_t ret);
+	cam_ccm_i2c_write(vec<reg_array> SendData,uint32_t length) generates (int32_t ret);
+	cam_ccm_i2c_read(uint32_t SendData, uint32_t AddrType,uint32_t DataType) generates (uint32_t ret);
+	cam_ccm_return_buffer(int32_t idx) generates (int32_t ret);
+	cam_scm1_return_buffer(int32_t idx) generates (int32_t ret);
+	cam_scm2_return_buffer(int32_t idx) generates (int32_t ret);
+	cam_ccm_serial_number_read() generates (string ret);
+	cam_scm_serial_number_read() generates (string ret);
+	cam_scm_fw_version_read() generates (string ret);
+	cam_ccm_move_Focus(int32_t distancemm) generates (int32_t ret);
+	cam_ccm_flash(int32_t flash_status,int32_t timeout) generates (int32_t ret);
+	cam_ccm_switch_size(int32_t type) generates (int32_t ret);
+	cam_aim_sus(uint8_t gpio_signal) generates (int32_t ret);
+	cam_wake(uint8_t gpio_signal) generates (int32_t ret);
+	non_volatail_param_write(string param) generates (int32_t ret);
+	non_volatail_param_read() generates (string ret);
+	quad_cam_open() generates (int32_t ret);
+	quad_cam_close() generates (int32_t ret);
+	quad_cam_suspend() generates (int32_t ret);
+	quad_cam_resume() generates (int32_t ret);
+	quad_cam_scm_capture() generates (int32_t ret);
+	quad_cam_scm_i2c_write(uint8_t slaveAddress, uint32_t AddrType,uint32_t DataType, vec<reg_array> SendData,uint32_t length) generates (int32_t ret);
+	quad_cam_scm_i2c_read(uint8_t slaveAddress,uint32_t SendData,uint32_t AddrType,uint32_t DataType) generates (uint32_t ret);
+	quad_cam_scm_return_buffer(int32_t idx) generates (int32_t ret);
+};

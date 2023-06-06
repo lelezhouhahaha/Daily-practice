@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2016 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package vendor.scan.hardware.scanservice@1.0;
+
+
+enum CCM_SWITCH_SIZE_TYPE : int32_t{
+	CCM_1M_SIZE_TYPE = 0,
+	CCM_13M_SIZE_TYPE = 1,
+};
+
+enum I2C_CMD_WIDTH_TYPE : int32_t{
+	BYTE_TYPE = 1,
+	SHORT_TYPE = 2,
+};
+
+enum FLASH_STATUS_TYPE : int32_t{
+	DISABLE_FLASH_LIGHT = 0,
+	ENABLE_FLASH_LIGHT_WEAK = 1,
+	ENABLE_FLASH_LIGHT_STRONG = 2,
+};
+
+
+struct reg_array {
+	uint32_t reg_addr;
+	uint32_t reg_data;
+	uint32_t delay;
+	uint32_t data_mask;
+};
+
+//typedef void (*DataCallBack)(int32_t width,int32_t height,int32_t stride,size_t size,void *FrameBufferVirtualAddr,int idx);

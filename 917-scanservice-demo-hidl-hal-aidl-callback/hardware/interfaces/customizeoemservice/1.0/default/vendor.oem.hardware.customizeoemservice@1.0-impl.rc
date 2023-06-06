@@ -1,0 +1,5 @@
+service vendor.oemservice-1-0 /vendor/bin/hw/vendor.oem.hardware.customizeoemservice@1.0-impl
+    class hal
+    user system
+    group system
+

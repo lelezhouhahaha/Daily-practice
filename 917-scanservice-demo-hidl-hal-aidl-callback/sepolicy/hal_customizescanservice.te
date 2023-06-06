@@ -1,0 +1,6 @@
+# HwBinder IPC from client to server, and callbacks
+binder_call(hal_customizescanservice_client, hal_customizescanservice_server)
+binder_call(hal_customizescanservice_server, hal_customizescanservice_client)
+
+add_hwservice(hal_customizescanservice_server, hal_customizescanservice_hwservice)
+allow hal_customizescanservice_client hal_customizescanservice_hwservice:hwservice_manager find;

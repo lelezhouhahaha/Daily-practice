@@ -1,0 +1,4 @@
+###
+### HAL Services
+###
+type hal_customizescan_service, vendor_service, service_manager_type;

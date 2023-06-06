@@ -1,0 +1,19 @@
+// Pick up Android.bp in next directory level
+subdirs = [
+    "*"
+]
+
+hidl_package_root {
+    name: "vendor.scan.hardware",
+    path: "vendor/vendorcode/hardware/interfaces",
+}
+
+hidl_package_root {
+    name: "android.hardware.oem",
+    path: "vendor/vendorcode/hardware/interfaces",
+}
+
+hidl_package_root {
+    name: "vendor.oem.hardware",
+    path: "vendor/vendorcode/hardware/interfaces",
+}

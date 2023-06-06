@@ -1,0 +1,5 @@
+service vendor.customizescanservice-1-0 /vendor/bin/hw/android.hardware.oem.customizescanservice-service
+    class hal
+    user system
+    group system
+

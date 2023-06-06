@@ -1,0 +1,9 @@
+#20220825
+type hal_scanservice_hwservice, hwservice_manager_type;
+
+#20230427
+type hal_customizescanservice_hwservice, hwservice_manager_type;
+
+#20230602
+type hal_customizeservice_hwservice, hwservice_manager_type;
+

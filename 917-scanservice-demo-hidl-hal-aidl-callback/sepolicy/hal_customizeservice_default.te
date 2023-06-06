@@ -1,0 +1,12 @@
+type hal_customizeservice_default, domain;
+hal_server_domain(hal_customizeservice_default, hal_customizeservice)
+
+type hal_customizeservice_default_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(hal_customizeservice_default)
+allow hal_customizeservice_default ssign_blk_file:dir search;
+allow hal_customizeservice_default ssign_blk_file:blk_file { read write open map };
+allow hal_customizeservice_default block_device:dir search;
+
+#allow hal_customizeservice_default hal_customize_service:service_manager add;
+#allow hal_customizeservice_default servicemanager:binder { transfer call };
+#allow hal_customizeservice_default hal_customizeservice_default:qipcrtr_socket create;
